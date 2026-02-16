@@ -1,0 +1,26 @@
+# Professional Front Controller Configuration - AI Arena
+
+# 1. Disable Directory Listing
+Options -Indexes
+
+# 2. Enable Rewrite Engine
+RewriteEngine On
+
+# 3. Canonical Redirects (Remove .php from URL)
+# Target specific recovery flow files to avoid breaking other parts of the system
+RewriteCond %{THE_REQUEST} ^[A-Z]{3,}\s/(.*)/(forgot_password|verify_pin|reset_password)\.php [NC]
+RewriteRule ^ %2 [R=301,L]
+
+# 4. Front Controller Routing
+# If the request is for an existing file or folder (after redirection check), serve it.
+RewriteCond %{REQUEST_FILENAME} !index.php
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Otherwise, route everything to index.php.
+RewriteRule ^ index.php [QSA,NE,L]
+
+# 4. Custom Error Pages
+ErrorDocument 403 /OJT%20DEVELOPMENT/Inventory_System/403.php
+ErrorDocument 404 /OJT%20DEVELOPMENT/Inventory_System/404.php
