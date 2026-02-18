@@ -961,7 +961,7 @@ $root = rtrim($scriptDir, '/') . '/';
                 <i class="fas fa-clipboard-list"></i> Requisition Slip (0)
             </button>
             <button class="controlled-assets-btn" id="btn-controlled-assets" style="background: #1e3a8a; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 600;">
-                <i class="fas fa-shield-alt"></i> Controlled Assets
+                <i class="fas fa-truck-loading"></i> Controlled Assets Deliveries
             </button>
             <form method="GET" action="<?php echo $basePath; ?>api/export_supply_excel.php" style="margin: 0;">
                 <button type="submit" class="download-btn" style="background-color: #217346; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer;"><i class="fas fa-file-excel"></i> Download Excel</button>

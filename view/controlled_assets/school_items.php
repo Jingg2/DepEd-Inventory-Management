@@ -7,7 +7,7 @@ error_reporting(E_ALL);
 // Root path calculation
 $scriptDir = dirname($_SERVER['SCRIPT_NAME']);
 $scriptDir = str_replace('\\', '/', $scriptDir);
-if (basename($scriptDir) === 'controlled_assests') {
+if (basename($scriptDir) === 'controlled_assets') {
     $scriptDir = dirname(dirname($scriptDir));
 }
 $root = rtrim($scriptDir, '/') . '/';
@@ -23,13 +23,14 @@ try {
     $supplyModel = new SupplyModel();
     $settingsModel = new SettingsModel();
     
-    $schoolName = $_GET['school'] ?? '';
+    $schoolName = trim($_GET['school'] ?? '');
     if (empty($schoolName)) {
-        header('Location: ' . $root . 'controlled_assets/supply');
+        header('Location: ' . $root . 'controlled_assets/deliveries');
         exit;
     }
     
     $items = $supplyModel->getItemsBySchool($schoolName);
+    $schoolDetails = $supplyModel->getSchoolByName($schoolName);
     
     $settings = $settingsModel->getAllSettings();
     $defaultLow = $settings['default_low_stock'] ?? 10;
@@ -50,6 +51,10 @@ try {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <script>
+        window.basePath = '<?php echo $root; ?>';
+    </script>
     <script>
         var basePath = '<?php echo addslashes($root); ?>';
         (function() {
@@ -122,7 +127,7 @@ try {
         </div>
         <ul>
             <li><a href="<?php echo $root; ?>controlled_assets"><i class="fas fa-th-large"></i> <span>Dashboard</span></a></li>
-            <li><a href="<?php echo $root; ?>controlled_assets/supply" class="active"><i class="fas fa-box"></i> <span>Supply</span></a></li>
+            <li><a href="<?php echo $root; ?>controlled_assets/deliveries" class="active"><i class="fas fa-box"></i> <span>Deliveries</span></a></li>
             <li><a href="#"><i class="fas fa-exchange-alt"></i> <span>Borrow and Return</span></a></li>
             <li><a href="#"><i class="fas fa-file-alt"></i> <span>Reports</span></a></li>
             <li class="divider"></li>
@@ -139,9 +144,12 @@ try {
         </div>
 
         <div style="margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center;">
-            <a href="<?php echo $root; ?>controlled_assets/supply" class="back-btn">
+            <a href="<?php echo $root; ?>controlled_assets/deliveries" class="back-btn">
                 <i class="fas fa-arrow-left"></i> Back to Schools
             </a>
+            <button class="add-btn" onclick="openEditSchoolModal()" style="background: #10b981;">
+                <i class="fas fa-edit"></i> Edit School Info
+            </button>
         </div>
 
         <div class="search-filter-container" style="display: flex; gap: 15px; margin-bottom: 25px; background: white; padding: 15px 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
@@ -228,10 +236,35 @@ try {
     <?php include_once __DIR__ . '/../includes/edit_supply_modal.php'; ?>
     <?php include_once __DIR__ . '/../supply_details_modal.php'; ?>
     <?php include_once __DIR__ . '/../stock_card_modal.php'; ?>
+    <?php include_once __DIR__ . '/../includes/edit_school_modal.php'; ?>
     <?php include_once __DIR__ . '/../../includes/logout_modal.php'; ?>
 
     <script src="<?php echo $root; ?>js/sidebar.js?v=<?php echo time(); ?>"></script>
     <script src="<?php echo $root; ?>js/dashboard.js?v=<?php echo time(); ?>"></script>
     <script src="<?php echo $root; ?>js/supply_modals.js?v=<?php echo time(); ?>"></script>
+    <script>
+        // Populate edit school modal
+        document.addEventListener('DOMContentLoaded', function() {
+            <?php if ($schoolDetails): ?>
+            const details = <?php echo json_encode($schoolDetails); ?>;
+            console.log("School details found:", details);
+            
+            const fields = {
+                'edit-school-id': details.id,
+                'edit-school-school-id': details.school_id,
+                'edit-school-name': details.school_name,
+                'edit-school-address': details.address,
+                'edit-school-contact': details.contact_no
+            };
+            
+            for (const [id, value] of Object.entries(fields)) {
+                const el = document.getElementById(id);
+                if (el) el.value = value || '';
+            }
+            <?php else: ?>
+            console.warn("No school details found for '<?php echo addslashes($schoolName); ?>'");
+            <?php endif; ?>
+        });
+    </script>
 </body>
 </html>

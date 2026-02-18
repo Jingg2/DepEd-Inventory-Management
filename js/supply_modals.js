@@ -4,14 +4,15 @@
  */
 
 // Smart initialization - works for both regular and AJAX page loads
-(function initSupplyModals() {
+// Smart initialization - works for both regular and AJAX page loads
+document.addEventListener('DOMContentLoaded', function () {
     console.log('supply_modals.js: Initializing...');
 
     // CRITICAL FIX: Force close all modals on page load
-    // Some other script or PHP condition is setting them as 'active' initially
     const allModals = document.querySelectorAll('.modal');
     allModals.forEach(modal => {
         modal.classList.remove('active');
+        modal.style.display = 'none';
     });
     console.log('Forced all modals closed on init');
 
@@ -108,64 +109,6 @@
             }
         });
 
-        // Open View Modal (Event Delegation)
-        document.addEventListener('click', function (event) {
-            if (event.target.classList.contains('view-icon') || event.target.closest('.view-icon')) {
-                event.stopPropagation();
-                const icon = event.target.classList.contains('view-icon') ? event.target : event.target.closest('.view-icon');
-                const card = icon.closest('.supply-card');
-
-                if (card) {
-                    // Extract data
-                    const details = {
-                        id: card.getAttribute('data-id'),
-                        name: card.getAttribute('data-name'),
-                        category: card.getAttribute('data-category'),
-                        quantity: card.getAttribute('data-quantity'),
-                        stockNo: card.getAttribute('data-stock-no'),
-                        unit: card.getAttribute('data-unit'),
-                        description: card.getAttribute('data-description'),
-                        unitCost: card.getAttribute('data-unit-cost'),
-                        status: card.getAttribute('data-status'),
-                        propClass: card.getAttribute('data-property-classification'),
-                        school: card.getAttribute('data-school'),
-                        img: card.getAttribute('data-image') || card.querySelector('img')?.src || basePath + 'img/Bogo_City_logo.png',
-                        lowT: card.getAttribute('data-low-threshold'),
-                        critT: card.getAttribute('data-critical-threshold')
-                    };
-
-                    // Populate UI
-                    document.getElementById('modal-title').textContent = (details.name || 'Unknown') + ' Details';
-                    document.getElementById('modal-img').src = details.img;
-                    document.getElementById('modal-stock-no').textContent = details.stockNo || 'N/A';
-                    document.getElementById('modal-name').textContent = details.name || 'Unknown';
-                    document.getElementById('modal-category').textContent = details.category || 'N/A';
-                    document.getElementById('modal-unit').textContent = details.unit || 'N/A';
-                    document.getElementById('modal-quantity').textContent = details.quantity || '0';
-                    document.getElementById('modal-unit-cost').textContent = details.unitCost ? parseFloat(details.unitCost).toFixed(2) : '0.00';
-
-                    const total = (parseFloat(details.quantity) || 0) * (parseFloat(details.unitCost) || 0);
-                    document.getElementById('modal-total-cost').textContent = total.toFixed(2);
-
-                    document.getElementById('modal-status').textContent = details.status || 'Unknown';
-                    document.getElementById('modal-low-threshold').textContent = details.lowT || '10';
-                    document.getElementById('modal-critical-threshold').textContent = details.critT || '5';
-                    document.getElementById('modal-property-classification').textContent = details.propClass || 'N/A';
-                    document.getElementById('modal-school').textContent = details.school || 'N/A';
-                    document.getElementById('modal-description').textContent = details.description || 'No description';
-
-                    // Track current ID for Edit/Delete from within modal
-                    itemModal.setAttribute('data-current-id', details.id);
-                    itemModal.classList.add('active');
-
-                    // FORCE VISIBILITY
-                    itemModal.style.display = 'flex';
-                    itemModal.style.opacity = '1';
-                    itemModal.style.visibility = 'visible';
-                    itemModal.style.zIndex = '9999';
-                }
-            }
-        });
     }
 
 
@@ -255,7 +198,7 @@
             e.stopPropagation();
 
             // Redirect to the new controlled assets screen
-            window.location.href = basePath + 'controlled_assets';
+            window.location.href = basePath + 'controlled_assets/deliveries';
         }
     });
 
@@ -790,18 +733,13 @@
             }
         }
     });
-
-    console.log('Supply modals initialized successfully');
-
-
-
     // ==========================================
     // 6. VIEW ITEM DETAILS LOGIC
     // ==========================================
     document.addEventListener('click', function (e) {
         const viewIcon = e.target.closest('.view-icon');
         if (viewIcon) {
-            console.log('View Icon Clicked');
+            console.log('View Icon Clicked - Fetching Details');
             e.preventDefault();
             e.stopPropagation();
 
@@ -809,71 +747,94 @@
             if (card) {
                 const modal = document.getElementById('item-modal');
                 if (modal) {
-                    // Populate fields
-                    const img = card.getAttribute('data-image');
-                    const stockNo = card.getAttribute('data-stock-no') || '-';
-                    const name = card.getAttribute('data-name');
-                    const category = card.getAttribute('data-category');
-                    const unit = card.getAttribute('data-unit');
-                    const quantity = card.getAttribute('data-quantity');
-                    const unitCost = card.getAttribute('data-unit-cost');
-                    const totalCost = card.getAttribute('data-total-cost');
-                    const status = card.getAttribute('data-status');
-                    const lowThreshold = card.getAttribute('data-low-threshold') || '10'; // Default
-                    const critThreshold = card.getAttribute('data-critical-threshold') || '5'; // Default
-                    const propertyClass = card.getAttribute('data-property-classification');
-                    const description = card.getAttribute('data-description');
+                    // Track current ID
+                    modal.setAttribute('data-current-id', card.getAttribute('data-id'));
 
-                    document.getElementById('modal-stock-no').textContent = stockNo;
-                    document.getElementById('modal-name').textContent = name;
-                    document.getElementById('modal-category').textContent = category;
-                    document.getElementById('modal-unit').textContent = unit;
-                    document.getElementById('modal-quantity').textContent = quantity;
-                    document.getElementById('modal-unit-cost').textContent = unitCost;
-                    document.getElementById('modal-total-cost').textContent = totalCost;
-                    document.getElementById('modal-status').textContent = status;
-                    document.getElementById('modal-low-threshold').textContent = lowThreshold;
-                    document.getElementById('modal-critical-threshold').textContent = critThreshold;
-                    document.getElementById('modal-property-classification').textContent = propertyClass;
-                    document.getElementById('modal-description').textContent = description;
+                    // Extract common data from card
+                    const details = {
+                        id: card.getAttribute('data-id'),
+                        name: card.getAttribute('data-name'),
+                        category: card.getAttribute('data-category'),
+                        quantity: card.getAttribute('data-quantity'),
+                        stockNo: card.getAttribute('data-stock-no'),
+                        unit: card.getAttribute('data-unit'),
+                        description: card.getAttribute('data-description'),
+                        unitCost: card.getAttribute('data-unit-cost'),
+                        totalCost: card.getAttribute('data-total-cost'),
+                        status: card.getAttribute('data-status'),
+                        propClass: card.getAttribute('data-property-classification'),
+                        school: card.getAttribute('data-school'),
+                        img: card.getAttribute('data-image') || (basePath + 'img/Bogo_City_logo.png'),
+                        lowT: card.getAttribute('data-low-threshold') || '10',
+                        critT: card.getAttribute('data-critical-threshold') || '5'
+                    };
+
+                    // Basic UI Population
+                    document.getElementById('modal-stock-no').textContent = details.stockNo || '-';
+                    document.getElementById('modal-name').textContent = details.name || 'Unknown';
+                    document.getElementById('modal-category').textContent = details.category || 'N/A';
+                    document.getElementById('modal-unit').textContent = details.unit || 'N/A';
+                    document.getElementById('modal-quantity').textContent = details.quantity || '0';
+                    document.getElementById('modal-unit-cost').textContent = details.unitCost || '0.00';
+                    document.getElementById('modal-total-cost').textContent = details.totalCost || '0.00';
+                    document.getElementById('modal-status').textContent = details.status || 'Unknown';
+                    document.getElementById('modal-low-threshold').textContent = details.lowT;
+                    document.getElementById('modal-critical-threshold').textContent = details.critT;
+                    document.getElementById('modal-property-classification').textContent = details.propClass || 'N/A';
+                    document.getElementById('modal-school').textContent = details.school || 'N/A';
+                    document.getElementById('modal-description').textContent = details.description || 'No description';
 
                     // Image Handling
                     const imgContainer = document.getElementById('modal-img-container');
                     const imgElem = document.getElementById('modal-img');
-                    if (img && img !== 'assets/default-item.png') {
-                        imgElem.src = img;
+                    if (details.img && details.img !== (basePath + 'img/Bogo_City_logo.png')) {
+                        imgElem.src = details.img;
                         imgContainer.style.display = 'block';
                     } else {
                         imgContainer.style.display = 'none';
                     }
 
-                    // Show modal/Add Active Class
+                    // Delivery Details Fetch
+                    const deliveryInfoSection = document.getElementById('modal-delivery-info');
+                    if (deliveryInfoSection) {
+                        deliveryInfoSection.style.display = 'none'; // Hide initially
+
+                        const deliveryUrl = basePath + 'api/get_delivery_details.php?item=' + encodeURIComponent(details.name) +
+                            '&school=' + encodeURIComponent(details.school) +
+                            '&unit_cost=' + encodeURIComponent(details.unitCost);
+
+                        fetch(deliveryUrl)
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data.success && data.delivery) {
+                                    document.getElementById('modal-delivery-receipt').textContent = data.delivery.receipt_no || 'N/A';
+                                    document.getElementById('modal-delivery-date').textContent = data.delivery.delivery_date || 'N/A';
+                                    document.getElementById('modal-delivery-supplier').textContent = data.delivery.supplier_name || 'N/A';
+
+                                    const body = document.getElementById('modal-delivery-items-body');
+                                    if (body && data.items) {
+                                        body.innerHTML = data.items.map(it => `
+                                            <tr>
+                                                <td style="padding: 8px 12px; border-bottom: 1px solid #e2e8f0;">${it.item_name}</td>
+                                                <td style="text-align: center; padding: 8px 12px; border-bottom: 1px solid #e2e8f0;">${it.quantity}</td>
+                                                <td style="text-align: right; padding: 8px 12px; border-bottom: 1px solid #e2e8f0;">₱${parseFloat(it.unit_cost).toFixed(2)}</td>
+                                            </tr>
+                                        `).join('');
+                                    }
+                                    deliveryInfoSection.style.display = 'block';
+                                }
+                            })
+                            .catch(err => console.error('Error fetching delivery details:', err));
+                    }
+
                     modal.classList.add('active');
                     modal.style.display = 'block';
                     modal.style.opacity = '1';
                     modal.style.visibility = 'visible';
-
-                    // Close logic
-                    const closeBtn = document.getElementById('item-close');
-                    const closeFooterBtn = document.getElementById('close-view-btn');
-
-                    const closeModal = () => {
-                        modal.classList.remove('active');
-                        modal.style.display = 'none';
-                        modal.style.opacity = '0';
-                        modal.style.visibility = 'hidden';
-                    };
-
-                    if (closeBtn) closeBtn.onclick = closeModal;
-                    if (closeFooterBtn) closeFooterBtn.onclick = closeModal;
-
-                    window.addEventListener('click', (ev) => {
-                        if (ev.target === modal) closeModal();
-                    });
                 }
             }
         }
     });
 
-    console.log('supply_modals.js: Initialization complete');
-})(); // End IIFE - Execute immediately
+    console.log('Supply modals initialized successfully');
+});

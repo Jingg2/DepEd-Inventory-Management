@@ -54,8 +54,9 @@ $routes = [
     '/reports' => 'view/reports.php',
     '/settings' => 'view/settings.php',
     '/system_logs' => 'view/system_logs.php',
-    '/controlled_assets' => 'view/controlled_assests/index.php',
-    '/controlled_assets/supply' => 'view/controlled_assests/supply.php',
+    '/controlled_assets' => 'view/controlled_assets/index.php',
+    '/controlled_assets/deliveries' => 'view/controlled_assets/deliveries.php',
+    '/controlled_assets/school_items' => 'view/controlled_assets/school_items.php',
     
     // Password Recovery Routes
     '/forgot_password' => 'forgot_password.php',

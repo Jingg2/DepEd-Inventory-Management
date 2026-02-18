@@ -20,7 +20,7 @@ try {
 $scriptDir = dirname($_SERVER['SCRIPT_NAME']);
 $scriptDir = str_replace('\\', '/', $scriptDir);
 // If we are in view/controlled_assests/ index.php, we need to go up 2 levels
-if (basename($scriptDir) === 'controlled_assests') {
+if (basename($scriptDir) === 'controlled_assets') {
     $scriptDir = dirname(dirname($scriptDir));
 }
 $root = rtrim($scriptDir, '/') . '/';
@@ -117,7 +117,7 @@ $root = rtrim($scriptDir, '/') . '/';
         </div>
         <ul>
             <li><a href="<?php echo $root; ?>controlled_assets" class="active"><i class="fas fa-th-large"></i> <span>Dashboard</span></a></li>
-            <li><a href="<?php echo $root; ?>controlled_assets/supply"><i class="fas fa-box"></i> <span>Supply</span></a></li>
+            <li><a href="<?php echo $root; ?>controlled_assets/deliveries"><i class="fas fa-box"></i> <span>Deliveries</span></a></li>
             <li><a href="#"><i class="fas fa-exchange-alt"></i> <span>Borrow and Return</span></a></li>
             <li><a href="#"><i class="fas fa-file-alt"></i> <span>Reports</span></a></li>
             <li class="divider"></li>
@@ -126,7 +126,7 @@ $root = rtrim($scriptDir, '/') . '/';
     </div>
     <div class="main-content">
         <div class="header">
-            <h1>Controlled Assests</h1>
+            <h1>Controlled Assets</h1>
             <div style="display: flex; align-items: center; gap: 15px;">
                 <?php include_once __DIR__ . '/../includes/head_notification.php'; ?>
                 <button class="sidebar-toggle"><i class="fas fa-bars"></i></button>

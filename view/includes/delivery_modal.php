@@ -23,8 +23,31 @@
                         <input type="text" id="receipt_no" name="receipt_no" placeholder="e.g. 000644" required>
                     </div>
                     <div class="form-group">
-                        <label for="delivery_school"><i class="fas fa-school"></i> School / Destination</label>
-                        <input type="text" id="delivery_school" name="school" placeholder="Select or enter school" required>
+                        <label for="delivery_school_id"><i class="fas fa-school"></i> School / Destination</label>
+                        <select id="delivery_school_id" name="school_id" required onchange="toggleNewSchoolInput(this)">
+                            <option value="">Select School</option>
+                            <?php 
+                            $allSchools = $supplyModel->getSchools();
+                            foreach ($allSchools as $s): ?>
+                                <option value="<?php echo $s['id']; ?>" data-name="<?php echo htmlspecialchars($s['school_name']); ?>">
+                                    <?php echo "[" . htmlspecialchars($s['school_id']) . "] " . htmlspecialchars($s['school_name']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                            <option value="other">+ Add New School</option>
+                        </select>
+                        <input type="hidden" name="school" id="delivery_school_name">
+                    </div>
+                    <div class="form-group" id="new-school-group" style="display: none; grid-column: span 2;">
+                        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 15px;">
+                            <div>
+                                <label for="new_school_id"><i class="fas fa-id-card"></i> School ID</label>
+                                <input type="text" id="new_school_id" name="new_school_id" placeholder="e.g. 119564">
+                            </div>
+                            <div>
+                                <label for="new_school_name"><i class="fas fa-plus"></i> New School Name</label>
+                                <input type="text" id="new_school_name" name="new_school_name" placeholder="Enter school name">
+                            </div>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="delivery_date"><i class="fas fa-calendar-alt"></i> Delivery Date</label>
@@ -95,6 +118,28 @@
         </form>
     </div>
 </div>
+
+<script>
+function toggleNewSchoolInput(select) {
+    const newSchoolGroup = document.getElementById('new-school-group');
+    const newSchoolInput = document.getElementById('new_school_name');
+    const newSchoolIdInput = document.getElementById('new_school_id');
+    const schoolNameInput = document.getElementById('delivery_school_name');
+    
+    if (select.value === 'other') {
+        newSchoolGroup.style.display = 'block';
+        if (newSchoolInput) newSchoolInput.required = true;
+        if (newSchoolIdInput) newSchoolIdInput.required = true;
+        if (schoolNameInput) schoolNameInput.value = '';
+    } else {
+        newSchoolGroup.style.display = 'none';
+        if (newSchoolInput) newSchoolInput.required = false;
+        if (newSchoolIdInput) newSchoolIdInput.required = false;
+        const selectedOption = select.options[select.selectedIndex];
+        if (schoolNameInput) schoolNameInput.value = selectedOption.dataset.name || '';
+    }
+}
+</script>
 
 <style>
 #delivery-items-table input, #delivery-items-table select {

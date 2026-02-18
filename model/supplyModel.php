@@ -10,6 +10,7 @@ class SupplyModel {
         $this->db = new Database(); // Store reference to prevent destruction
         $this->conn = $this->db->getConnection();
         $this->ensureHistoryTableExists();
+        $this->ensureSchoolTablesExist();
     }
 
     private function ensureHistoryTableExists() {
@@ -78,19 +79,108 @@ class SupplyModel {
             } catch (Exception $e) {
                 error_log("Failed to create deliveries table: " . $e->getMessage());
             }
-
-            // Auto-migration: Ensure delivery_id column exists in supply table
-            try {
-                $check = $this->conn->query("SHOW COLUMNS FROM supply LIKE 'delivery_id'");
-                if ($check->rowCount() == 0) {
-                    $this->conn->exec("ALTER TABLE supply ADD COLUMN delivery_id INT DEFAULT NULL AFTER supply_id");
-                }
-            } catch (Exception $e) {
-                error_log("Failed to add delivery_id column: " . $e->getMessage());
-            }
             
         } catch (Exception $e) {
             error_log("Failed to ensure history table: " . $e->getMessage());
+        }
+    }
+
+    private function ensureSchoolTablesExist() {
+        try {
+            // Create schools table (Internal ID and External School ID)
+            $sqlSchools = "CREATE TABLE IF NOT EXISTS schools (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                school_id VARCHAR(50) UNIQUE NOT NULL,
+                school_name VARCHAR(255) NOT NULL,
+                address TEXT,
+                contact_no VARCHAR(50),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB";
+            $this->conn->exec($sqlSchools);
+
+            // Create items table
+            $sqlItems = "CREATE TABLE IF NOT EXISTS items (
+                item_id INT AUTO_INCREMENT PRIMARY KEY,
+                item_name VARCHAR(255) UNIQUE NOT NULL,
+                category VARCHAR(50),
+                unit VARCHAR(50),
+                description TEXT,
+                property_classification VARCHAR(100),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB";
+            $this->conn->exec($sqlItems);
+
+            // Create school_deliveries table
+            $sqlSchoolDeliveries = "CREATE TABLE IF NOT EXISTS school_deliveries (
+                delivery_item_id INT AUTO_INCREMENT PRIMARY KEY,
+                school_id INT NOT NULL,
+                supply_id INT NOT NULL,
+                quantity INT NOT NULL,
+                delivery_date DATE,
+                received_by VARCHAR(255),
+                remarks TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX (school_id),
+                INDEX (supply_id),
+                FOREIGN KEY (school_id) REFERENCES schools(id) ON DELETE CASCADE,
+                FOREIGN KEY (supply_id) REFERENCES supply(supply_id) ON DELETE CASCADE
+            ) ENGINE=InnoDB";
+            $this->conn->exec($sqlSchoolDeliveries);
+
+            // Create delivery_items table (Itemized receipt records)
+            $sqlDeliveryItems = "CREATE TABLE IF NOT EXISTS delivery_items (
+                delivery_item_id INT AUTO_INCREMENT PRIMARY KEY,
+                delivery_id INT NOT NULL,
+                item_name VARCHAR(255) NOT NULL,
+                category VARCHAR(50),
+                unit VARCHAR(50),
+                quantity INT NOT NULL,
+                unit_cost DECIMAL(15,2),
+                total_cost DECIMAL(15,2),
+                description TEXT,
+                property_classification VARCHAR(100),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX (delivery_id)
+            ) ENGINE=InnoDB";
+            $this->conn->exec($sqlDeliveryItems);
+
+            // Migrate existing school names from supply table
+            $stmtCheckSchools = $this->conn->query("SELECT COUNT(*) FROM schools");
+            if ($stmtCheckSchools->fetchColumn() == 0) {
+                // Try to get school and potential ID from supply table
+                $stmt = $this->conn->query("SELECT DISTINCT school FROM supply WHERE school IS NOT NULL AND school != ''");
+                $schools = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+                if (!empty($schools)) {
+                    $insertStmt = $this->conn->prepare("INSERT IGNORE INTO schools (school_id, school_name) VALUES (?, ?)");
+                    foreach ($schools as $school) {
+                        // For auto-migration, we'll use the name as ID if no ID exists
+                        $insertStmt->execute([$school, $school]);
+                    }
+                }
+            }
+
+            // Migrate existing item definitions from supply table
+            $stmtCheckItems = $this->conn->query("SELECT COUNT(*) FROM items");
+            if ($stmtCheckItems->fetchColumn() == 0) {
+                $stmt = $this->conn->query("SELECT DISTINCT item, category, unit, description, property_classification FROM supply");
+                $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                if (!empty($items)) {
+                    $insertStmt = $this->conn->prepare("INSERT IGNORE INTO items (item_name, category, unit, description, property_classification) VALUES (?, ?, ?, ?, ?)");
+                    foreach ($items as $item) {
+                        $insertStmt->execute([
+                            $item['item'],
+                            $item['category'],
+                            $item['unit'],
+                            $item['description'],
+                            $item['property_classification']
+                        ]);
+                    }
+                }
+            }
+        } catch (Exception $e) {
+            error_log("Failed to ensure school and item tables: " . $e->getMessage());
         }
     }
 
@@ -227,12 +317,11 @@ class SupplyModel {
     }
 
     public function getAllCategories() {
-        $sql = "SELECT DISTINCT category FROM supply WHERE category IS NOT NULL AND category != '' ORDER BY category ASC";
+        $sql = "SELECT DISTINCT category FROM items WHERE category IS NOT NULL AND category != '' ORDER BY category ASC";
         try {
-            $stmt = $this->conn->query($sql);
-            return $stmt->fetchAll(PDO::FETCH_COLUMN);
+            return $this->conn->query($sql)->fetchAll(PDO::FETCH_COLUMN);
         } catch (PDOException $e) {
-            error_log("Get all categories error: " . $e->getMessage());
+            error_log("Get categories error: " . $e->getMessage());
             return [];
         }
     }
@@ -514,9 +603,11 @@ class SupplyModel {
     }
 
     public function getSupplyById($id) {
-        $sql = "SELECT supply_id as id, item, unit, stock_no, quantity, quantity as current_qty, unit_cost, 
-                       updated_at as created_at, property_classification, description, school
-                FROM supply WHERE supply_id = ?";
+        $sql = "SELECT s.supply_id as id, i.item_name as item, i.unit, s.stock_no, s.quantity, s.quantity as current_qty, s.unit_cost, 
+                       s.updated_at as created_at, i.property_classification, i.description, s.school, s.image
+                FROM supply s
+                JOIN items i ON s.item = i.item_name
+                WHERE s.supply_id = ?";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([$id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
@@ -682,14 +773,15 @@ class SupplyModel {
      * @return array List of PPE/Semi-Expendable supplies
      */
     public function getPPESemiExpendableItems() {
-        $sql = "SELECT supply_id, stock_no, item, description, category, unit, quantity, 
-                       unit_cost, total_cost, property_classification, 
-                       status, updated_at
-                FROM supply 
-                WHERE (property_classification LIKE 'Semi-Expendable%' AND property_classification NOT LIKE '%Low Value%')
-                   OR property_classification LIKE 'PPE%'
-                   OR property_classification LIKE 'Property%'
-                ORDER BY property_classification, item";
+        $sql = "SELECT s.supply_id, s.stock_no, i.item_name as item, i.description, i.category, i.unit, s.quantity, 
+                       s.unit_cost, s.total_cost, i.property_classification, 
+                       s.status, s.updated_at
+                FROM supply s
+                JOIN items i ON s.item = i.item_name
+                WHERE (i.property_classification LIKE 'Semi-Expendable%' AND i.property_classification NOT LIKE '%Low Value%')
+                   OR i.property_classification LIKE 'PPE%'
+                   OR i.property_classification LIKE 'Property%'
+                ORDER BY i.property_classification, i.item_name";
         try {
             $stmt = $this->conn->query($sql);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -729,24 +821,67 @@ class SupplyModel {
      * Get all unique schools from controlled assets
      * @return array List of unique school names with item counts
      */
+    public function getSchools() {
+        try {
+            $stmt = $this->conn->query("SELECT * FROM schools ORDER BY school_name ASC");
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            error_log("Failed to get schools: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    public function getSchoolByName($name) {
+        try {
+            $stmt = $this->conn->prepare("SELECT * FROM schools WHERE TRIM(school_name) = TRIM(?)");
+            $stmt->execute([$name]);
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            error_log("Failed to get school by name: " . $e->getMessage());
+            return null;
+        }
+    }
+
+    public function updateSchool($id, $data) {
+        try {
+            $sql = "UPDATE schools SET 
+                    school_id = :school_id,
+                    school_name = :school_name,
+                    address = :address,
+                    contact_no = :contact_no
+                    WHERE id = :id";
+            $stmt = $this->conn->prepare($sql);
+            return $stmt->execute([
+                ':school_id' => $data['school_id'],
+                ':school_name' => $data['school_name'],
+                ':address' => $data['address'],
+                ':contact_no' => $data['contact_no'],
+                ':id' => $id
+            ]);
+        } catch (Exception $e) {
+            error_log("Failed to update school: " . $e->getMessage());
+            return false;
+        }
+    }
+
     public function getSchoolsList() {
         $sql = "SELECT 
-                    school, 
-                    COUNT(*) as item_count,
-                    SUM(quantity) as total_quantity
-                FROM supply 
-                WHERE school IS NOT NULL 
-                  AND school != ''
-                  AND ((property_classification LIKE 'Semi-Expendable%' AND property_classification NOT LIKE '%Low Value%')
-                       OR property_classification LIKE 'PPE%'
-                       OR property_classification LIKE 'Property%')
-                GROUP BY school 
-                ORDER BY school ASC";
+                    d.school as school, 
+                    COUNT(di.delivery_item_id) as item_count,
+                    SUM(di.quantity) as total_quantity
+                FROM deliveries d
+                JOIN delivery_items di ON d.delivery_id = di.delivery_id
+                JOIN items i ON di.item_name = i.item_name
+                WHERE ((i.property_classification LIKE 'Semi-Expendable%' AND i.property_classification NOT LIKE '%Low Value%')
+                       OR i.property_classification LIKE 'PPE%'
+                       OR i.property_classification LIKE 'Property%')
+                GROUP BY d.school
+                ORDER BY d.school ASC";
         try {
             $stmt = $this->conn->query($sql);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            error_log("Get schools list error: " . $e->getMessage());
+            error_log("Get schools list from deliveries error: " . $e->getMessage());
             return [];
         }
     }
@@ -757,20 +892,34 @@ class SupplyModel {
      * @return array List of items for the specified school
      */
     public function getItemsBySchool($schoolName) {
-        $sql = "SELECT supply_id, stock_no, item, description, category, unit, quantity, 
-                       unit_cost, total_cost, property_classification, status, updated_at, school
-                FROM supply 
-                WHERE school = ?
-                  AND ((property_classification LIKE 'Semi-Expendable%' AND property_classification NOT LIKE '%Low Value%')
-                       OR property_classification LIKE 'PPE%'
-                       OR property_classification LIKE 'Property%')
-                ORDER BY item ASC";
+        $sql = "SELECT di.delivery_item_id as supply_id, 
+                       'DE-REC' as stock_no, 
+                       i.item_name as item, 
+                       i.description, 
+                       i.category, 
+                       i.unit, 
+                       di.quantity, 
+                       di.unit_cost, 
+                       di.total_cost, 
+                       i.property_classification, 
+                       'Delivered' as status, 
+                       di.created_at as updated_at, 
+                       d.school,
+                       null as image
+                FROM delivery_items di
+                JOIN deliveries d ON di.delivery_id = d.delivery_id
+                JOIN items i ON di.item_name = i.item_name
+                WHERE d.school = ?
+                  AND ((i.property_classification LIKE 'Semi-Expendable%' AND i.property_classification NOT LIKE '%Low Value%')
+                       OR i.property_classification LIKE 'PPE%'
+                       OR i.property_classification LIKE 'Property%')
+                ORDER BY i.item_name ASC";
         try {
             $stmt = $this->conn->prepare($sql);
             $stmt->execute([$schoolName]);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            error_log("Get items by school error: " . $e->getMessage());
+            error_log("Get items by school from deliveries error: " . $e->getMessage());
             return [];
         }
     }

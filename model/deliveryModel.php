@@ -14,19 +14,39 @@ class DeliveryModel {
      * Save a complete delivery with its items
      */
     public function saveDelivery($data, $items, $adminId = 1) {
+        $supplyModel = null;
         try {
+            // Initialize Models before transaction to avoid implicit commits (DDL)
+            require_once __DIR__ . '/supplyModel.php';
+            $supplyModel = new SupplyModel();
+
             $this->conn->beginTransaction();
+
+            $schoolId = $data['school_id'] ?? null;
+            $schoolName = $data['school'] ?? null;
+
+            // Handle "Other" school
+            if ($schoolId === 'other' && !empty($data['new_school_name'])) {
+                // Check if user provided an official school ID
+                $officialSchoolId = !empty($data['new_school_id']) ? $data['new_school_id'] : $data['new_school_name'];
+                
+                $stmtSchool = $this->conn->prepare("INSERT INTO schools (school_id, school_name) VALUES (?, ?)");
+                $stmtSchool->execute([$officialSchoolId, $data['new_school_name']]);
+                $schoolId = $this->conn->lastInsertId();
+                $schoolName = $data['new_school_name'];
+            }
 
             // 1. Insert Delivery Header
             $sql = "INSERT INTO deliveries (
-                        receipt_no, school, address, delivery_date, delivered_by, 
+                        receipt_no, school, school_id, address, delivery_date, delivered_by, 
                         received_by_officer, received_by_librarian, supplier, total_amount
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             
             $stmt = $this->conn->prepare($sql);
             $stmt->execute([
                 $data['receipt_no'] ?? null,
-                $data['school'] ?? null,
+                $schoolName,
+                $schoolId,
                 $data['address'] ?? null,
                 $data['delivery_date'] ?? date('Y-m-d'),
                 $data['delivered_by'] ?? null,
@@ -38,18 +58,22 @@ class DeliveryModel {
             
             $deliveryId = $this->conn->lastInsertId();
 
-            // 2. Insert Items (Supplies)
-            require_once __DIR__ . '/supplyModel.php';
-            $supplyModel = new SupplyModel();
+            // 2. Insert Items
 
             foreach ($items as $item) {
-                // Ensure delivery_id is linked
                 $item['delivery_id'] = $deliveryId;
                 $item['admin_id'] = $adminId;
-                $item['school'] = $data['school'] ?? $item['school'] ?? null;
+                $item['school'] = $schoolName;
+                $item['school_id'] = $schoolId;
                 $item['status'] = 'Available';
                 
-                // Use supplyModel's insert logic (slightly modified to support delivery_id)
+                // Track in delivery_items (itemized history)
+                $this->insertToDeliveryItems($item);
+
+                // Ensure item exists in master items table
+                $this->ensureItemMasterExists($item);
+
+                // Update/Insert inventory stock
                 $success = $this->insertDeliveryItem($item, $supplyModel);
                 if (!$success) {
                     throw new Exception("Failed to insert item: " . ($item['item'] ?? 'Unknown'));
@@ -67,6 +91,38 @@ class DeliveryModel {
         }
     }
 
+    private function insertToDeliveryItems($item) {
+        $sql = "INSERT INTO delivery_items (
+                    delivery_id, item_name, category, unit, quantity, 
+                    unit_cost, total_cost, description, property_classification
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute([
+            $item['delivery_id'],
+            $item['item'],
+            $item['category'] ?? null,
+            $item['unit'] ?? null,
+            $item['quantity'],
+            $item['unit_cost'],
+            ($item['unit_cost'] * $item['quantity']),
+            $item['description'] ?? null,
+            $item['property_classification'] ?? null
+        ]);
+    }
+
+    private function ensureItemMasterExists($item) {
+        $sql = "INSERT IGNORE INTO items (item_name, category, unit, description, property_classification) 
+                VALUES (?, ?, ?, ?, ?)";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute([
+            $item['item'],
+            $item['category'] ?? null,
+            $item['unit'] ?? null,
+            $item['description'] ?? null,
+            $item['property_classification'] ?? null
+        ]);
+    }
+
     /**
      * Helper to insert item specifically from a delivery
      */
@@ -80,29 +136,37 @@ class DeliveryModel {
         $updated_at = date('Y-m-d H:i:s');
         $stock_no = !empty($data['stock_no']) ? $data['stock_no'] : "AUTO-" . time() . "-" . rand(10, 99);
 
+        // Check if item already exists in this school's supply (to update quantity)
+        // Note: For now we'll prioritize new stock rows but link to delivery_id
         $sql = "INSERT INTO supply (
-                    delivery_id, stock_no, category, unit, item, description, 
+                    stock_no, category, unit, item, description, 
                     quantity, unit_cost, total_cost, status, updated_by, 
                     updated_at, property_classification, school
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         $stmt = $this->conn->prepare($sql);
-        $result = $stmt->execute([
-            $data['delivery_id'],
-            $stock_no,
-            $data['category'] ?? 'Miscellaneous',
-            $data['unit'] ?? 'pcs',
-            $data['item'],
-            $data['description'] ?? '',
-            $quantity,
-            $unit_cost,
-            $total_cost,
-            $data['status'],
-            $data['admin_id'],
-            $updated_at,
-            $data['property_classification'] ?? null,
-            $data['school']
-        ]);
+        try {
+            $result = $stmt->execute([
+                $stock_no,
+                $data['category'] ?? 'Miscellaneous',
+                $data['unit'] ?? 'pcs',
+                $data['item'],
+                $data['description'] ?? '',
+                $quantity,
+                $unit_cost,
+                $total_cost,
+                $data['status'],
+                $data['admin_id'],
+                $updated_at,
+                $data['property_classification'] ?? null,
+                $data['school']
+            ]);
+        } catch (Exception $e) {
+            error_log("Insert Supply Error: " . $e->getMessage());
+            error_log("SQL: " . $sql);
+            error_log("Data: " . print_r($data, true));
+            throw $e;
+        }
 
         if ($result) {
             $newId = $this->conn->lastInsertId();

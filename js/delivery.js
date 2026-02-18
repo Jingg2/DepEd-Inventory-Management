@@ -20,6 +20,25 @@ document.addEventListener('DOMContentLoaded', function () {
     // Event Listeners
     addRowBtn.addEventListener('click', addItemRow);
 
+    // Toggle new school input
+    window.toggleNewSchoolInput = function (select) {
+        const newSchoolGroup = document.getElementById('new-school-group');
+        const newSchoolInput = document.getElementById('new_school_name');
+        const schoolNameInput = document.getElementById('delivery_school_name');
+
+        if (select.value === 'other') {
+            newSchoolGroup.style.display = 'block';
+            newSchoolInput.required = true;
+            schoolNameInput.value = ''; // Will be set from new_school_name on submit
+        } else {
+            newSchoolGroup.style.display = 'none';
+            newSchoolInput.required = false;
+            // Set the readable name for backward compatibility/reporting
+            const selectedOption = select.options[select.selectedIndex];
+            schoolNameInput.value = selectedOption.dataset.name || '';
+        }
+    };
+
     closeBtns.forEach(btn => {
         if (btn) btn.addEventListener('click', () => {
             deliveryModal.style.display = 'none';
@@ -32,6 +51,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const formData = new FormData(this);
 
+        // Sync school name if "Other"
+        if (formData.get('school_id') === 'other') {
+            formData.set('school', formData.get('new_school_name'));
+        }
+
         // Convert rows to JSON
         const items = [];
         const rows = deliveryTableBody.querySelectorAll('tr');
@@ -42,7 +66,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 unit: row.querySelector('.col-unit').value,
                 unit_cost: row.querySelector('.col-price').value,
                 quantity: row.querySelector('.col-qty').value,
-                description: row.querySelector('.col-item').value, // For now description = item name or could add col
+                description: row.querySelector('.col-item').value,
                 property_classification: row.querySelector('.col-property').value
             };
             if (item.item) items.push(item);
@@ -55,24 +79,32 @@ document.addEventListener('DOMContentLoaded', function () {
 
         formData.append('items', JSON.stringify(items));
         formData.append('action', 'save_delivery');
+        formData.append('ajax', '1');
 
         // Submit via AJAX
-        fetch(basePath + 'controller/supplyController.php', {
+        fetch(basePath + 'supply.php', {
             method: 'POST',
             body: formData
         })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        throw new Error('Server responded with ' + response.status + ': ' + text);
+                    });
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
                     alert('Delivery recorded successfully!');
                     location.reload();
                 } else {
-                    alert('Error: ' + data.message);
+                    alert('Error: ' + (data.message || 'Unknown error occurred.'));
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while saving the delivery.');
+                console.error('Save Delivery Error:', error);
+                alert('An error occurred while saving the delivery: ' + error.message);
             });
     });
 
@@ -103,8 +135,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 <span class="row-amount">₱0.00</span>
             </td>
             <td style="padding: 5px; text-align: center;">
+                <select class="col-property" style="width: 100px; padding: 5px; font-size: 0.8rem;">
+                    <option value="Consumable / Expendable">Expendable</option>
+                    <option value="Semi-Expendable (Low Value)">Semi-Exp (Low)</option>
+                    <option value="Semi-Expendable (High Value)">Semi-Exp (High)</option>
+                    <option value="Property, Plant and Equipment (PPE)" selected>PPE</option>
+                </select>
+            </td>
+            <td style="padding: 5px; text-align: center;">
                 <i class="fas fa-times remove-row"></i>
-                <input type="hidden" class="col-property" value="Non-Expendable">
             </td>
         `;
 
@@ -153,7 +192,29 @@ window.openDeliveryModal = function (schoolName = '') {
     const modal = document.getElementById('delivery-modal');
     if (modal) {
         if (schoolName) {
-            document.getElementById('delivery_school').value = schoolName;
+            const select = document.getElementById('delivery_school_id');
+            const schoolNameInput = document.getElementById('delivery_school_name');
+
+            // Try to find the school in the dropdown
+            let found = false;
+            for (let i = 0; i < select.options.length; i++) {
+                if (select.options[i].dataset.name === schoolName) {
+                    select.selectedIndex = i;
+                    schoolNameInput.value = schoolName;
+                    found = true;
+                    break;
+                }
+            }
+
+            // If not found, we don't switch to "Other" automatically to avoid confusion, 
+            // but the system is ready.
+            if (!found) {
+                select.value = '';
+                schoolNameInput.value = '';
+            }
+
+            // Ensure "Other" input is hidden if we found a match
+            toggleNewSchoolInput(select);
         }
         modal.style.display = 'block';
     }

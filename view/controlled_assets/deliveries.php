@@ -6,7 +6,7 @@ error_reporting(E_ALL);
 // Root path calculation
 $scriptDir = dirname($_SERVER['SCRIPT_NAME']);
 $scriptDir = str_replace('\\', '/', $scriptDir);
-if (basename($scriptDir) === 'controlled_assests') {
+if (basename($scriptDir) === 'controlled_assets') {
     $scriptDir = dirname(dirname($scriptDir));
 }
 $root = rtrim($scriptDir, '/') . '/';
@@ -46,7 +46,7 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Controlled Assets Supply - Inventory System</title>
+    <title>Controlled Assets Deliveries - Inventory System</title>
     <link rel="stylesheet" href="<?php echo $root; ?>css/dashboard.css?v=<?php echo time(); ?>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -140,7 +140,7 @@ try {
         </div>
         <ul>
             <li><a href="<?php echo $root; ?>controlled_assets"><i class="fas fa-th-large"></i> <span>Dashboard</span></a></li>
-            <li><a href="<?php echo $root; ?>controlled_assets/supply" class="active"><i class="fas fa-box"></i> <span>Supply</span></a></li>
+            <li><a href="<?php echo $root; ?>controlled_assets/deliveries" class="active"><i class="fas fa-box"></i> <span>Deliveries</span></a></li>
             <li><a href="#"><i class="fas fa-exchange-alt"></i> <span>Borrow and Return</span></a></li>
             <li><a href="#"><i class="fas fa-file-alt"></i> <span>Reports</span></a></li>
             <li class="divider"></li>
@@ -149,7 +149,7 @@ try {
     </div>
     <div class="main-content">
         <div class="header">
-            <h1>Controlled Assests Supply</h1>
+            <h1>Controlled Assets Deliveries</h1>
             <div style="display: flex; align-items: center; gap: 15px;">
                 <?php include_once __DIR__ . '/../includes/head_notification.php'; ?>
                 <button class="sidebar-toggle"><i class="fas fa-bars"></i></button>
@@ -192,8 +192,7 @@ try {
                     <div class="supply-card school-card" 
                          data-school="<?php echo htmlspecialchars($school['school']); ?>" 
                          data-item-count="<?php echo $itemCount; ?>"
-                         data-total-quantity="<?php echo $totalQty; ?>"
-                         style="cursor: pointer;">
+                         data-total-quantity="<?php echo $totalQty; ?>">
                         
                         <i class="fas fa-school" style="font-size: 3rem; margin: 20px auto; display: block; color: #10b981; opacity: 0.8;"></i>
                         
@@ -206,7 +205,7 @@ try {
                         </p>
                         
                         <div class="actions">
-                            <i class="fas fa-eye icon view-school-icon" title="View Items"></i>
+                            <i class="fas fa-eye icon view-school-icon" title="View Items" style="cursor: pointer;"></i>
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -227,23 +226,21 @@ try {
     <script src="<?php echo $root; ?>js/delivery.js?v=<?php echo time(); ?>"></script>
     <script src="<?php echo $root; ?>js/supply_modals.js?v=<?php echo time(); ?>"></script>
     <script>
-        // Handle school card clicks
+        // Handle school card clicks via eye icon (Using event delegation for durability)
         document.addEventListener('DOMContentLoaded', function() {
-            const schoolCards = document.querySelectorAll('.school-card');
-            
-            schoolCards.forEach(card => {
-                card.addEventListener('click', function(e) {
-                    // Don't navigate if clicking the action icons
-                    if (e.target.closest('.actions')) {
-                        return;
-                    }
-                    
-                    const schoolName = this.dataset.school;
-                    if (schoolName) {
-                        window.location.href = basePath + 'controlled_assets/school_items?school=' + encodeURIComponent(schoolName);
+            const cardsContainer = document.querySelector('.supply-cards');
+            if (cardsContainer) {
+                cardsContainer.addEventListener('click', function(e) {
+                    const viewIcon = e.target.closest('.view-school-icon');
+                    if (viewIcon) {
+                        const card = viewIcon.closest('.school-card');
+                        const schoolName = card.dataset.school;
+                        if (schoolName) {
+                            window.location.href = basePath + 'controlled_assets/school_items?school=' + encodeURIComponent(schoolName);
+                        }
                     }
                 });
-            });
+            }
         });
     </script>
 </body>

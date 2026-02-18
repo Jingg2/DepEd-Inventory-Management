@@ -1,5 +1,7 @@
 <?php
 // filepath: c:\OJT DEVELOPMENT\Inventory_System\controller\supplyController.php
+require_once __DIR__ . '/../includes/security.php';
+initSecureSession();
 require_once __DIR__ . '/../model/supplyModel.php';
 require_once __DIR__ . '/../model/deliveryModel.php';
 
@@ -50,16 +52,49 @@ class SupplyController {
             error_log("POST data received: " . print_r($_POST, true));
             error_log("FILES data received: " . print_r($_FILES, true));
             
+
             // Handle Multi-item Delivery
             if (isset($_POST['action']) && $_POST['action'] === 'save_delivery') {
+                ob_start(); // Start capturing any accidental output
                 $deliveryModel = new DeliveryModel();
-                $items = json_decode($_POST['items'], true);
                 
-                $result = $deliveryModel->saveDelivery($_POST, $items, $_SESSION['admin_id'] ?? 1);
+                $items = json_decode($_POST['items'] ?? '[]', true);
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    error_log("JSON Decode Error: " . json_last_error_msg());
+                    $result = ['success' => false, 'message' => 'Invalid items data format: ' . json_last_error_msg()];
+                } else {
+                    $result = $deliveryModel->saveDelivery($_POST, $items, $_SESSION['admin_id'] ?? 1);
+                }
+                
+                $captured = ob_get_clean(); // Get any warnings/errors
+                if (!empty($captured)) {
+                    error_log("Captured output during save_delivery: " . $captured);
+                }
                 
                 if (ob_get_level()) ob_end_clean();
                 header('Content-Type: application/json; charset=utf-8');
                 echo json_encode($result);
+                exit();
+            }
+
+            // Handle School Update
+            if (isset($_POST['action']) && $_POST['action'] === 'update_school') {
+                $schoolId = (int)$_POST['id'];
+                $schoolData = [
+                    'school_id' => $_POST['school_id'] ?? '',
+                    'school_name' => $_POST['school_name'] ?? '',
+                    'address' => $_POST['address'] ?? '',
+                    'contact_no' => $_POST['contact_no'] ?? ''
+                ];
+                
+                $result = $this->model->updateSchool($schoolId, $schoolData);
+                
+                header('Content-Type: application/json; charset=utf-8');
+                if ($result) {
+                    echo json_encode(['success' => true, 'message' => 'School updated successfully', 'school_name' => $schoolData['school_name']]);
+                } else {
+                    echo json_encode(['success' => false, 'message' => 'Failed to update school']);
+                }
                 exit();
             }
 
