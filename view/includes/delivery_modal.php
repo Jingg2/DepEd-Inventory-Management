@@ -29,7 +29,9 @@
                             <?php 
                             $allSchools = $supplyModel->getSchools();
                             foreach ($allSchools as $s): ?>
-                                <option value="<?php echo $s['id']; ?>" data-name="<?php echo htmlspecialchars($s['school_name']); ?>">
+                                <option value="<?php echo $s['id']; ?>" 
+                                        data-name="<?php echo htmlspecialchars($s['school_name']); ?>"
+                                        data-address="<?php echo htmlspecialchars($s['address'] ?? ''); ?>">
                                     <?php echo "[" . htmlspecialchars($s['school_id']) . "] " . htmlspecialchars($s['school_name']); ?>
                                 </option>
                             <?php endforeach; ?>
@@ -119,27 +121,6 @@
     </div>
 </div>
 
-<script>
-function toggleNewSchoolInput(select) {
-    const newSchoolGroup = document.getElementById('new-school-group');
-    const newSchoolInput = document.getElementById('new_school_name');
-    const newSchoolIdInput = document.getElementById('new_school_id');
-    const schoolNameInput = document.getElementById('delivery_school_name');
-    
-    if (select.value === 'other') {
-        newSchoolGroup.style.display = 'block';
-        if (newSchoolInput) newSchoolInput.required = true;
-        if (newSchoolIdInput) newSchoolIdInput.required = true;
-        if (schoolNameInput) schoolNameInput.value = '';
-    } else {
-        newSchoolGroup.style.display = 'none';
-        if (newSchoolInput) newSchoolInput.required = false;
-        if (newSchoolIdInput) newSchoolIdInput.required = false;
-        const selectedOption = select.options[select.selectedIndex];
-        if (schoolNameInput) schoolNameInput.value = selectedOption.dataset.name || '';
-    }
-}
-</script>
 
 <style>
 #delivery-items-table input, #delivery-items-table select {

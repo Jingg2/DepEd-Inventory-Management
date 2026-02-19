@@ -1242,10 +1242,16 @@ html.sidebar-collapsed .main-content {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.stat-card:hover,
-.supply-card:hover {
+.stat-card:hover {
     transform: translateY(-8px);
     box-shadow: 0 20px 40px -5px rgba(42, 77, 136, 0.15);
+}
+
+.supply-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 40px -5px var(--primary-glow);
+    border: 1px solid var(--primary-emerald);
+    z-index: 5;
 }
 
 /* Table "Modern Clean" Look */

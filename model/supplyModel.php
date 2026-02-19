@@ -317,7 +317,7 @@ class SupplyModel {
     }
 
     public function getAllCategories() {
-        $sql = "SELECT DISTINCT category FROM items WHERE category IS NOT NULL AND category != '' ORDER BY category ASC";
+        $sql = "SELECT DISTINCT category FROM supply WHERE category IS NOT NULL AND category != '' ORDER BY category ASC";
         try {
             return $this->conn->query($sql)->fetchAll(PDO::FETCH_COLUMN);
         } catch (PDOException $e) {
@@ -773,15 +773,16 @@ class SupplyModel {
      * @return array List of PPE/Semi-Expendable supplies
      */
     public function getPPESemiExpendableItems() {
-        $sql = "SELECT s.supply_id, s.stock_no, i.item_name as item, i.description, i.category, i.unit, s.quantity, 
-                       s.unit_cost, s.total_cost, i.property_classification, 
+        $sql = "SELECT s.supply_id, s.stock_no, s.item, s.description, s.category, s.unit, s.quantity, 
+                       s.unit_cost, s.total_cost, s.property_classification, 
                        s.status, s.updated_at
                 FROM supply s
-                JOIN items i ON s.item = i.item_name
-                WHERE (i.property_classification LIKE 'Semi-Expendable%' AND i.property_classification NOT LIKE '%Low Value%')
-                   OR i.property_classification LIKE 'PPE%'
-                   OR i.property_classification LIKE 'Property%'
-                ORDER BY i.property_classification, i.item_name";
+                WHERE 
+                    (TRIM(s.property_classification) LIKE 'Semi-Expendable%' AND TRIM(s.property_classification) NOT LIKE '%Low Value%')
+                    OR TRIM(s.property_classification) LIKE '%PPE%'
+                    OR TRIM(s.property_classification) LIKE 'Property, Plant and Equipment%'
+                    OR TRIM(s.property_classification) LIKE 'Property%'
+                ORDER BY s.property_classification, s.item";
         try {
             $stmt = $this->conn->query($sql);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -792,6 +793,88 @@ class SupplyModel {
     }
 
 
+
+    /**
+     * Get Waste Materials (Unserviceable Items)
+     * @param string|null $startDate
+     * @param string|null $endDate
+     * @return array
+     */
+    public function getWasteItems($startDate = null, $endDate = null) {
+        $sql = "SELECT w.*, s.stock_no, s.item as item_name, s.unit, s.description, s.unit_cost, 
+                       s.property_classification,
+                       e.first_name, e.last_name, d.department_name
+                FROM waste_items w
+                JOIN supply s ON w.supply_id = s.supply_id
+                JOIN employee e ON w.employee_id = e.employee_id
+                JOIN department d ON e.department_id = d.department_id
+                WHERE 1=1";
+        
+        $params = [];
+        if ($startDate) {
+            $sql .= " AND w.date_returned >= ?";
+            $params[] = $startDate . " 00:00:00";
+        }
+        if ($endDate) {
+            $sql .= " AND w.date_returned <= ?";
+            $params[] = $endDate . " 23:59:59";
+        }
+        
+        $sql .= " ORDER BY w.date_returned DESC";
+        
+        try {
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute($params);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Get waste items error: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Get Delivery Summary for Reports
+     * @param string|null $startDate
+     * @param string|null $endDate
+     * @return array
+     */
+    public function getDeliverySummary($startDate = null, $endDate = null) {
+        $sql = "SELECT s.*, si.school_name, si.address, si.contact_no 
+                FROM supply s
+                JOIN schools_info si ON s.school = si.school_name
+                WHERE s.school IS NOT NULL AND s.school != ''";
+        
+        $params = [];
+        if ($startDate) {
+            $sql .= " AND s.updated_at >= ?"; 
+            $params[] = $startDate . " 00:00:00";
+        }
+        if ($endDate) {
+            $sql .= " AND s.updated_at <= ?";
+            $params[] = $endDate . " 23:59:59";
+        }
+        
+        $sql .= " ORDER BY s.updated_at DESC, s.school ASC";
+        
+        try {
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute($params);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Get delivery summary error: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Get School Inventory for Reports
+     * @param string $schoolName
+     * @return array
+     */
+    public function getSchoolInventory($schoolName) {
+        // Reusing getItemsBySchool but ensuring we get school info too
+        return $this->getItemsBySchool($schoolName);
+    }
 
     /**
      * Get top issued supplies for turnover analysis
@@ -905,6 +988,9 @@ class SupplyModel {
                        'Delivered' as status, 
                        di.created_at as updated_at, 
                        d.school,
+                       d.receipt_no,
+                       d.delivery_date,
+                       di.item_condition,
                        null as image
                 FROM delivery_items di
                 JOIN deliveries d ON di.delivery_id = d.delivery_id
@@ -913,7 +999,7 @@ class SupplyModel {
                   AND ((i.property_classification LIKE 'Semi-Expendable%' AND i.property_classification NOT LIKE '%Low Value%')
                        OR i.property_classification LIKE 'PPE%'
                        OR i.property_classification LIKE 'Property%')
-                ORDER BY i.item_name ASC";
+                ORDER BY d.delivery_date DESC, d.receipt_no DESC, i.item_name ASC";
         try {
             $stmt = $this->conn->prepare($sql);
             $stmt->execute([$schoolName]);
@@ -921,6 +1007,17 @@ class SupplyModel {
         } catch (PDOException $e) {
             error_log("Get items by school from deliveries error: " . $e->getMessage());
             return [];
+        }
+    }
+
+    public function updateDeliveryItemCondition($id, $condition) {
+        try {
+            $sql = "UPDATE delivery_items SET item_condition = ? WHERE delivery_item_id = ?";
+            $stmt = $this->conn->prepare($sql);
+            return $stmt->execute([$condition, $id]);
+        } catch (PDOException $e) {
+            error_log("Update delivery item condition error: " . $e->getMessage());
+            return false;
         }
     }
 

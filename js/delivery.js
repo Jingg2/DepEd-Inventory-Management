@@ -25,17 +25,24 @@ document.addEventListener('DOMContentLoaded', function () {
         const newSchoolGroup = document.getElementById('new-school-group');
         const newSchoolInput = document.getElementById('new_school_name');
         const schoolNameInput = document.getElementById('delivery_school_name');
+        const addressInput = document.getElementById('address');
 
         if (select.value === 'other') {
             newSchoolGroup.style.display = 'block';
             newSchoolInput.required = true;
             schoolNameInput.value = ''; // Will be set from new_school_name on submit
+            if (addressInput) addressInput.value = '';
         } else {
             newSchoolGroup.style.display = 'none';
             newSchoolInput.required = false;
             // Set the readable name for backward compatibility/reporting
             const selectedOption = select.options[select.selectedIndex];
             schoolNameInput.value = selectedOption.dataset.name || '';
+
+            // Auto-populate address if available
+            if (addressInput) {
+                addressInput.value = selectedOption.dataset.address || '';
+            }
         }
     };
 

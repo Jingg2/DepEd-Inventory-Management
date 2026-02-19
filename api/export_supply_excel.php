@@ -55,6 +55,14 @@ $excludedCategories = [
 ];
 
 $supplies = array_filter($supplies, function($supply) use ($excludedCategories) {
+    // 1. Filter by Property Classification (Primary Rule)
+    if (isset($supply['property_classification'])) {
+        $pc = strtoupper($supply['property_classification']);
+        if (strpos($pc, 'PPE') !== false || strpos($pc, 'PROPERTY') !== false) return false;
+        if (strpos($pc, 'SEMI-EXPENDABLE') !== false && strpos($pc, 'HIGH VALUE') !== false) return false;
+    }
+
+    // 2. Filter by Category (Legacy Fallback)
     if (!isset($supply['category'])) return true;
     $cat = strtoupper(trim($supply['category']));
     
@@ -63,7 +71,6 @@ $supplies = array_filter($supplies, function($supply) use ($excludedCategories) 
     
     // Fuzzy check for furniture to be safe
     if (stripos($cat, 'FURNITURE') !== false || stripos($cat, 'FUNITURE') !== false) {
-        // If it contains furniture/funiture, exclude it from RPCI
         return false;
     }
 

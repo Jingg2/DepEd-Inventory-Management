@@ -3,13 +3,13 @@
 header('Content-Type: application/json');
 require_once __DIR__ . '/../model/employeeModel.php';
 
-$id = $_GET['id'] ?? '';
+$id = isset($_GET['id']) ? trim($_GET['id']) : '';
 error_log("GET_EMPLOYEE API: Looking for ID: " . $id);
 
 $model = new EmployeeModel();
 
-if (empty($id)) {
-    echo json_encode(['success' => false, 'message' => 'Employee ID is required']);
+if ($id === '' || $id === '0') {
+    echo json_encode(['success' => false, 'message' => 'Valid Employee ID is required']);
     exit();
 }
 

@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const adminFabBadge = document.getElementById('admin-fab-badge');
 
     let requestItems = [];
+    let isEmployeeValid = false;
 
     // Initialize
     updateRequestCount();
@@ -84,12 +85,15 @@ document.addEventListener('DOMContentLoaded', function () {
         empIdInput.addEventListener('input', function () {
             const id = this.value.trim();
 
-            if (id === '') {
-                empNameInput.value = '';
-                empPositionInput.value = '';
-                empDeptInput.value = '';
-                return;
-            }
+            // Clear fields immediately on any input change
+            isEmployeeValid = false;
+            empNameInput.value = '';
+            empPositionInput.value = '';
+            empDeptInput.value = '';
+            empIdInput.style.borderColor = '#e2e8f0';
+            empIdInput.style.backgroundColor = '#ffffff';
+
+            if (id === '') return;
 
             // Get basePath (usually empty or absolute path)
             const basePath = typeof window.basePath !== 'undefined' ? window.basePath : '';
@@ -104,17 +108,22 @@ document.addEventListener('DOMContentLoaded', function () {
                             empNameInput.value = `${emp.first_name} ${emp.last_name}`;
                             empPositionInput.value = emp.position || '';
                             empDeptInput.value = emp.department_name || '';
-                            empIdInput.style.borderColor = '#48bb78';
+                            empIdInput.style.borderColor = '#48bb78'; // Green
                             empIdInput.style.backgroundColor = '#f0fff4';
+                            isEmployeeValid = true;
                         } else {
-                            empIdInput.style.borderColor = '#e2e8f0';
-                            empIdInput.style.backgroundColor = '#ffffff';
-                            empNameInput.value = '';
-                            empPositionInput.value = '';
-                            empDeptInput.value = '';
+                            // Clear fields and show error state
+                            empIdInput.style.borderColor = '#f56565'; // Red
+                            empIdInput.style.backgroundColor = '#fff5f5';
+                            empNameInput.value = 'Employee Not Found';
+                            empNameInput.style.color = '#c53030';
+                            isEmployeeValid = false;
                         }
                     })
-                    .catch(error => console.error('Error fetching employee:', error));
+                    .catch(error => {
+                        console.error('Error fetching employee:', error);
+                        isEmployeeValid = false;
+                    });
             }, 500);
         });
 
@@ -134,10 +143,13 @@ document.addEventListener('DOMContentLoaded', function () {
             const name = document.getElementById('admin-req-name').value;
             const purpose = document.getElementById('admin-req-purpose').value;
 
-            if (!empId || !name) {
-                showModal('Please fill in a valid Employee ID.', 'warning');
+            if (!isEmployeeValid || !empId || !name || name === 'Employee Not Found') {
+                showModal('Please enter a valid Employee ID.', 'warning');
                 return;
             }
+
+            // Reset name color if it was red from previous error
+            empNameInput.style.color = '#2d3748';
 
             // Show loading state
             const originalBtnText = adminSubmitRequestBtn.innerHTML;
@@ -180,6 +192,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         document.getElementById('admin-req-purpose').value = '';
                         document.getElementById('admin-req-emp-id').style.borderColor = '#e2e8f0';
                         document.getElementById('admin-req-emp-id').style.backgroundColor = '#ffffff';
+                        isEmployeeValid = false;
 
                         showModal(`Requisition submitted successfully! No: ${data.requisition_no}`, 'success', () => location.reload());
                     } else {

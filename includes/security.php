@@ -224,4 +224,3 @@ function hashPassword($password) {
 function verifyPassword($password, $hash) {
     return hash('sha256', $password) === $hash;
 }
-?>

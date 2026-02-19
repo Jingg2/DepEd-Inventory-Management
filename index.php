@@ -53,10 +53,12 @@ $routes = [
     '/employees' => 'view/employee.php',
     '/reports' => 'view/reports.php',
     '/settings' => 'view/settings.php',
+    '/help_center' => 'view/help_center.php',
     '/system_logs' => 'view/system_logs.php',
     '/controlled_assets' => 'view/controlled_assets/index.php',
     '/controlled_assets/deliveries' => 'view/controlled_assets/deliveries.php',
     '/controlled_assets/school_items' => 'view/controlled_assets/school_items.php',
+    '/controlled_assets/reports' => 'view/controlled_assets/reports.php',
     
     // Password Recovery Routes
     '/forgot_password' => 'forgot_password.php',

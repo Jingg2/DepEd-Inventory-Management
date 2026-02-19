@@ -324,12 +324,33 @@ $root = rtrim($scriptDir, '/') . '/';
                                 </td>
                                 <td><?php echo date('Y-m-d', strtotime($emp['created_at'])); ?></td>
                                 <td>
-                                    <i class="fas fa-edit" style="color: #2A4D88; cursor: pointer; margin-right: 10px;" title="Edit"></i>
-                                    <i class="fas fa-trash" style="color: #e74c3c; cursor: pointer;" title="Delete"></i>
+                                    <i class="fas fa-edit update-employee-btn" 
+                                       style="color: #2A4D88; cursor: pointer; margin-right: 10px;" 
+                                       title="Edit"
+                                       data-id="<?php echo htmlspecialchars($emp['employee_id']); ?>"
+                                       data-first-name="<?php echo htmlspecialchars($emp['first_name']); ?>"
+                                       data-last-name="<?php echo htmlspecialchars($emp['last_name']); ?>"
+                                       data-position="<?php echo htmlspecialchars($emp['position']); ?>"
+                                       data-department-id="<?php echo htmlspecialchars($emp['department_id']); ?>"
+                                       data-role="<?php echo htmlspecialchars($emp['role']); ?>"
+                                       data-status="<?php echo htmlspecialchars($emp['status']); ?>"></i>
+                                    
+                                    <i class="fas fa-trash delete-employee-btn" 
+                                       style="color: #e74c3c; cursor: pointer; margin-right: 10px;" 
+                                       title="Delete"
+                                       data-id="<?php echo htmlspecialchars($emp['employee_id']); ?>"
+                                       data-name="<?php echo htmlspecialchars($emp['first_name'] . ' ' . $emp['last_name']); ?>"></i>
+                                    
                                     <?php if (($emp['held_items_count'] ?? 0) > 0): ?>
-                                        <a href="../api/export_ics_excel.php?employee_id=<?php echo urlencode($emp['employee_id']); ?>" 
+                                        <i class="fas fa-box-open view-assets-btn" 
+                                           data-id="<?php echo $emp['employee_id']; ?>" 
+                                           data-name="<?php echo htmlspecialchars($emp['first_name'] . ' ' . $emp['last_name']); ?>"
+                                           title="View Assigned Assets" 
+                                           style="color: #3b82f6; cursor: pointer; margin-right: 10px; font-size: 1.1rem;"></i>
+                                        
+                                        <a href="<?php echo $root; ?>api/export_ics_excel.php?employee_id=<?php echo urlencode($emp['employee_id']); ?>" 
                                            title="Download Borrowing History (ICS)" 
-                                           style="color: #a87e00; margin-left: 10px; font-size: 1.1rem; text-decoration: none;">
+                                           style="color: #a87e00; font-size: 1.1rem; text-decoration: none;">
                                             <i class="fas fa-address-card"></i>
                                         </a>
                                     <?php endif; ?>
@@ -345,21 +366,23 @@ $root = rtrim($scriptDir, '/') . '/';
 
     <!-- Registration Modal -->
     <div id="registrationModal" class="modal">
+        <!-- ... existing modal content ... -->
         <div class="modal-content">
             <div class="modal-header">
                 <h2><i class="fas fa-user-plus"></i> New Employee</h2>
                 <span class="close-modal" id="closeModalBtn">&times;</span>
             </div>
             <div class="modal-body">
-                <?php if (!empty($message)): ?>
+                <?php if (!empty($message) && (!isset($_POST['action']) || $_POST['action'] === 'create')): ?>
                     <div class="error-message">
                         <i class="fas fa-exclamation-circle"></i> <?php echo htmlspecialchars($message); ?>
                     </div>
                 <?php endif; ?>
-                <form class="registration-form" id="employeeForm" method="POST" action="employee.php">
+                <form class="registration-form" id="employeeForm" method="POST" action="employees">
+                    <input type="hidden" name="action" value="create">
                     <div class="form-group">
                         <label><i class="fas fa-id-card"></i> Employee ID</label>
-                        <input type="text" name="employee_id" placeholder="Enter Employee ID" required>
+                        <input type="text" name="employee_id" placeholder="Enter 7-digit ID" minlength="7" maxlength="7" pattern="\d{7}" title="Employee ID must be exactly 7 digits" required>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
@@ -378,40 +401,23 @@ $root = rtrim($scriptDir, '/') . '/';
                         </div>
                         <div class="form-group">
                             <label><i class="fas fa-building"></i> Department</label>
-                            <select name="department_id" id="departmentSelect" onchange="toggleDeptField(this.value)" required>
+                            <select name="department_id" class="departmentSelect" onchange="toggleDeptField(this, 'customDepartmentGroup')" required>
                                 <option value="">Select Department</option>
                                 <?php foreach ($departments as $dept): ?>
-                                    <option value="<?php echo $dept['department_id']; ?>" <?php echo (isset($_POST['department_id']) && $_POST['department_id'] == $dept['department_id']) ? 'selected' : ''; ?>>
+                                    <option value="<?php echo $dept['department_id']; ?>">
                                         <?php echo htmlspecialchars($dept['department_name']); ?>
                                     </option>
                                 <?php endforeach; ?>
-                                <option value="Other" <?php echo (isset($_POST['department_id']) && $_POST['department_id'] == 'Other') ? 'selected' : ''; ?>>Other (Create New)</option>
+                                <option value="Other">Other (Create New)</option>
                             </select>
                         </div>
                     </div>
 
-                    <!-- Custom Department Name - High Visibility -->
-                    <div class="form-group" id="customDepartmentGroup" style="display: <?php echo (isset($_POST['department_id']) && $_POST['department_id'] == 'Other') ? 'block' : 'none'; ?>; border: 2px solid #2A4D88; padding: 15px; border-radius: 8px; background-color: #f0f4f8; margin-top: 15px;">
+                    <div class="form-group customDepartmentGroup" style="display: none; border: 2px solid #2A4D88; padding: 15px; border-radius: 8px; background-color: #f0f4f8; margin-top: 15px;">
                         <label style="color: #2A4D88;"><i class="fas fa-plus-circle"></i> New Department Name</label>
-                        <input type="text" name="custom_department" id="customDepartment" placeholder="Type new department name here..." value="<?php echo htmlspecialchars($_POST['custom_department'] ?? ''); ?>">
-                        <small style="color: #666; margin-top: 5px; display: block;">This department will be created automatically.</small>
+                        <input type="text" name="custom_department" class="customDepartment" placeholder="Type new department name here...">
                     </div>
 
-                    <script>
-                        function toggleDeptField(value) {
-                            var group = document.getElementById('customDepartmentGroup');
-                            var input = document.getElementById('customDepartment');
-                            if (value === 'Other') {
-                                group.style.display = 'block';
-                                input.required = true;
-                                setTimeout(function() { input.focus(); }, 100);
-                            } else {
-                                group.style.display = 'none';
-                                input.required = false;
-                                input.value = '';
-                            }
-                        }
-                    </script>
                     <div class="form-row">
                         <div class="form-group">
                             <label><i class="fas fa-user-tag"></i> Role</label>
@@ -432,18 +438,127 @@ $root = rtrim($scriptDir, '/') . '/';
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn-cancel" id="cancelBtn">Cancel</button>
+                <button type="button" class="btn-cancel cancelBtn">Cancel</button>
                 <button type="submit" form="employeeForm" class="btn-save">Register</button>
             </div>
         </div>
     </div>
 
+    <!-- Edit Employee Modal -->
+    <div id="editEmployeeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #2A4D88 0%, #1e3a6a 100%);">
+                <h2><i class="fas fa-user-edit"></i> Edit Employee</h2>
+                <span class="close-modal" id="closeEditModalBtn">&times;</span>
+            </div>
+            <div class="modal-body">
+                <?php if (!empty($message) && isset($_POST['action']) && $_POST['action'] === 'update'): ?>
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-circle"></i> <?php echo htmlspecialchars($message); ?>
+                    </div>
+                <?php endif; ?>
+                <form id="editEmployeeForm" method="POST" action="employees">
+                    <input type="hidden" name="action" value="update">
+                    <div class="form-group">
+                        <label><i class="fas fa-id-card"></i> Employee ID</label>
+                        <input type="text" name="employee_id" id="edit_employee_id" readonly style="background-color: #f8f9fa;">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="fas fa-user"></i> First Name</label>
+                            <input type="text" name="first_name" id="edit_first_name" required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-user"></i> Last Name</label>
+                            <input type="text" name="last_name" id="edit_last_name" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="fas fa-briefcase"></i> Position</label>
+                            <input type="text" name="position" id="edit_position" required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-building"></i> Department</label>
+                            <select name="department_id" id="edit_department_id" class="departmentSelect" onchange="toggleDeptField(this, 'editCustomDeptGroup')" required>
+                                <option value="">Select Department</option>
+                                <?php foreach ($departments as $dept): ?>
+                                    <option value="<?php echo $dept['department_id']; ?>">
+                                        <?php echo htmlspecialchars($dept['department_name']); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                                <option value="Other">Other (Create New)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group editCustomDeptGroup" style="display: none; border: 2px solid #2A4D88; padding: 15px; border-radius: 8px; background-color: #f0f4f8; margin-top: 15px;">
+                        <label style="color: #2A4D88;"><i class="fas fa-plus-circle"></i> New Department Name</label>
+                        <input type="text" name="custom_department" class="customDepartment" placeholder="Type new department name here...">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="fas fa-user-tag"></i> Role</label>
+                            <select name="role" id="edit_role">
+                                <option value="Manager">Manager</option>
+                                <option value="Staff">Staff</option>
+                                <option value="Supervisor">Supervisor</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-info-circle"></i> Status</label>
+                            <select name="status" id="edit_status">
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" id="cancelEditBtn">Cancel</button>
+                <button type="submit" form="editEmployeeForm" class="btn-save">Update Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleDeptField(select, groupClass) {
+            const modal = select.closest('.modal-content');
+            const group = modal.querySelector('.' + groupClass);
+            const input = group.querySelector('.customDepartment');
+            if (select.value === 'Other') {
+                group.style.display = 'block';
+                input.required = true;
+                setTimeout(() => input.focus(), 100);
+            } else {
+                group.style.display = 'none';
+                input.required = false;
+                input.value = '';
+            }
+        }
+    </script>
+
     <script src="<?php echo $root; ?>js/sidebar.js?v=<?php echo time(); ?>"></script>
     <script src="<?php echo $root; ?>js/dashboard.js?v=<?php echo time(); ?>"></script>
-    <script src="<?php echo $root; ?>js/employee.js"></script>
+    <script src="<?php echo $root; ?>js/employee.js?v=<?php echo time(); ?>"></script>
+    <!-- New Script for Return Feature -->
+    <script src="<?php echo $root; ?>js/employee_return.js?v=<?php echo time(); ?>"></script>
+
     <?php if (isset($_GET['success'])): ?>
-        <script>document.addEventListener('DOMContentLoaded', () => showModal('Employee registered successfully!', 'success'));</script>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const type = '<?php echo $_GET['success']; ?>';
+                let msg = 'Employee registered successfully!';
+                if (type === 'update') msg = 'Employee updated successfully!';
+                if (type === 'delete') msg = 'Employee deleted successfully!';
+                showModal(msg, 'success');
+            });
+        </script>
     <?php endif; ?>
     <?php include_once __DIR__ . '/../includes/logout_modal.php'; ?>
+    <?php include_once __DIR__ . '/includes/employee_items_modal.php'; ?>
+    <?php include_once __DIR__ . '/includes/return_item_modal.php'; ?>
 </body>
 </html>

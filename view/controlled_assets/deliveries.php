@@ -141,8 +141,7 @@ try {
         <ul>
             <li><a href="<?php echo $root; ?>controlled_assets"><i class="fas fa-th-large"></i> <span>Dashboard</span></a></li>
             <li><a href="<?php echo $root; ?>controlled_assets/deliveries" class="active"><i class="fas fa-box"></i> <span>Deliveries</span></a></li>
-            <li><a href="#"><i class="fas fa-exchange-alt"></i> <span>Borrow and Return</span></a></li>
-            <li><a href="#"><i class="fas fa-file-alt"></i> <span>Reports</span></a></li>
+            <li><a href="<?php echo $root; ?>controlled_assets/reports"><i class="fas fa-file-alt"></i> <span>Reports</span></a></li>
             <li class="divider"></li>
             <li><a href="<?php echo $root; ?>inventory" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;"><i class="fas fa-arrow-left"></i> <span>Back to Inventory</span></a></li>
         </ul>

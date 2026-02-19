@@ -764,6 +764,8 @@ document.addEventListener('DOMContentLoaded', function () {
                         status: card.getAttribute('data-status'),
                         propClass: card.getAttribute('data-property-classification'),
                         school: card.getAttribute('data-school'),
+                        receiptNo: card.getAttribute('data-receipt-no'),
+                        deliveryDate: card.getAttribute('data-delivery-date'),
                         img: card.getAttribute('data-image') || (basePath + 'img/Bogo_City_logo.png'),
                         lowT: card.getAttribute('data-low-threshold') || '10',
                         critT: card.getAttribute('data-critical-threshold') || '5'
@@ -797,11 +799,16 @@ document.addEventListener('DOMContentLoaded', function () {
                     // Delivery Details Fetch
                     const deliveryInfoSection = document.getElementById('modal-delivery-info');
                     if (deliveryInfoSection) {
-                        deliveryInfoSection.style.display = 'none'; // Hide initially
+                        // Pre-populate with what we have from the card immediately
+                        document.getElementById('modal-delivery-receipt').textContent = details.receiptNo || 'Loading...';
+                        document.getElementById('modal-delivery-date').textContent = details.deliveryDate || 'Loading...';
+                        document.getElementById('modal-delivery-supplier').textContent = 'Loading...';
+                        document.getElementById('modal-delivery-items-body').innerHTML = '<tr><td colspan="3" style="text-align:center; padding:10px;">Loading other items...</td></tr>';
 
-                        const deliveryUrl = basePath + 'api/get_delivery_details.php?item=' + encodeURIComponent(details.name) +
-                            '&school=' + encodeURIComponent(details.school) +
-                            '&unit_cost=' + encodeURIComponent(details.unitCost);
+                        deliveryInfoSection.style.display = 'block';
+
+                        // Precise fetch using ID
+                        const deliveryUrl = basePath + 'api/get_delivery_details.php?supply_id=' + details.id;
 
                         fetch(deliveryUrl)
                             .then(res => res.json())
@@ -814,14 +821,13 @@ document.addEventListener('DOMContentLoaded', function () {
                                     const body = document.getElementById('modal-delivery-items-body');
                                     if (body && data.items) {
                                         body.innerHTML = data.items.map(it => `
-                                            <tr>
-                                                <td style="padding: 8px 12px; border-bottom: 1px solid #e2e8f0;">${it.item_name}</td>
+                                            <tr style="${it.supply_id == details.id ? 'background: #f0fdf4; font-weight: 600;' : ''}">
+                                                <td style="padding: 8px 12px; border-bottom: 1px solid #e2e8f0;">${it.item} ${it.supply_id == details.id ? ' <span style="font-size: 0.7rem; color: #10b981;">(This Item)</span>' : ''}</td>
                                                 <td style="text-align: center; padding: 8px 12px; border-bottom: 1px solid #e2e8f0;">${it.quantity}</td>
                                                 <td style="text-align: right; padding: 8px 12px; border-bottom: 1px solid #e2e8f0;">₱${parseFloat(it.unit_cost).toFixed(2)}</td>
                                             </tr>
                                         `).join('');
                                     }
-                                    deliveryInfoSection.style.display = 'block';
                                 }
                             })
                             .catch(err => console.error('Error fetching delivery details:', err));
@@ -837,4 +843,84 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     console.log('Supply modals initialized successfully');
+
+    // ==========================================
+    // 9. UPDATE CONDITION MODAL
+    // ==========================================
+    const updateConditionModal = document.getElementById('update-condition-modal');
+
+    window.closeUpdateConditionModal = function () {
+        if (updateConditionModal) {
+            updateConditionModal.classList.remove('active');
+            setTimeout(() => {
+                updateConditionModal.style.display = 'none';
+            }, 300);
+        }
+    }
+
+    // Open Logic (Delegate)
+    document.addEventListener('click', function (e) {
+        const icon = e.target.closest('.update-condition-icon');
+        if (icon) {
+            e.preventDefault();
+            e.stopPropagation();
+            const card = icon.closest('.supply-card');
+
+            // Check if modal exists
+            const modal = document.getElementById('update-condition-modal');
+            if (card && modal) {
+                const id = card.getAttribute('data-id');
+                const condition = card.getAttribute('data-condition') || 'Functional';
+
+                document.getElementById('update-condition-id').value = id;
+                document.getElementById('item-condition-select').value = condition;
+
+                modal.style.display = 'block';
+                // Small timeout to allow display:block to apply before adding active class for transition
+                requestAnimationFrame(() => {
+                    modal.classList.add('active');
+                });
+            } else {
+                console.error('Update Condition Modal not found');
+            }
+        }
+    });
+
+    // Submit Logic
+    window.submitUpdateCondition = function (event) {
+        event.preventDefault();
+        const id = document.getElementById('update-condition-id').value;
+        const condition = document.getElementById('item-condition-select').value;
+        const form = document.getElementById('update-condition-form');
+        const btn = form.querySelector('button[type="submit"]');
+        const originalText = btn.textContent;
+
+        if (!id) return;
+
+        btn.disabled = true;
+        btn.textContent = 'Saving...';
+
+        fetch((typeof basePath !== 'undefined' ? basePath : '') + 'api/update_condition.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: id, condition: condition })
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showModal('Condition updated successfully.', 'success', () => location.reload());
+                } else {
+                    showModal('Error: ' + data.message, 'error');
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showModal('Connection error.', 'error');
+                btn.disabled = false;
+                btn.textContent = originalText;
+            });
+    }
+
 });

@@ -295,6 +295,19 @@ $root = rtrim($scriptDir, '/') . '/';
             border-radius: 8px;
             border: 1px dashed #dee2e6;
         }
+
+        .quick-link {
+            font-size: 0.85rem;
+            color: #2A4D88;
+            text-decoration: none;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .quick-link:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -457,6 +470,11 @@ $root = rtrim($scriptDir, '/') . '/';
                     <h3><i class="fas fa-history"></i> System Logs</h3>
                     <p style="font-size: 0.85rem; color: #666; margin-bottom: 10px;">View administrative activity</p>
                     <a href="<?php echo $root; ?>system_logs" class="btn-secondary-settings" style="text-decoration: none; display: block; text-align: center;">View Logs</a>
+                </div>
+                <div class="settings-card small-card" style="border-top: 4px solid #2A4D88;">
+                    <h3><i class="fas fa-question-circle"></i> Help Center</h3>
+                    <p style="font-size: 0.85rem; color: #666; margin-bottom: 10px;">Guides & Step-by-step instructions</p>
+                    <a href="<?php echo $root; ?>help_center" class="btn-primary-settings" style="text-decoration: none; display: block; text-align: center; width: 100%; padding: 10px;">Open Help Center</a>
                 </div>
             </div>
         </div>

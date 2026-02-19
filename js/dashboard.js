@@ -124,9 +124,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             };
 
-            // Process Grouped Layout
-            if (categorySections.length > 0) {
-                categorySections.forEach(section => {
+            // Process Grouped Layout (Categories or Receipts)
+            const groupedSections = document.querySelectorAll('.category-section, .receipt-group');
+            if (groupedSections.length > 0) {
+                groupedSections.forEach(section => {
                     const supplyCards = section.querySelectorAll('.supply-card');
                     let visibleCardsInSection = 0;
                     supplyCards.forEach(card => {
@@ -759,7 +760,7 @@ window.showModal = function (message, type = 'info', callback = null) {
         content.style.borderTop = '5px solid #10b981';
     }
 
-    msg.innerText = message;
+    msg.innerHTML = message;
     modal.style.display = 'block';
 };
 

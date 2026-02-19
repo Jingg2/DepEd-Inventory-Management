@@ -342,16 +342,29 @@ $urlRoot = str_replace(' ', '%20', $root);
                 </a>
             </div>
 
-            <!-- PPE & Semi-Expendable Report -->
+            <!-- RPCI (PPE & Semi-Expendable) -->
             <div class="report-card">
                 <div class="report-icon" style="background: linear-gradient(135deg, #38a169 0%, #2f855a 100%);">
                     <i class="fas fa-tools"></i>
                 </div>
-                <h3>PPE & Semi-Expendable</h3>
-                <p>Property, Plant, Equipment & Semi-Expendable items report with equipment status (Functional, For Repair, etc.).</p>
-                <a href="<?php echo $root; ?>api/export_ppe_report.php" class="download-btn" style="background: linear-gradient(135deg, #38a169 0%, #2f855a 100%);">
+                <h3>RPCI (PPE & Semi-Expendable)</h3>
+                <p>Report on the Physical Count of Property, Plant, Equipment & Semi-Expendable items (High Value - Appendix 66).</p>
+                <a href="<?php echo $root; ?>api/export_ppe_report.php" class="download-btn" id="ppe-download-btn" style="background: linear-gradient(135deg, #38a169 0%, #2f855a 100%);">
                     <i class="fas fa-download"></i>
-                    Export PPE Report
+                    Export RPCI (PPE)
+                </a>
+            </div>
+
+            <!-- Waste Materials Report (WMR) -->
+            <div class="report-card">
+                <div class="report-icon" style="background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);">
+                    <i class="fas fa-trash-alt"></i>
+                </div>
+                <h3>Waste Materials Report</h3>
+                <p>Appendix 65 (WMR) - Report of unserviceable items designated for disposal or destruction.</p>
+                <a href="<?php echo $root; ?>api/export_wmr_excel.php" class="download-btn" id="wmr-download-btn" style="background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);">
+                    <i class="fas fa-download"></i>
+                    Download WMR
                 </a>
             </div>
         </div>
@@ -522,6 +535,8 @@ $urlRoot = str_replace(' ', '%20', $root);
         let supplyUrl = basePath + 'export_supply_excel.php';
         let rsmiUrl = basePath + 'export_rsmi_excel.php';
         let risOfficeUrl = basePath + 'export_ris_by_office.php';
+        let wmrUrl = basePath + 'export_wmr_excel.php';
+        let ppeUrl = basePath + 'export_ppe_report.php';
         
         let commonParams = [];
         if (startDate && endDate) {
@@ -536,6 +551,8 @@ $urlRoot = str_replace(' ', '%20', $root);
             supplyUrl += paramStr;
             rsmiUrl += paramStr;
             risOfficeUrl += paramStr;
+            wmrUrl += paramStr;
+            ppeUrl += paramStr;
         }
 
         // Add department parameter to risOfficeUrl if selected
@@ -546,6 +563,10 @@ $urlRoot = str_replace(' ', '%20', $root);
         document.getElementById('supply-download-btn').href = supplyUrl;
         document.getElementById('rsmi-download-btn').href = rsmiUrl;
         document.getElementById('ris-office-download-btn').href = risOfficeUrl;
+        document.getElementById('wmr-download-btn').href = wmrUrl;
+        if (document.getElementById('ppe-download-btn')) {
+            document.getElementById('ppe-download-btn').href = ppeUrl;
+        }
         
         // Filter the requisitions table
         const table = document.querySelector('.requisition-table');

@@ -1012,21 +1012,34 @@ $root = rtrim($scriptDir, '/') . '/';
             $groupedSupplies[$cat][] = $supply;
         }
 
-        // Case-insensitive prioritization for "OFFICE SUPPLIES"
-        $officeKey = null;
-        foreach (array_keys($groupedSupplies) as $key) {
-            if (strcasecmp($key, 'OFFICE SUPPLIES') === 0) {
-                $officeKey = $key;
-                break;
+        // Priority categories to show first (case-insensitive matching)
+        $priorityCategories = [
+            'office supplies',
+            'janitorial supplies',
+            'it equipment',
+            'it supplies',
+            'it equipment/supplies',
+            'electrical',
+            'electrical supplies',
+        ];
+
+        // Build a prioritized groupedSupplies array
+        $prioritized = [];
+        $remaining = $groupedSupplies;
+
+        foreach ($priorityCategories as $priority) {
+            foreach (array_keys($remaining) as $key) {
+                if (strcasecmp(trim($key), $priority) === 0) {
+                    $prioritized[$key] = $remaining[$key];
+                    unset($remaining[$key]);
+                    break;
+                }
             }
         }
 
-        if ($officeKey) {
-            $officeItems = $groupedSupplies[$officeKey];
-            unset($groupedSupplies[$officeKey]);
-            // Re-insert at the beginning using plus operator to preserve keys and data
-            $groupedSupplies = [$officeKey => $officeItems] + $groupedSupplies;
-        }
+        // Merge: priority first, then the rest alphabetically
+        ksort($remaining);
+        $groupedSupplies = $prioritized + $remaining;
 
         foreach ($groupedSupplies as $categoryName => $categoryItems): 
         ?>
