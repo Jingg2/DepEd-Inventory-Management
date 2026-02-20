@@ -839,22 +839,37 @@ class SupplyModel {
      * @return array
      */
     public function getDeliverySummary($startDate = null, $endDate = null) {
-        $sql = "SELECT s.*, si.school_name, si.address, si.contact_no 
-                FROM supply s
-                JOIN schools_info si ON s.school = si.school_name
-                WHERE s.school IS NOT NULL AND s.school != ''";
+        $sql = "SELECT 
+                    di.item_name as item,
+                    COALESCE(i.description, di.description) as description,
+                    COALESCE(i.category, di.category) as category,
+                    COALESCE(i.unit, di.unit) as unit,
+                    di.quantity,
+                    di.unit_cost,
+                    di.total_cost,
+                    COALESCE(i.property_classification, di.property_classification) as property_classification,
+                    d.school as school_name,
+                    d.address,
+                    d.delivery_date as updated_at,
+                    d.receipt_no as stock_no,
+                    si.contact_no
+                FROM delivery_items di
+                JOIN deliveries d ON di.delivery_id = d.delivery_id
+                LEFT JOIN items i ON di.item_name = i.item_name
+                LEFT JOIN schools si ON d.school = si.school_name
+                WHERE 1=1";
         
         $params = [];
         if ($startDate) {
-            $sql .= " AND s.updated_at >= ?"; 
-            $params[] = $startDate . " 00:00:00";
+            $sql .= " AND d.delivery_date >= ?"; 
+            $params[] = $startDate;
         }
         if ($endDate) {
-            $sql .= " AND s.updated_at <= ?";
-            $params[] = $endDate . " 23:59:59";
+            $sql .= " AND d.delivery_date <= ?";
+            $params[] = $endDate;
         }
         
-        $sql .= " ORDER BY s.updated_at DESC, s.school ASC";
+        $sql .= " ORDER BY d.delivery_date DESC, d.school ASC";
         
         try {
             $stmt = $this->conn->prepare($sql);
