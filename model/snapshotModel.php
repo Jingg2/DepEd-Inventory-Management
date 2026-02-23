@@ -24,12 +24,21 @@ class SnapshotModel {
             unit VARCHAR(50),
             description TEXT,
             quantity INT,
+            previous_month INT DEFAULT 0,
+            add_stock INT DEFAULT 0,
+            issuance INT DEFAULT 0,
             unit_cost DECIMAL(10,2),
             total_cost DECIMAL(10,2),
             status VARCHAR(50),
             property_classification VARCHAR(100),
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )";
+
+        $sql_alter = [
+            "ALTER TABLE monthly_inventory_snapshot ADD COLUMN IF NOT EXISTS previous_month INT DEFAULT 0 AFTER quantity",
+            "ALTER TABLE monthly_inventory_snapshot ADD COLUMN IF NOT EXISTS add_stock INT DEFAULT 0 AFTER previous_month",
+            "ALTER TABLE monthly_inventory_snapshot ADD COLUMN IF NOT EXISTS issuance INT DEFAULT 0 AFTER add_stock"
+        ];
         
         $sql2 = "CREATE TABLE IF NOT EXISTS rsmi_snapshot (
             rsmi_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -49,6 +58,9 @@ class SnapshotModel {
 
         try {
             $this->conn->exec($sql1);
+            foreach ($sql_alter as $alter) {
+                $this->conn->exec($alter);
+            }
             $this->conn->exec($sql2);
         } catch (Exception $e) {
             error_log("Failed to ensure snapshot tables: " . $e->getMessage());
@@ -75,9 +87,10 @@ class SnapshotModel {
 
             $this->conn->beginTransaction();
 
-            // Get all current supplies
+            // Get all current supplies with perfected columns
             $sql = "SELECT supply_id, stock_no, item, category, unit, description, 
-                           quantity, unit_cost, total_cost, status, property_classification 
+                           quantity, previous_month, add_stock, issuance,
+                           unit_cost, total_cost, status, property_classification 
                     FROM supply";
             $stmt = $this->conn->prepare($sql);
             $stmt->execute();
@@ -96,8 +109,9 @@ class SnapshotModel {
             // Insert new snapshot
             $insertSql = "INSERT INTO monthly_inventory_snapshot 
                          (snapshot_date, snapshot_month, supply_id, stock_no, item, category, 
-                          unit, description, quantity, unit_cost, total_cost, status, property_classification) 
-                         VALUES (CURDATE(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                          unit, description, quantity, previous_month, add_stock, issuance,
+                          unit_cost, total_cost, status, property_classification) 
+                         VALUES (CURDATE(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $insertStmt = $this->conn->prepare($insertSql);
 
             foreach ($supplies as $supply) {
@@ -110,6 +124,9 @@ class SnapshotModel {
                     $supply['unit'],
                     $supply['description'],
                     $supply['quantity'],
+                    $supply['previous_month'],
+                    $supply['add_stock'],
+                    $supply['issuance'],
                     $supply['unit_cost'],
                     $supply['total_cost'],
                     $supply['status'],

@@ -234,8 +234,8 @@ class SupplyModel {
             $updated_at = date('Y-m-d H:i:s');
             
             if ($imageData !== null && strlen($imageData) > 0) {
-                $sql = "INSERT INTO supply (stock_no, category, unit, item, description, quantity, unit_cost, total_cost, status, updated_by, updated_at, image, property_classification, low_stock_threshold, critical_stock_threshold, school)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                $sql = "INSERT INTO supply (stock_no, category, unit, item, description, quantity, unit_cost, total_cost, status, updated_by, updated_at, image, property_classification, low_stock_threshold, critical_stock_threshold, school, previous_month, issuance)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                 $stmt = $this->conn->prepare($sql);
                 $params = [
                     $stock_no, $data['category'], $data['unit'], $data['item'],
@@ -244,12 +244,14 @@ class SupplyModel {
                     $data['property_classification'] ?? null,
                     $data['low_stock_threshold'] ?? 10,
                     $data['critical_stock_threshold'] ?? 5,
-                    $data['school'] ?? null
+                    $data['school'] ?? null,
+                    $data['previous_month'] ?? 0,
+                    $data['issuance'] ?? 0
                 ];
                 $result = $stmt->execute($params);
             } else {
-                $sql = "INSERT INTO supply (stock_no, category, unit, item, description, quantity, unit_cost, total_cost, status, updated_by, updated_at, property_classification, low_stock_threshold, critical_stock_threshold, school)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                $sql = "INSERT INTO supply (stock_no, category, unit, item, description, quantity, unit_cost, total_cost, status, updated_by, updated_at, property_classification, low_stock_threshold, critical_stock_threshold, school, previous_month, issuance)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                 $stmt = $this->conn->prepare($sql);
                 $params = [
                     $stock_no, $data['category'], $data['unit'], $data['item'],
@@ -258,7 +260,9 @@ class SupplyModel {
                     $data['property_classification'] ?? null,
                     $data['low_stock_threshold'] ?? 10,
                     $data['critical_stock_threshold'] ?? 5,
-                    $data['school'] ?? null
+                    $data['school'] ?? null,
+                    $data['previous_month'] ?? 0,
+                    $data['issuance'] ?? 0
                 ];
                 $result = $stmt->execute($params);
             }
@@ -437,87 +441,95 @@ class SupplyModel {
             $updated_at = date('Y-m-d H:i:s');
             
             // Build SQL based on whether image is being updated
-            if ($imageData !== null && strlen($imageData) > 0) {
-                $sql = "UPDATE supply SET 
-                        stock_no = ?, 
-                        category = ?, 
-                        unit = ?, 
-                        item = ?, 
-                        description = ?, 
-                        quantity = ?, 
-                        add_stock = ?,
-                        previous_quantity = ?,
-                        unit_cost = ?, 
-                        total_cost = ?, 
-                        status = ?, 
-                        updated_by = ?, 
-                        updated_at = ?, 
-                        image = ?,
-                        property_classification = ?,
-                        low_stock_threshold = ?,
-                        critical_stock_threshold = ?,
-                        school = ?
-                        WHERE supply_id = ?";
-                $stmt = $this->conn->prepare($sql);
-                $stmt->bindValue(1, !empty($data['stock_no']) ? $data['stock_no'] : null);
-                $stmt->bindValue(2, $data['category']);
-                $stmt->bindValue(3, $data['unit']);
-                $stmt->bindValue(4, $data['item']);
-                $stmt->bindValue(5, !empty($data['description']) ? $data['description'] : '');
-                $stmt->bindValue(6, $quantity, PDO::PARAM_INT);
-                $stmt->bindValue(7, $addStock, PDO::PARAM_INT);
-                $stmt->bindValue(8, $prevQty, PDO::PARAM_INT);
-                $stmt->bindValue(9, $unit_cost);
-                $stmt->bindValue(10, $total_cost);
-                $stmt->bindValue(11, $data['status']);
-                $stmt->bindValue(12, $adminId, PDO::PARAM_INT);
-                $stmt->bindValue(13, $updated_at);
-                $stmt->bindValue(14, $imageData, PDO::PARAM_LOB);
-                $stmt->bindValue(15, $data['property_classification'] ?? null);
-                $stmt->bindValue(16, $data['low_stock_threshold'] ?? 10, PDO::PARAM_INT);
-                $stmt->bindValue(17, $data['critical_stock_threshold'] ?? 5, PDO::PARAM_INT);
-                $stmt->bindValue(18, $data['school'] ?? null);
-                $stmt->bindValue(19, $id, PDO::PARAM_INT);
-            } else {
-                $sql = "UPDATE supply SET 
-                        stock_no = ?, 
-                        category = ?, 
-                        unit = ?, 
-                        item = ?, 
-                        description = ?, 
-                        quantity = ?, 
-                        add_stock = ?,
-                        previous_quantity = ?,
-                        unit_cost = ?, 
-                        total_cost = ?, 
-                        status = ?, 
-                        updated_by = ?, 
-                        updated_at = ?,
-                        property_classification = ?,
-                        low_stock_threshold = ?,
-                        critical_stock_threshold = ?,
-                        school = ?
-                        WHERE supply_id = ?";
-                $stmt = $this->conn->prepare($sql);
-                $stmt->bindValue(1, !empty($data['stock_no']) ? $data['stock_no'] : null);
-                $stmt->bindValue(2, $data['category']);
-                $stmt->bindValue(3, $data['unit']);
-                $stmt->bindValue(4, $data['item']);
-                $stmt->bindValue(5, !empty($data['description']) ? $data['description'] : '');
-                $stmt->bindValue(6, $quantity, PDO::PARAM_INT);
-                $stmt->bindValue(7, $addStock, PDO::PARAM_INT);
-                $stmt->bindValue(8, $prevQty, PDO::PARAM_INT);
-                $stmt->bindValue(9, $unit_cost);
-                $stmt->bindValue(10, $total_cost);
-                $stmt->bindValue(11, $data['status']);
-                $stmt->bindValue(12, $adminId, PDO::PARAM_INT);
-                $stmt->bindValue(13, $updated_at);
-                $stmt->bindValue(14, $data['property_classification'] ?? null);
-                $stmt->bindValue(15, $data['low_stock_threshold'] ?? 10, PDO::PARAM_INT);
-                $stmt->bindValue(16, $data['critical_stock_threshold'] ?? 5, PDO::PARAM_INT);
-                $stmt->bindValue(17, $data['school'] ?? null);
-                $stmt->bindValue(18, $id, PDO::PARAM_INT);
-            }
+        if ($imageData !== null && strlen($imageData) > 0) {
+            $sql = "UPDATE supply SET 
+                    stock_no = ?, 
+                    category = ?, 
+                    unit = ?, 
+                    item = ?, 
+                    description = ?, 
+                    quantity = ?, 
+                    add_stock = ?,
+                    previous_quantity = ?,
+                    unit_cost = ?, 
+                    total_cost = ?, 
+                    status = ?, 
+                    updated_by = ?, 
+                    updated_at = ?, 
+                    image = ?,
+                    property_classification = ?,
+                    low_stock_threshold = ?,
+                    critical_stock_threshold = ?,
+                    school = ?,
+                    previous_month = ?,
+                    issuance = ?
+                    WHERE supply_id = ?";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bindValue(1, !empty($data['stock_no']) ? $data['stock_no'] : null);
+            $stmt->bindValue(2, $data['category']);
+            $stmt->bindValue(3, $data['unit']);
+            $stmt->bindValue(4, $data['item']);
+            $stmt->bindValue(5, !empty($data['description']) ? $data['description'] : '');
+            $stmt->bindValue(6, $quantity, PDO::PARAM_INT);
+            $stmt->bindValue(7, $addStock, PDO::PARAM_INT);
+            $stmt->bindValue(8, $prevQty, PDO::PARAM_INT);
+            $stmt->bindValue(9, $unit_cost);
+            $stmt->bindValue(10, $total_cost);
+            $stmt->bindValue(11, $data['status']);
+            $stmt->bindValue(12, $adminId, PDO::PARAM_INT);
+            $stmt->bindValue(13, $updated_at);
+            $stmt->bindValue(14, $imageData, PDO::PARAM_LOB);
+            $stmt->bindValue(15, $data['property_classification'] ?? null);
+            $stmt->bindValue(16, $data['low_stock_threshold'] ?? 10, PDO::PARAM_INT);
+            $stmt->bindValue(17, $data['critical_stock_threshold'] ?? 5, PDO::PARAM_INT);
+            $stmt->bindValue(18, $data['school'] ?? null);
+            $stmt->bindValue(19, $data['previous_month'] ?? 0, PDO::PARAM_INT);
+            $stmt->bindValue(20, $data['issuance'] ?? 0, PDO::PARAM_INT);
+            $stmt->bindValue(21, (int)$id, PDO::PARAM_INT);
+        } else {
+            $sql = "UPDATE supply SET 
+                    stock_no = ?, 
+                    category = ?, 
+                    unit = ?, 
+                    item = ?, 
+                    description = ?, 
+                    quantity = ?, 
+                    add_stock = ?,
+                    previous_quantity = ?,
+                    unit_cost = ?, 
+                    total_cost = ?, 
+                    status = ?, 
+                    updated_by = ?, 
+                    updated_at = ?,
+                    property_classification = ?,
+                    low_stock_threshold = ?,
+                    critical_stock_threshold = ?,
+                    school = ?,
+                    previous_month = ?,
+                    issuance = ?
+                    WHERE supply_id = ?";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bindValue(1, !empty($data['stock_no']) ? $data['stock_no'] : null);
+            $stmt->bindValue(2, $data['category']);
+            $stmt->bindValue(3, $data['unit']);
+            $stmt->bindValue(4, $data['item']);
+            $stmt->bindValue(5, !empty($data['description']) ? $data['description'] : '');
+            $stmt->bindValue(6, $quantity, PDO::PARAM_INT);
+            $stmt->bindValue(7, $addStock, PDO::PARAM_INT);
+            $stmt->bindValue(8, $prevQty, PDO::PARAM_INT);
+            $stmt->bindValue(9, $unit_cost);
+            $stmt->bindValue(10, $total_cost);
+            $stmt->bindValue(11, $data['status']);
+            $stmt->bindValue(12, $adminId, PDO::PARAM_INT);
+            $stmt->bindValue(13, $updated_at);
+            $stmt->bindValue(14, $data['property_classification'] ?? null);
+            $stmt->bindValue(15, $data['low_stock_threshold'] ?? 10, PDO::PARAM_INT);
+            $stmt->bindValue(16, $data['critical_stock_threshold'] ?? 5, PDO::PARAM_INT);
+            $stmt->bindValue(17, $data['school'] ?? null);
+            $stmt->bindValue(18, $data['previous_month'] ?? 0, PDO::PARAM_INT);
+            $stmt->bindValue(19, $data['issuance'] ?? 0, PDO::PARAM_INT);
+            $stmt->bindValue(20, (int)$id, PDO::PARAM_INT);
+        }
             
             $result = $stmt->execute();
             
@@ -533,8 +545,9 @@ class SupplyModel {
                 $this->recordSupplyHistory($id, $addStock, $addStock, $prevQty, $quantity, 'Receipt', 'Manual Restock', $updated_at, $adminId);
             } else if ($quantity != $prevQty) {
                 $diff = $quantity - $prevQty;
-                $type = $diff > 0 ? 'Receipt' : 'Correction';
-                $remarks = $diff > 0 ? 'Stock replenished' : 'Stock corrected';
+                // Direct edits are "Corrections" not "Receipts" (Receipts come from Add Stock)
+                $type = 'Correction';
+                $remarks = $diff > 0 ? 'Stock Correction (Increase)' : 'Stock Correction (Decrease)';
                 $this->recordSupplyHistory($id, 0, $diff, $prevQty, $quantity, $type, $remarks, $updated_at, $adminId);
             }
             
@@ -603,11 +616,11 @@ class SupplyModel {
     }
 
     public function getSupplyById($id) {
-        $sql = "SELECT s.supply_id as id, i.item_name as item, i.unit, s.stock_no, s.quantity, s.quantity as current_qty, s.unit_cost, 
-                       s.updated_at as created_at, i.property_classification, i.description, s.school, s.image
-                FROM supply s
-                JOIN items i ON s.item = i.item_name
-                WHERE s.supply_id = ?";
+        $sql = "SELECT supply_id as id, item, unit, stock_no, quantity, quantity as current_qty, unit_cost, 
+                       updated_at as created_at, property_classification, description, school, image,
+                       previous_month, add_stock, issuance
+                FROM supply
+                WHERE supply_id = ?";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([$id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
@@ -773,9 +786,7 @@ class SupplyModel {
      * @return array List of PPE/Semi-Expendable supplies
      */
     public function getPPESemiExpendableItems() {
-        $sql = "SELECT s.supply_id, s.stock_no, s.item, s.description, s.category, s.unit, s.quantity, 
-                       s.unit_cost, s.total_cost, s.property_classification, 
-                       s.status, s.updated_at
+        $sql = "SELECT s.*
                 FROM supply s
                 WHERE 
                     (TRIM(s.property_classification) LIKE 'Semi-Expendable%' AND TRIM(s.property_classification) NOT LIKE '%Low Value%')

@@ -120,6 +120,21 @@
 
                 <div class="form-row">
                     <div class="form-group">
+                        <label for="edit-previous-month">
+                            <i class="fas fa-history"></i> Previous Month Balance
+                        </label>
+                        <input type="number" id="edit-previous-month" name="previous_month" min="0" value="0" placeholder="Value from previous month">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-issuance">
+                            <i class="fas fa-file-export"></i> Issuance for the Month
+                        </label>
+                        <input type="number" id="edit-issuance" name="issuance" min="0" value="0" placeholder="Total items issued">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
                         <label for="edit-unit-cost">
                             <i class="fas fa-dollar-sign"></i> Unit Cost
                         </label>

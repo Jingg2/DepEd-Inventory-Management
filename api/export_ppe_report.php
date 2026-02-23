@@ -5,25 +5,17 @@ require_once __DIR__ . '/../model/SystemLogModel.php';
 
 // Parameters
 $selectedMonth = $_GET['month'] ?? null;
-$startDate = $_GET['start_date'] ?? null;
-$endDate = $_GET['end_date'] ?? null;
 
-// Get PPE/Semi-Expendable items
+// Get PPE/Semi-Expendable items directly from the database
 $model = new SupplyModel();
-$supplies = $model->getPPESemiExpendableItems();
+$allSupplies = $model->getPPESemiExpendableItems();
 
-// Filter by date if provided
-if ($startDate && $endDate) {
-    $startTs = strtotime($startDate . ' 00:00:00');
-    $endTs = strtotime($endDate . ' 23:59:59');
-    $supplies = array_filter($supplies, function($s) use ($startTs, $endTs) {
-        $ts = strtotime($s['updated_at']);
-        return $ts >= $startTs && $ts <= $endTs;
-    });
-} else if ($selectedMonth && $selectedMonth !== 'current') {
-    $supplies = array_filter($supplies, function($s) use ($selectedMonth) {
-        return date('Y-m', strtotime($s['updated_at'])) === $selectedMonth;
-    });
+// Map DB columns directly — the database IS the source of truth
+// quantity = Balance for the Month (historical_balance)
+$supplies = [];
+foreach ($allSupplies as $s) {
+    $s['historical_balance'] = (float)($s['quantity'] ?? 0);
+    $supplies[] = $s;
 }
 
 // Log the action
@@ -118,7 +110,7 @@ $grandTotal = 0;
 foreach ($groupedSupplies as $cat => $items) {
     echo '<tr><td colspan="10" style="background-color:#ffff00; font-weight:bold; border:1px solid black; height:20pt; padding-left:5px;">' . $cat . '</td></tr>';
     foreach ($items as $item) {
-        $qty = (float)($item['quantity'] ?? 0);
+        $qty = (float)($item['historical_balance'] ?? 0);
         $cost = (float)($item['unit_cost'] ?? 0);
         $total = $qty * $cost;
         $grandTotal += $total;
@@ -129,8 +121,8 @@ foreach ($groupedSupplies as $cat => $items) {
         echo '<td align="center" style="border:1px solid black;">' . htmlspecialchars($item['stock_no']) . '</td>';
         echo '<td align="center" style="border:1px solid black;">' . htmlspecialchars($item['unit']) . '</td>';
         echo '<td align="right" style="border:1px solid black; padding-right:5px;">' . number_format($cost, 2) . '</td>';
-        echo '<td align="center" style="border:1px solid black;">' . ($qty > 0 ? $qty : '-') . '</td>';
-        echo '<td align="center" style="border:1px solid black;">' . ($qty > 0 ? $qty : '-') . '</td>';
+        echo '<td align="center" style="border:1px solid black;">' . ($qty > 0 ? $qty : '0') . '</td>';
+        echo '<td align="center" style="border:1px solid black;">' . ($qty > 0 ? $qty : '0') . '</td>';
         echo '<td align="center" style="border:1px solid black;"></td>'; // Shortage Qty
         echo '<td align="center" style="border:1px solid black;"></td>'; // Shortage Value
         echo '<td style="border:1px solid black; padding-left:5px;">' . htmlspecialchars($item['status'] ?? '') . '</td>';

@@ -54,16 +54,18 @@ echo '</head>';
 echo '<body>';
 echo '<table>';
 
-// Annex Label
-echo '<tr><td colspan="12" class="annex-label">Annex A.1</td></tr>';
+// Appendix Label
+echo '<tr><td colspan="12" class="annex-label">Appendix 69</td></tr>';
 echo '<tr><td colspan="12" class="no-border">&nbsp;</td></tr>';
 
 // Official Header
 echo '<tr><td colspan="12" class="header-title">SEMI-EXPENDABLE PROPERTY CARD</td></tr>';
 echo '<tr><td colspan="12" class="no-border">&nbsp;</td></tr>';
 
+$entityName = !empty($supply['school']) ? htmlspecialchars(strtoupper($supply['school'])) : "DEPED DIVISION OF CITY OF BOGO";
+
 echo '<tr>
-        <td colspan="8" class="no-border"><b>Entity Name :</b> DEPED DIVISION OF CITY OF BOGO</td>
+        <td colspan="8" class="no-border"><b>Entity Name :</b> ' . $entityName . '</td>
         <td colspan="4" class="no-border"><b>Fund Cluster:</b> ____________________</td>
       </tr>';
 echo '<tr><td colspan="12" class="no-border" style="height:5px;"></td></tr>';
@@ -96,7 +98,7 @@ echo '<tr>
         <th style="width: 120px;">Office/Officer</th>
       </tr>';
 
-// Beginning Balance if filtered
+// Beginning balance if date filtered
 if ($from || $to) {
     echo '<tr>';
     echo '<td class="text-center">' . ($from ? $from : '') . '</td>';
@@ -152,7 +154,7 @@ foreach ($transactions as $t) {
     // Balance Qty
     echo '<td class="text-center">' . $t['balance'] . '</td>';
     
-    // Amount
+    // Amount (based on movement)
     echo '<td class="text-right">' . number_format($moveAmount, 2) . '</td>';
     
     // Remarks

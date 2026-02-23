@@ -307,7 +307,10 @@ document.addEventListener('DOMContentLoaded', function () {
                         school: card.getAttribute('data-school'),
                         lowT: card.getAttribute('data-low-threshold'),
                         critT: card.getAttribute('data-critical-threshold'),
-                        img: card.getAttribute('data-image')
+                        img: card.getAttribute('data-image'),
+                        prevMonth: card.getAttribute('data-previous-month'),
+                        addStock: card.getAttribute('data-add-stock'),
+                        issuance: card.getAttribute('data-issuance')
                     };
 
                     // Populate Fields
@@ -321,6 +324,16 @@ document.addEventListener('DOMContentLoaded', function () {
                     document.getElementById('edit-status').value = data.status || 'Available';
                     if (document.getElementById('edit-school')) {
                         document.getElementById('edit-school').value = data.school || '';
+                    }
+
+                    if (document.getElementById('edit-previous-month')) {
+                        document.getElementById('edit-previous-month').value = data.prevMonth || '0';
+                    }
+                    if (document.getElementById('edit-add-stock')) {
+                        document.getElementById('edit-add-stock').value = data.addStock || '0';
+                    }
+                    if (document.getElementById('edit-issuance')) {
+                        document.getElementById('edit-issuance').value = data.issuance || '0';
                     }
 
 
@@ -565,7 +578,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     // Load function
                     function loadStockCardHistory(supplyId, fromDate = null, toDate = null) {
-                        if (scBody) scBody.innerHTML = '<tr><td colspan="7" class="text-center">Loading transactions...</td></tr>';
+                        const isSemiExpendable = (card.getAttribute('data-property-classification') || "").toLowerCase().includes('semi-expendable');
+                        const colCount = isSemiExpendable ? 8 : 7;
+
+                        if (scBody) scBody.innerHTML = `<tr><td colspan="${colCount}" class="text-center">Loading transactions...</td></tr>`;
 
                         let url = (basePath || '') + 'api/get_stock_card_history.php?id=' + supplyId;
                         if (fromDate) url += '&from=' + fromDate;
@@ -576,7 +592,6 @@ document.addEventListener('DOMContentLoaded', function () {
                             .then(result => {
                                 if (result.success) {
                                     const data = result.data;
-                                    const isSemiExpendable = (card.getAttribute('data-property-classification') || "").toLowerCase().includes('semi-expendable');
                                     const cardTypeName = isSemiExpendable ? 'Property Card' : 'Stock Card';
                                     const cardTypeIcon = isSemiExpendable ? 'fa-address-card' : 'fa-file-invoice';
 
@@ -589,21 +604,22 @@ document.addEventListener('DOMContentLoaded', function () {
                                     const h2 = scModal.querySelector('h2');
                                     const subtitle = scModal.querySelector('.modal-subtitle');
                                     if (h2) h2.innerHTML = `<i class="fas ${cardTypeIcon}"></i> ${cardTypeName} Preview`;
-                                    if (subtitle) subtitle.textContent = isSemiExpendable ? 'Official Appendix 60 format overview' : 'Official Appendix 58 format overview';
+                                    if (subtitle) subtitle.textContent = isSemiExpendable ? 'Official Appendix 69 format overview' : 'Official Appendix 58 format overview';
 
                                     // Update Table Headers
                                     const headerRow = document.getElementById('sc-header-row');
                                     if (headerRow) {
                                         if (isSemiExpendable) {
-                                            // Property Card Headers (Appendix 69/60 style)
+                                            // Property Card Headers (Appendix 69 style)
                                             headerRow.innerHTML = `
                                                 <th style="padding: 10px; border: 1px solid #e2e8f0; font-size: 0.8rem;">Date</th>
                                                 <th style="padding: 10px; border: 1px solid #e2e8f0; font-size: 0.8rem;">Reference</th>
                                                 <th style="padding: 10px; border: 1px solid #e2e8f0; font-size: 0.8rem;">Receipt Qty</th>
-                                                <th style="padding: 10px; border: 1px solid #e2e8f0; font-size: 0.8rem;">Transfer/Disposal</th>
-                                                <th style="padding: 10px; border: 1px solid #e2e8f0; font-size: 0.8rem;">Issue To (Office/Person)</th>
+                                                <th style="padding: 10px; border: 1px solid #e2e8f0; font-size: 0.8rem;">Issue Qty</th>
+                                                <th style="padding: 10px; border: 1px solid #e2e8f0; font-size: 0.8rem;">Office/Officer</th>
                                                 <th style="padding: 10px; border: 1px solid #e2e8f0; font-size: 0.8rem;">Balance</th>
-                                                <th style="padding: 10px; border: 1px solid #e2e8f0; font-size: 0.8rem;">Encoder</th>
+                                                <th style="padding: 10px; border: 1px solid #e2e8f0; font-size: 0.8rem;">Amount</th>
+                                                <th style="padding: 10px; border: 1px solid #e2e8f0; font-size: 0.8rem;">Remarks</th>
                                             `;
                                         } else {
                                             // Stock Card Headers (Appendix 58 style)
@@ -621,9 +637,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
                                     // Update download button
                                     if (scDownloadBtn) {
-                                        scDownloadBtn.innerHTML = `<i class="fas fa-download"></i> Download Official ${cardTypeName} (Excel)`;
-                                        const exportApi = isSemiExpendable ? 'export_property_card_excel.php' : 'export_stock_card_excel.php';
                                         scDownloadBtn.onclick = () => {
+                                            const exportApi = isSemiExpendable ? 'export_property_card_excel.php' : 'export_stock_card_excel.php';
                                             let exportUrl = (basePath || '') + 'api/' + exportApi + '?id=' + supplyId;
                                             if (fromDate) exportUrl += '&from=' + fromDate;
                                             if (toDate) exportUrl += '&to=' + toDate;
@@ -633,29 +648,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
                                     let h = '';
                                     const transactions = data.transactions || [];
-                                    const beginningBalance = data.beginning_balance || 0;
+                                    const unitCost = parseFloat(data.supply.unit_cost) || 0;
 
                                     if (transactions.length === 0 && !fromDate && !toDate) {
-                                        h = '';
+                                        h = `<tr><td colspan="${colCount}" class="text-center">No transactions found</td></tr>`;
                                     } else {
                                         transactions.forEach(t => {
                                             const received = parseInt(t.received) || 0;
                                             const issued = parseInt(t.issued) || 0;
-                                            // Format date based on card type to match Excel exports
-                                            let dateFmt = 'N/A';
-                                            if (t.date) {
-                                                const d = new Date(t.date);
-                                                if (isSemiExpendable) {
-                                                    // MM.DD.YY for Property Card
-                                                    const m = String(d.getMonth() + 1).padStart(2, '0');
-                                                    const day = String(d.getDate()).padStart(2, '0');
-                                                    const y = String(d.getFullYear()).slice(-2);
-                                                    dateFmt = `${m}.${day}.${y}`;
-                                                } else {
-                                                    // YYYY-MM-DD for Stock Card
-                                                    dateFmt = t.date.split(' ')[0];
-                                                }
-                                            }
+                                            const dateFmt = t.date ? (isSemiExpendable ? dateToMDY(t.date) : t.date.split(' ')[0]) : 'N/A';
                                             const reference = t.reference || (received > 0 ? 'Stock Receipt' : 'Adjustment');
 
                                             let deptOffice = '-';
@@ -663,30 +664,52 @@ document.addEventListener('DOMContentLoaded', function () {
                                                 deptOffice = (t.first_name || t.last_name)
                                                     ? `${t.first_name || ''} ${t.last_name || ''}`.trim()
                                                     : (t.department_name || '-');
+
+                                                const amount = (received > 0 ? received : issued) * unitCost;
+
+                                                h += `<tr>
+                                                    <td class="text-center">${dateFmt}</td>
+                                                    <td class="text-center">${reference}</td>
+                                                    <td class="text-center">${received > 0 ? received : ''}</td>
+                                                    <td class="text-center">${issued > 0 ? issued : ''}</td>
+                                                    <td class="text-center">${deptOffice}</td>
+                                                    <td class="text-center">${t.balance}</td>
+                                                    <td class="text-right">₱${amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                                    <td class="text-center">${t.remarks || '-'}</td>
+                                                </tr>`;
                                             } else {
                                                 deptOffice = t.department_name || '-';
+                                                h += `<tr>
+                                                    <td class="text-center">${dateFmt}</td>
+                                                    <td class="text-center">${reference}</td>
+                                                    <td class="text-center">${received > 0 ? received : ''}</td>
+                                                    <td class="text-center">${issued > 0 ? issued : ''}</td>
+                                                    <td class="text-center">${deptOffice}</td>
+                                                    <td class="text-center">${t.balance}</td>
+                                                    <td class="text-center">${t.encoder_name || (t.type === 'Issuance' ? 'Requisition' : 'System')}</td>
+                                                </tr>`;
                                             }
-
-                                            h += `<tr>
-                                                <td class="text-center">${dateFmt}</td>
-                                                <td class="text-center">${reference}</td>
-                                                <td class="text-center">${received > 0 ? received : ''}</td>
-                                                <td class="text-center">${issued > 0 ? issued : ''}</td>
-                                                <td class="text-center">${deptOffice}</td>
-                                                <td class="text-center">${t.balance}</td>
-                                                <td class="text-center">${t.encoder_name || (t.type === 'Issuance' ? 'Requisition' : 'System')}</td>
-                                            </tr>`;
                                         });
                                     }
                                     if (scBody) scBody.innerHTML = h;
                                 } else {
-                                    if (scBody) scBody.innerHTML = `<tr><td colspan="7" class="text-center" style="color:red;">${result.message}</td></tr>`;
+                                    if (scBody) scBody.innerHTML = `<tr><td colspan="${colCount}" class="text-center" style="color:red;">${result.message}</td></tr>`;
                                 }
                             })
                             .catch(error => {
                                 console.error('Stock Card Fetch Error:', error);
-                                if (scBody) scBody.innerHTML = `<tr><td colspan="7" class="text-center" style="color:red;">Error loading history</td></tr>`;
+                                if (scBody) scBody.innerHTML = `<tr><td colspan="${colCount}" class="text-center" style="color:red;">Error loading history</td></tr>`;
                             });
+                    }
+
+                    // Helper for MDY format
+                    function dateToMDY(dateStr) {
+                        const d = new Date(dateStr);
+                        if (isNaN(d.getTime())) return dateStr;
+                        const m = String(d.getMonth() + 1).padStart(2, '0');
+                        const day = String(d.getDate()).padStart(2, '0');
+                        const y = String(d.getFullYear()).slice(-2);
+                        return `${m}.${day}.${y}`;
                     }
 
                     // Open and load

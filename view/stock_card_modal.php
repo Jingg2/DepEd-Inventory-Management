@@ -57,9 +57,10 @@
             </div>
         </div>
 
-        <div class="modal-footer" style="padding: 15px 20px; border-top: 1px solid #edf2f7; text-align: right;">
+        <div class="modal-footer" style="padding: 15px 20px; border-top: 1px solid #edf2f7; text-align: right; display: flex; justify-content: flex-end; gap: 10px;">
             <button type="button" class="cancel-btn" onclick="document.getElementById('stock-card-modal').classList.remove('active'); document.getElementById('stock-card-modal').style.display='none';">Close</button>
             <button type="button" id="print-stock-card-btn" class="add-supply-btn" style="background: #2A4D88;"><i class="fas fa-print"></i> Print PDF</button>
+            <button type="button" id="download-sc-btn" class="add-supply-btn" style="background: #217346;"><i class="fas fa-file-excel"></i> Export Official Excel</button>
         </div>
     </div>
 </div>

@@ -1,14 +1,9 @@
 <?php
 // filepath: c:\xampp\htdocs\OJT DEVELOPMENT\Inventory_System\api\export_supply_excel.php
 require_once __DIR__ . '/../model/supplyModel.php';
-require_once __DIR__ . '/../model/snapshotModel.php';
-require_once __DIR__ . '/../db/database.php';
 
 // Parameters
 $selectedMonth = $_GET['month'] ?? date('Y-m');
-$startDate = $_GET['start_date'] ?? null;
-$endDate = $_GET['end_date'] ?? null;
-$isSnapshot = false;
 $supplies = [];
 
 // Filter out specific high-value categories
@@ -18,44 +13,20 @@ $excludedCategories = [
     'OFFICE FUNITURES AND FIXTURED', 'MEDICAL EQUIPMENT', 'MOTOR SERVICE VEHICLE'
 ];
 
-// Data Loading
-$snapshotModel = new SnapshotModel();
-if (empty($startDate) && empty($endDate) && $selectedMonth && preg_match('/^\d{4}-\d{2}$/', $selectedMonth)) {
-    if ($snapshotModel->snapshotExists($selectedMonth)) {
-        $supplies = $snapshotModel->getSnapshotData($selectedMonth);
-        $isSnapshot = true;
-    }
-}
+// Load supply data — the database IS the source of truth
+$model = new SupplyModel();
+$supplies = $model->getAllSupplies();
 
-$db = (new Database())->getConnection();
-
-// 1. Get deliveries/acquisitions
-$acqSql = "SELECT supply_id, SUM(quantity_change) as total_acq FROM supply_history WHERE type IN ('Receipt', 'Adjustment', 'Correction') AND quantity_change > 0 AND created_at LIKE ? GROUP BY supply_id";
-$acqStmt = $db->prepare($acqSql);
-$acqStmt->execute([$selectedMonth . '%']);
-$acquisitions = $acqStmt->fetchAll(PDO::FETCH_KEY_PAIR);
-
-// 2. Get issuances
-$issSql = "SELECT ri.supply_id, SUM(ri.issued_quantity) as total_iss FROM request_item ri JOIN requisition r ON ri.requisition_id = r.requisition_id WHERE r.status = 'Approved' AND ri.issued_quantity > 0 AND r.approved_date LIKE ? GROUP BY ri.supply_id";
-$issStmt = $db->prepare($issSql);
-$issStmt->execute([$selectedMonth . '%']);
-$issuances = $issStmt->fetchAll(PDO::FETCH_KEY_PAIR);
-
-if (!$isSnapshot || empty($supplies)) {
-    $model = new SupplyModel();
-    $supplies = $model->getAllSupplies();
-}
-
-// Map movements to items
+// Map DB columns directly to report columns
+// previous_month = Previous Month Balance
+// add_stock      = Acquisition for the Month
+// issuance       = Issuance for the Month
+// quantity       = Balance for the Month
 foreach ($supplies as &$supply) {
-    $id = $supply['supply_id'];
-    $acq = (float)($acquisitions[$id] ?? 0);
-    $iss = (float)($issuances[$id] ?? 0);
-    $curr = (float)($supply['quantity'] ?? 0);
-    $prev = $curr - $acq + $iss;
-    $supply['acq'] = $acq;
-    $supply['iss'] = $iss;
-    $supply['prev'] = $prev;
+    $supply['prev'] = (float)($supply['previous_month'] ?? 0);
+    $supply['acq']  = (float)($supply['add_stock'] ?? 0);
+    $supply['iss']  = (float)($supply['issuance'] ?? 0);
+    $supply['reported_bal'] = (float)($supply['quantity'] ?? 0);
 }
 
 // Filter Categories
@@ -150,7 +121,7 @@ foreach ($groupedSupplies as $cat => $items) {
         $prev = (float)$item['prev'];
         $acq = (float)$item['acq'];
         $iss = (float)$item['iss'];
-        $bal = (float)$item['quantity'];
+        $bal = (float)$item['reported_bal'];
         $cost = (float)$item['unit_cost'];
         $total = $bal * $cost;
         $grandTotal += $total;
