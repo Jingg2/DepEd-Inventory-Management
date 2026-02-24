@@ -143,8 +143,16 @@ class EmployeeModel {
         try {
             $this->conn->beginTransaction();
 
-            // 1. Delete associated request_items first (these are linked via requisition)
-            // We find all requisition IDs for this employee
+            // 1. Nullify references in other tables (avoid constraint violations)
+            $nullApprovedSql = "UPDATE requisition SET approved_by = NULL WHERE approved_by = ?";
+            $nullApprovedStmt = $this->conn->prepare($nullApprovedSql);
+            $nullApprovedStmt->execute([$id]);
+
+            $nullUpdateSql = "UPDATE supply SET updated_by = NULL WHERE updated_by = ?";
+            $nullUpdateStmt = $this->conn->prepare($nullUpdateSql);
+            $nullUpdateStmt->execute([$id]);
+
+            // 2. Delete associated request_items and requisitions (where employee is the requester)
             $getReqIdsSql = "SELECT requisition_id FROM requisition WHERE employee_id = ?";
             $getReqIdsStmt = $this->conn->prepare($getReqIdsSql);
             $getReqIdsStmt->execute([$id]);
@@ -153,12 +161,12 @@ class EmployeeModel {
             if (!empty($reqIds)) {
                 $placeholders = implode(',', array_fill(0, count($reqIds), '?'));
                 
-                // 1a. Delete from request_item
+                // 2a. Delete from request_item
                 $delItemsSql = "DELETE FROM request_item WHERE requisition_id IN ($placeholders)";
                 $delItemsStmt = $this->conn->prepare($delItemsSql);
                 $delItemsStmt->execute($reqIds);
 
-                // 2. Delete from requisition
+                // 2b. Delete from requisition
                 $delReqsSql = "DELETE FROM requisition WHERE employee_id = ?";
                 $delReqsStmt = $this->conn->prepare($delReqsSql);
                 $delReqsStmt->execute([$id]);
@@ -169,10 +177,17 @@ class EmployeeModel {
             $delWasteStmt = $this->conn->prepare($delWasteSql);
             $delWasteStmt->execute([$id]);
 
-            // 4. Finally delete the employee record
+            // 4. Finally delete the employee record and check row count
             $sql = "DELETE FROM employee WHERE employee_id = ?";
             $stmt = $this->conn->prepare($sql);
             $result = $stmt->execute([$id]);
+            
+            // If Execute succeeded but rowCount is 0, then the employee ID didn't exist
+            if ($result && $stmt->rowCount() === 0) {
+                $this->lastError = "Employee record not found or already deleted.";
+                $this->conn->rollBack();
+                return false;
+            }
 
             $this->conn->commit();
             return $result;
