@@ -49,6 +49,15 @@ $root = rtrim($scriptDir, '/') . '/';
             }
         })();
     </script>
+    <style>
+        .header h1 {
+            color: var(--navy-900) !important;
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            margin: 0;
+        }
+    </style>
 </head>
 <body>
     <div class="sidebar">
@@ -98,7 +107,7 @@ $root = rtrim($scriptDir, '/') . '/';
         }
         ?>
         <div class="header">
-            <h1>Dashboard</h1>
+            <h1 style="color: var(--navy-900); font-weight: 800;"><i class="fas fa-tachometer-alt" style="color: var(--primary-emerald); margin-right: 12px;"></i> Dashboard</h1>
             <div style="display: flex; align-items: center; gap: 15px;">
                 <?php include_once __DIR__ . '/includes/head_notification.php'; ?>
                 <button class="sidebar-toggle"><i class="fas fa-bars"></i></button>
@@ -283,13 +292,40 @@ $root = rtrim($scriptDir, '/') . '/';
                 
                 const data = result.data;
                 
-                // Render all charts
+                // --- Helper: Create Gradients ---
+                const ctx = (id) => document.getElementById(id).getContext('2d');
+                
+                const createGradient = (ctx, color1, color2) => {
+                    const gradient = ctx.createLinearGradient(0, 0, 400, 0);
+                    gradient.addColorStop(0, color1);
+                    gradient.addColorStop(1, color2);
+                    return gradient;
+                };
+
+                const createVerticalGradient = (ctx, color1, color2, height = 300) => {
+                    const gradient = ctx.createLinearGradient(0, 0, 0, height);
+                    gradient.addColorStop(0, color1);
+                    gradient.addColorStop(1, color2);
+                    return gradient;
+                };
+
+                // Vibrant Palette definitions
+                const palette = {
+                    emerald: ['#10b981', '#059669'],
+                    indigo: ['#6366f1', '#4f46e5'],
+                    rose: ['#fb7185', '#e11d48'],
+                    amber: ['#fbbf24', '#d97706'],
+                    blue: ['#38bdf8', '#0284c7'],
+                    violet: ['#a78bfa', '#7c3aed'],
+                    teal: ['#2dd4bf', '#0d9488']
+                };
+
+                // --- 1. Stock Levels Analysis ---
                 if(data.stockLevels && data.stockLevels.length > 0) {
                     const canvas = document.getElementById('stockLevelsChart');
-                    const chartWrapper = canvas.parentElement;
-                    // Dynamic height: 40px per item for better spacing
+                    const ctxt = canvas.getContext('2d');
                     const height = Math.max(600, data.stockLevels.length * 40);
-                    chartWrapper.style.height = height + 'px';
+                    canvas.parentElement.style.height = height + 'px';
                     canvas.height = height;
                     
                     new Chart(canvas, {
@@ -300,13 +336,14 @@ $root = rtrim($scriptDir, '/') . '/';
                                 label: 'Quantity',
                                 data: data.stockLevels.map(i => i.qty),
                                 backgroundColor: data.stockLevels.map(i => {
-                                    if(i.urgency === 'Out of Stock') return '#ef5350';
-                                    if(i.urgency === 'Critical') return '#ff9800';
-                                    if(i.urgency === 'Caution') return '#ffc107';
-                                    return '#10b981';
+                                    if(i.urgency === 'Out of Stock') return createGradient(ctxt, '#fecaca', '#ef4444');
+                                    if(i.urgency === 'Critical') return createGradient(ctxt, '#fde68a', '#f59e0b');
+                                    if(i.urgency === 'Caution') return createGradient(ctxt, '#a7f3d0', '#10b981');
+                                    return createGradient(ctxt, '#34d399', '#059669');
                                 }),
-                                borderWidth: 0,
-                                borderRadius: 6
+                                borderRadius: 8,
+                                borderSkipped: false,
+                                barThickness: 24
                             }]
                         },
                         options: {
@@ -316,28 +353,32 @@ $root = rtrim($scriptDir, '/') . '/';
                             plugins: {
                                 legend: { display: false },
                                 tooltip: {
-                                    backgroundColor: '#1f2937',
-                                    padding: 12,
-                                    titleFont: { size: 14, weight: 'bold' },
-                                    bodyFont: { size: 13 }
+                                    backgroundColor: 'rgba(17, 24, 39, 0.95)',
+                                    padding: 14,
+                                    cornerRadius: 10,
+                                    titleFont: { size: 14, weight: 'bold', family: 'Outfit' },
+                                    bodyFont: { size: 13, family: 'Inter' },
+                                    boxPadding: 6
                                 }
                             },
                             scales: {
                                 x: {
                                     beginAtZero: true,
-                                    grid: { color: '#e5e7eb' },
-                                    ticks: { font: { size: 12 } }
+                                    grid: { color: 'rgba(0,0,0,0.05)', drawBorder: false },
+                                    ticks: { font: { family: 'Inter', size: 12 }, color: '#64748b' }
                                 },
                                 y: {
                                     grid: { display: false },
-                                    ticks: { font: { size: 13, weight: '500' } }
+                                    ticks: { font: { family: 'Outfit', size: 13, weight: '600' }, color: '#1e293b' }
                                 }
                             }
                         }
                     });
                 }
                 
+                // --- 2. Stock Distribution ---
                 if(data.categoryDistribution) {
+                    const ctxt = ctx('distributionChart');
                     new Chart(document.getElementById('distributionChart'), {
                         type: 'doughnut',
                         data: {
@@ -345,17 +386,15 @@ $root = rtrim($scriptDir, '/') . '/';
                             datasets: [{
                                 data: Object.values(data.categoryDistribution),
                                 backgroundColor: [
-                                    '#064e3b', // Forest Green
-                                    '#2A4D88', // Navy Blue
-                                    '#059669', // Emerald Green
-                                    '#1e3a6e', // Dark Navy
-                                    '#34d399', // Light Emerald
-                                    '#047857', // Medium Green
-                                    '#6b7280', // Gray
-                                    '#d1d5db'  // Light Gray
+                                    '#10b981', '#6366f1', '#f43f5e', '#f59e0b', '#0ea5e9', '#8b5cf6', '#14b8a6', '#64748b'
                                 ],
-                                borderWidth: 0,
-                                hoverOffset: 4
+                                hoverBackgroundColor: [
+                                    '#059669', '#4f46e5', '#e11d48', '#d97706', '#0284c7', '#7c3aed', '#0d9488', '#475569'
+                                ],
+                                borderWidth: 4,
+                                borderColor: '#ffffff',
+                                borderRadius: 10,
+                                spacing: 5
                             }]
                         },
                         options: {
@@ -366,38 +405,40 @@ $root = rtrim($scriptDir, '/') . '/';
                                     position: 'right',
                                     labels: {
                                         usePointStyle: true,
-                                        pointStyle: 'circle',
+                                        pointStyle: 'rectRounded',
                                         padding: 20,
-                                        font: { size: 12 }
+                                        font: { size: 12, family: 'Outfit', weight: '600' },
+                                        color: '#334155'
                                     }
                                 },
                                 tooltip: {
-                                    backgroundColor: '#1c2722',
+                                    backgroundColor: 'rgba(17, 24, 39, 0.95)',
                                     padding: 12,
-                                    titleFont: { size: 14, weight: 'bold' },
+                                    cornerRadius: 10,
                                     callbacks: {
                                         label: function(context) {
-                                            const value = context.parsed;
                                             const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                            const percentage = ((value / total) * 100).toFixed(1);
-                                            return ` ${context.label}: ${value} (${percentage}%)`;
+                                            const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                            return ` ${context.label}: ${context.parsed} (${percentage}%)`;
                                         }
                                     }
                                 }
                             },
-                            cutout: '60%'
+                            cutout: '65%'
                         }
                     });
                 }
                 
+                // --- 3. Inventory Value Analysis ---
                 if(data.inventoryValue) {
                     const canvas = document.getElementById('valueChart');
-                    const chartWrapper = canvas.parentElement;
+                    const ctxt = canvas.getContext('2d');
                     const itemsCount = Object.keys(data.inventoryValue).length;
-                    // Dynamic height: 35px per category
                     const height = Math.max(300, itemsCount * 35);
-                    chartWrapper.style.height = height + 'px';
+                    canvas.parentElement.style.height = height + 'px';
                     canvas.height = height;
+                    
+                    const valueGradient = createGradient(ctxt, '#6ee7b7', '#059669');
 
                     new Chart(canvas, {
                         type: 'bar',
@@ -406,9 +447,9 @@ $root = rtrim($scriptDir, '/') . '/';
                             datasets: [{
                                 label: 'Value (₱)',
                                 data: Object.values(data.inventoryValue),
-                                backgroundColor: 'var(--primary-emerald)',
-                                borderRadius: 4,
-                                barThickness: 20
+                                backgroundColor: valueGradient,
+                                borderRadius: 6,
+                                barThickness: 18
                             }]
                         },
                         options: {
@@ -418,7 +459,7 @@ $root = rtrim($scriptDir, '/') . '/';
                             plugins: {
                                 legend: { display: false },
                                 tooltip: {
-                                    backgroundColor: '#1c2722',
+                                    backgroundColor: 'rgba(17, 24, 39, 0.95)',
                                     callbacks: {
                                         label: function(c) {
                                             return ' ₱' + c.parsed.x.toLocaleString(undefined, {minimumFractionDigits: 2});
@@ -428,26 +469,30 @@ $root = rtrim($scriptDir, '/') . '/';
                             },
                             scales: {
                                 x: {
-                                    grid: { color: '#f3f4f6' },
+                                    grid: { color: 'rgba(0,0,0,0.03)' },
                                     ticks: {
-                                        callback: function(value) { return '₱' + value.toLocaleString(); }
+                                        callback: function(value) { return '₱' + (value >= 1000 ? (value/1000).toFixed(1) + 'k' : value); },
+                                        font: { family: 'Inter', size: 11 }
                                     }
                                 },
                                 y: {
-                                    grid: { display: false }
+                                    grid: { display: false },
+                                    ticks: { font: { family: 'Outfit', size: 12, weight: '500' } }
                                 }
                             }
                         }
                     });
                 }
                 
+                // --- 4. Top Employee Requisitions ---
                 if(data.employeeRequisitions && data.employeeRequisitions.length > 0) {
                     const canvas = document.getElementById('trendChart');
-                    const chartWrapper = canvas.parentElement;
-                    // Dynamic height: 35px per employee
-                    const height = Math.max(400, data.employeeRequisitions.length * 35);
-                    chartWrapper.style.height = height + 'px';
+                    const ctxt = canvas.getContext('2d');
+                    const height = Math.max(400, data.employeeRequisitions.length * 40);
+                    canvas.parentElement.style.height = height + 'px';
                     canvas.height = height;
+                    
+                    const trendGradient = createGradient(ctxt, '#818cf8', '#4f46e5');
 
                     new Chart(canvas, {
                         type: 'bar',
@@ -456,8 +501,8 @@ $root = rtrim($scriptDir, '/') . '/';
                             datasets: [{
                                 label: 'Requisitions',
                                 data: data.employeeRequisitions.map(e => e.requisition_count),
-                                backgroundColor: 'var(--secondary-emerald)',
-                                borderRadius: 4,
+                                backgroundColor: trendGradient,
+                                borderRadius: 6,
                                 barThickness: 20
                             }]
                         },
@@ -467,27 +512,29 @@ $root = rtrim($scriptDir, '/') . '/';
                             maintainAspectRatio: false,
                             plugins: {
                                 legend: { display: false },
-                                tooltip: { backgroundColor: '#1c2722' }
+                                tooltip: { backgroundColor: 'rgba(17, 24, 39, 0.95)' }
                             },
                             scales: {
                                 x: {
-                                    grid: { color: '#f3f4f6' },
-                                    beginAtZero: true
+                                    grid: { color: 'rgba(0,0,0,0.03)' },
+                                    beginAtZero: true,
+                                    ticks: { font: { family: 'Inter', size: 11 } }
                                 },
                                 y: {
-                                    grid: { display: false }
+                                    grid: { display: false },
+                                    ticks: { font: { family: 'Outfit', size: 12, weight: '600' } }
                                 }
                             }
                         }
                     });
                 }
                 
+                // --- 5. Turnover Analysis ---
                 if(data.turnover && data.turnover.length > 0) {
                     const canvas = document.getElementById('turnoverChart');
-                    const chartWrapper = canvas.parentElement;
-                    // Dynamic height: 35px per item
-                    const height = Math.max(500, data.turnover.length * 35);
-                    chartWrapper.style.height = height + 'px';
+                    const ctxt = canvas.getContext('2d');
+                    const height = Math.max(500, data.turnover.length * 45);
+                    canvas.parentElement.style.height = height + 'px';
                     canvas.height = height;
                     
                     new Chart(canvas, {
@@ -498,16 +545,16 @@ $root = rtrim($scriptDir, '/') . '/';
                                 {
                                     label: 'Issued',
                                     data: data.turnover.map(t => t.issued),
-                                    backgroundColor: 'var(--primary-emerald)',
-                                    borderWidth: 0,
-                                    borderRadius: 5
+                                    backgroundColor: createGradient(ctxt, '#34d399', '#059669'),
+                                    borderRadius: 6,
+                                    barThickness: 14
                                 },
                                 {
                                     label: 'In Stock',
                                     data: data.turnover.map(t => t.stock),
-                                    backgroundColor: 'var(--accent-emerald)',
-                                    borderWidth: 0,
-                                    borderRadius: 5
+                                    backgroundColor: createGradient(ctxt, '#94a3b8', '#475569'),
+                                    borderRadius: 6,
+                                    barThickness: 14
                                 }
                             ]
                         },
@@ -520,36 +567,29 @@ $root = rtrim($scriptDir, '/') . '/';
                                     display: true,
                                     position: 'top',
                                     labels: {
-                                        font: { size: 13, weight: '500' },
+                                        font: { size: 13, weight: '600', family: 'Outfit' },
                                         padding: 15,
                                         usePointStyle: true,
                                         pointStyle: 'circle'
                                     }
                                 },
-                                tooltip: {
-                                    backgroundColor: '#1c2722',
-                                    padding: 12,
-                                    titleFont: { size: 14, weight: 'bold' },
-                                    bodyFont: { size: 13 }
-                                }
+                                tooltip: { backgroundColor: 'rgba(17, 24, 39, 0.95)' }
                             },
                             scales: {
                                 x: {
-                                    stacked: false,
                                     beginAtZero: true,
-                                    grid: { color: '#e5e7eb' },
-                                    ticks: { font: { size: 12 } }
+                                    grid: { color: 'rgba(0,0,0,0.05)' }
                                 },
                                 y: {
-                                    stacked: false,
                                     grid: { display: false },
-                                    ticks: { font: { size: 12, weight: '500' } }
+                                    ticks: { font: { family: 'Outfit', size: 12, weight: '500' } }
                                 }
                             }
                         }
                     });
                 }
                 
+                // --- 6. Alert Urgency ---
                 if(data.lowStockUrgency) {
                     new Chart(document.getElementById('urgencyChart'), {
                         type: 'polarArea',
@@ -562,11 +602,12 @@ $root = rtrim($scriptDir, '/') . '/';
                                     data.lowStockUrgency.caution || 0
                                 ],
                                 backgroundColor: [
-                                    'rgba(220, 38, 38, 0.8)',   // Red-600
-                                    'rgba(217, 119, 6, 0.8)',   // Amber-600
-                                    'rgba(5, 150, 105, 0.8)'   // Original Emerald
+                                    'rgba(244, 63, 94, 0.85)',   // Rose-500
+                                    'rgba(245, 158, 11, 0.85)',  // Amber-500
+                                    'rgba(16, 185, 129, 0.85)'   // Emerald-500
                                 ],
-                                borderWidth: 0
+                                borderWidth: 2,
+                                borderColor: '#ffffff'
                             }]
                         },
                         options: {
@@ -575,13 +616,18 @@ $root = rtrim($scriptDir, '/') . '/';
                             plugins: {
                                 legend: {
                                     position: 'bottom',
-                                    labels: { usePointStyle: true, padding: 20 }
+                                    labels: {
+                                        usePointStyle: true,
+                                        padding: 20,
+                                        font: { family: 'Outfit', weight: '600' }
+                                    }
                                 }
                             },
                             scales: {
                                 r: {
                                     ticks: { display: false },
-                                    grid: { color: '#e5e7eb' }
+                                    grid: { color: 'rgba(0,0,0,0.05)' },
+                                    angleLines: { color: 'rgba(0,0,0,0.05)' }
                                 }
                             }
                         }

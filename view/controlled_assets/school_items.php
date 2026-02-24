@@ -182,6 +182,13 @@ try {
             color: #64748b;
             font-weight: 500;
         }
+        .header h1 {
+            color: var(--navy-900) !important;
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            margin: 0;
+        }
     </style>
 </head>
 <body>
@@ -200,7 +207,7 @@ try {
     </div>
     <div class="main-content">
         <div class="header">
-            <h1><?php echo htmlspecialchars($schoolName); ?> - Items</h1>
+            <h1 style="color: var(--navy-900); font-weight: 800;"><i class="fas fa-school" style="color: var(--primary-emerald); margin-right: 12px;"></i> <?php echo htmlspecialchars($schoolName); ?> - Items</h1>
             <div style="display: flex; align-items: center; gap: 15px;">
                 <?php include_once __DIR__ . '/../includes/head_notification.php'; ?>
                 <button class="sidebar-toggle"><i class="fas fa-bars"></i></button>

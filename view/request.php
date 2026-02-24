@@ -191,6 +191,14 @@ $urlRoot = str_replace(' ', '%20', $root);
         }
         .details-grid p { margin: 0; font-size: 0.95rem; color: #4a5568; }
         .details-grid p strong { color: #2d3748; min-width: 130px; display: inline-block; }
+        .header h1 {
+            color: var(--navy-900) !important;
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            margin: 0;
+            font-weight: 800;
+        }
     </style>
 </head>
 <body>
@@ -222,32 +230,32 @@ $urlRoot = str_replace(' ', '%20', $root);
     </div>
     <div class="main-content">
         <div class="header">
-            <h1 id="page-title">Request Management</h1>
+            <h1 style="color: var(--navy-900); font-weight: 800;"><i class="fas fa-file-invoice" style="color: var(--primary-emerald); margin-right: 12px;"></i> Request Management</h1>
             <div style="display: flex; align-items: center; gap: 15px;">
                 <?php include_once __DIR__ . '/includes/head_notification.php'; ?>
                 <button class="sidebar-toggle"><i class="fas fa-bars"></i></button>
             </div>
         </div>
         <div class="stats">
-            <div class="stat-card">
-                <i class="fas fa-clock" style="position: absolute; right: -10px; bottom: -10px; font-size: 4rem; opacity: 0.1; color: #f39c12;"></i>
-                <h3>Pending Requests</h3>
-                <p><?php echo $stats['pending'] ?? 0; ?></p>
+            <div class="stat-card" style="position: relative; overflow: hidden;">
+                <i class="fas fa-clock" style="position: absolute; right: -10px; bottom: -10px; font-size: 4rem; opacity: 0.1; color: var(--warning);"></i>
+                <h3 style="color: var(--slate-500); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; font-weight: 700;">Pending Requests</h3>
+                <p style="color: var(--warning); font-size: 2.2rem; font-weight: 800; margin: 0; line-height: 1;"><?php echo $stats['pending'] ?? 0; ?></p>
             </div>
-            <div class="stat-card">
-                <i class="fas fa-check-circle" style="position: absolute; right: -10px; bottom: -10px; font-size: 4rem; opacity: 0.1; color: #2ecc71;"></i>
-                <h3>Approved Requests</h3>
-                <p><?php echo $stats['approved'] ?? 0; ?></p>
+            <div class="stat-card" style="position: relative; overflow: hidden; border-top: 4px solid var(--success);">
+                <i class="fas fa-check-circle" style="position: absolute; right: -10px; bottom: -10px; font-size: 4rem; opacity: 0.1; color: var(--success);"></i>
+                <h3 style="color: var(--slate-500); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; font-weight: 700;">Approved Requests</h3>
+                <p style="color: var(--success); font-size: 2.2rem; font-weight: 800; margin: 0; line-height: 1;"><?php echo $stats['approved'] ?? 0; ?></p>
             </div>
-            <div class="stat-card">
-                <i class="fas fa-times-circle" style="position: absolute; right: -10px; bottom: -10px; font-size: 4rem; opacity: 0.1; color: #e74c3c;"></i>
-                <h3>Rejected Requests</h3>
-                <p><?php echo $stats['rejected'] ?? 0; ?></p>
+            <div class="stat-card" style="position: relative; overflow: hidden; border-top: 4px solid var(--danger);">
+                <i class="fas fa-times-circle" style="position: absolute; right: -10px; bottom: -10px; font-size: 4rem; opacity: 0.1; color: var(--danger);"></i>
+                <h3 style="color: var(--slate-500); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; font-weight: 700;">Rejected Requests</h3>
+                <p style="color: var(--danger); font-size: 2.2rem; font-weight: 800; margin: 0; line-height: 1;"><?php echo $stats['rejected'] ?? 0; ?></p>
             </div>
-            <div class="stat-card">
+            <div class="stat-card" style="position: relative; overflow: hidden; border-top: 4px solid var(--primary-emerald);">
                 <i class="fas fa-file-invoice" style="position: absolute; right: -10px; bottom: -10px; font-size: 4rem; opacity: 0.1; color: var(--primary-emerald);"></i>
-                <h3>Total Requests</h3>
-                <p><?php echo $stats['total'] ?? 0; ?></p>
+                <h3 style="color: var(--slate-500); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; font-weight: 700;">Total Requests</h3>
+                <p style="color: var(--navy-900); font-size: 2.2rem; font-weight: 800; margin: 0; line-height: 1;"><?php echo $stats['total'] ?? 0; ?></p>
             </div>
         </div>
 
@@ -264,28 +272,28 @@ $urlRoot = str_replace(' ', '%20', $root);
         ?>
 
         <!-- Summary Actions -->
-        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-bottom: 20px;">
-            <a href="<?php echo $urlRoot; ?>api/export_rsmi_excel.php" id="btnExportRSMI" class="btn-primary" title="Download Summary RSMI" style="padding: 12px 24px; font-size: 0.9rem; background: linear-gradient(135deg, #217346 0%, #1a5c38 100%); box-shadow: 0 4px 15px rgba(33, 115, 70, 0.3); border-radius: 10px; font-weight: 700; display: inline-flex; align-items: center; gap: 10px;">
-                <i class="fas fa-file-excel" style="font-size: 1.2rem;"></i> RSMI SUMMARY REPORT
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-bottom: 25px;">
+            <a href="<?php echo $urlRoot; ?>api/export_rsmi_excel.php" id="btnExportRSMI" class="btn-primary" title="Download Summary RSMI" style="padding: 10px 24px; border-radius: 8px; font-weight: 600; display: flex; align-items: center; gap: 8px; height: 45px; background: #217346;">
+                <i class="fas fa-file-excel"></i> RSMI Summary Report
             </a>
-            <a href="<?php echo $urlRoot; ?>api/export_ris_by_office.php" id="btnExportRISOffice" class="btn-primary" title="Download RIS Categorized by Office" style="padding: 12px 24px; font-size: 0.9rem; background: linear-gradient(135deg, #764ba2 0%, #5d3a8a 100%); box-shadow: 0 4px 15px rgba(118, 75, 162, 0.3); border-radius: 10px; font-weight: 700; display: inline-flex; align-items: center; gap: 10px;">
-                <i class="fas fa-building" style="font-size: 1.2rem;"></i> RIS BY OFFICE REPORT
+            <a href="<?php echo $urlRoot; ?>api/export_ris_by_office.php" id="btnExportRISOffice" class="btn-primary" title="Download RIS Categorized by Office" style="padding: 10px 24px; border-radius: 8px; font-weight: 600; display: flex; align-items: center; gap: 8px; height: 45px; background: var(--gradient-navy);">
+                <i class="fas fa-building"></i> RIS by Office Report
             </a>
         </div>
 
         <!-- Filter Section -->
-        <div class="search-filter-container">
+        <div class="search-filter-container" style="background: rgba(255, 255, 255, 0.5); padding: 20px; border-radius: 12px; border: 1px solid rgba(0,0,0,0.05); backdrop-filter: blur(5px); margin-bottom: 30px;">
             <div style="display: flex; align-items: center; gap: 10px;">
-                <label for="start_date">From:</label>
-                <input type="date" id="start_date">
+                <label for="start_date" style="color: var(--slate-600); font-weight: 600;">From:</label>
+                <input type="date" id="start_date" style="border-radius: 8px; border: 1px solid rgba(0,0,0,0.1); padding: 8px 12px;">
             </div>
             <div style="display: flex; align-items: center; gap: 10px;">
-                <label for="end_date">To:</label>
-                <input type="date" id="end_date">
+                <label for="end_date" style="color: var(--slate-600); font-weight: 600;">To:</label>
+                <input type="date" id="end_date" style="border-radius: 8px; border: 1px solid rgba(0,0,0,0.1); padding: 8px 12px;">
             </div>
             <div style="display: flex; align-items: center; gap: 10px;">
-                <label for="dept_filter">Office:</label>
-                <select id="dept_filter">
+                <label for="dept_filter" style="color: var(--slate-600); font-weight: 600;">Office:</label>
+                <select id="dept_filter" style="border-radius: 8px; border: 1px solid rgba(0,0,0,0.1); padding: 8px 12px;">
                     <option value="">All Offices</option>
                     <?php foreach ($departments as $dept): ?>
                         <option value="<?php echo $dept['department_id']; ?>"><?php echo htmlspecialchars($dept['department_name']); ?></option>
@@ -293,21 +301,22 @@ $urlRoot = str_replace(' ', '%20', $root);
                 </select>
             </div>
             <div style="display: flex; gap: 10px;">
-                <button id="btnApplyFilter" class="btn-primary" style="padding: 10px 20px; font-size: 0.85rem;">
+                <button id="btnApplyFilter" class="btn-primary" style="padding: 10px 20px; border-radius: 8px; font-weight: 600;">
                     <i class="fas fa-filter"></i> Apply
                 </button>
-                <button id="btnResetFilter" class="cancel-btn" style="padding: 10px 15px; font-size: 0.85rem;">
+                <button id="btnResetFilter" class="cancel-btn" style="padding: 10px 15px; border-radius: 8px; font-weight: 600;">
                     Reset
                 </button>
             </div>
         </div>
 
-        <!-- Active Requisitions Section -->
-        <div class="table-section">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="margin: 0;"><i class="fas fa-clock"></i> Active Requisitions</h2>
+        <div class="table-section" style="background: white; border-radius: 16px; box-shadow: var(--shadow-sm); border: 1px solid rgba(0,0,0,0.05); padding: 25px; margin-bottom: 30px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                <h2 style="margin: 0; font-size: 1.3rem; font-weight: 800; color: var(--navy-900); display: flex; align-items: center; gap: 12px;">
+                    <i class="fas fa-clock" style="color: var(--primary-emerald);"></i> Active Requisitions
+                </h2>
                 <div style="display: flex; gap: 10px; align-items: center;">
-                    <span class="badge" style="background: #e1f5fe; color: #0288d1;">
+                    <span class="badge" style="background: var(--bg-emerald-light); color: var(--primary-emerald); padding: 6px 16px; border-radius: 20px; font-weight: 700;">
                         <?php echo count($activeRequisitions); ?> Pending/Processing
                     </span>
                 </div>
@@ -390,15 +399,16 @@ $urlRoot = str_replace(' ', '%20', $root);
             </div>
         </div>
 
-        <!-- Requisition History Section -->
-        <div class="table-section">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="margin: 0;"><i class="fas fa-history"></i> Requisition History (Approved)</h2>
+        <div class="table-section" style="background: white; border-radius: 16px; box-shadow: var(--shadow-sm); border: 1px solid rgba(0,0,0,0.05); padding: 25px; margin-bottom: 30px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                <h2 style="margin: 0; font-size: 1.3rem; font-weight: 800; color: var(--navy-900); display: flex; align-items: center; gap: 12px;">
+                    <i class="fas fa-history" style="color: var(--primary-emerald);"></i> Requisition History (Approved)
+                </h2>
                 <div style="display: flex; gap: 10px; align-items: center;">
-                    <button id="btnViewRejected" class="btn-primary" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3); padding: 8px 15px; font-size: 0.8rem;">
+                    <button id="btnViewRejected" class="btn-primary" style="background: var(--danger); border-radius: 8px; padding: 8px 16px; font-weight: 600; font-size: 0.85rem;">
                         <i class="fas fa-ban"></i> Rejected (<?php echo count($rejectedRequests); ?>)
                     </button>
-                    <span class="badge" style="background: #f1f3f4; color: #666;">
+                    <span class="badge" style="background: var(--slate-100); color: var(--slate-600); padding: 6px 16px; border-radius: 20px; font-weight: 700;">
                         Completed Records
                     </span>
                 </div>
@@ -481,9 +491,9 @@ $urlRoot = str_replace(' ', '%20', $root);
     <!-- View Items Modal (Read Only) -->
     <div id="itemsModal" class="modal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h2><i class="fas fa-list"></i> Requisition Items (<span id="modalRequisitionNo"></span>)</h2>
-                <span class="close-modal">&times;</span>
+            <div class="modal-header" style="background: var(--gradient-primary); padding: 25px 35px; border-radius: 12px 12px 0 0;">
+                <h2 style="color: white; margin:0; font-weight: 800; font-size: 1.5rem;"><i class="fas fa-list"></i> Requisition Items (<span id="modalRequisitionNo"></span>)</h2>
+                <span class="close-modal" style="color: white; opacity: 0.8;">&times;</span>
             </div>
             <div class="modal-body">
                 <!-- Requisition Details Header -->
@@ -534,9 +544,9 @@ $urlRoot = str_replace(' ', '%20', $root);
     <!-- Rejected Records Modal -->
     <div id="rejectedModal" class="modal">
         <div class="modal-content" style="max-width: 1000px;">
-            <div class="modal-header" style="background-color: #e74c3c;">
-                <h2><i class="fas fa-ban"></i> Rejected Requisitions</h2>
-                <span class="close-rejected-modal" style="font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+            <div class="modal-header" style="background: var(--danger); padding: 25px 35px; border-radius: 12px 12px 0 0;">
+                <h2 style="color: white; margin:0; font-weight: 800; font-size: 1.5rem;"><i class="fas fa-ban"></i> Rejected Requisitions</h2>
+                <span class="close-rejected-modal" style="color: white; opacity: 0.8; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
             </div>
             <div class="modal-body">
                 <div class="table-container">
@@ -604,9 +614,9 @@ $urlRoot = str_replace(' ', '%20', $root);
     <!-- Comprehensive Approval Modal -->
     <div id="approvalModal" class="modal">
         <div class="modal-content" style="width: 950px; margin: 2% auto;">
-            <div class="modal-header">
-                <h2><i class="fas fa-clipboard-check"></i> Requisition Approval & Issuance</h2>
-                <span class="close-approval-modal" style="font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+            <div class="modal-header" style="background: var(--gradient-primary); padding: 25px 35px; border-radius: 12px 12px 0 0;">
+                <h2 style="color: white; margin:0; font-weight: 800; font-size: 1.5rem;"><i class="fas fa-clipboard-check"></i> Requisition Approval & Issuance</h2>
+                <span class="close-approval-modal" style="color: white; opacity: 0.8; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
             </div>
             <div class="modal-body">
                 <!-- Request Header Details -->
@@ -673,7 +683,7 @@ $urlRoot = str_replace(' ', '%20', $root);
     <div id="itemDetailModal" class="modal">
         <div class="modal-content supply-modal-content">
             <span class="close-item-detail" style="position: absolute; right: 20px; top: 15px; font-size: 28px; cursor: pointer;">&times;</span>
-            <h2 id="modal-item-title" style="background: var(--gradient-navy); color: white; margin: -24px -24px 20px -24px; padding: 20px; text-align: center; border-radius: 12px 12px 0 0; font-size: 20px;">Item Details</h2>
+            <h2 id="modal-item-title" style="background: var(--gradient-navy); color: white; margin: -24px -24px 20px -24px; padding: 25px 35px; text-align: left; border-radius: 12px 12px 0 0; font-size: 1.5rem; font-weight: 800; display: flex; align-items: center; gap: 12px;">Item Details</h2>
             <img id="modal-item-img" src="" alt="Item Image">
             
             <div class="details-grid">

@@ -190,6 +190,13 @@ $root = rtrim($scriptDir, '/') . '/';
             .help-layout { grid-template-columns: 1fr; }
             .help-nav { position: static; margin-bottom: 20px; }
         }
+        .header h1 {
+            color: var(--navy-900) !important;
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            margin: 0;
+        }
     </style>
 </head>
 <body>
@@ -223,7 +230,7 @@ $root = rtrim($scriptDir, '/') . '/';
         <div class="header">
             <div style="display: flex; align-items: center; gap: 15px;">
                 <a href="settings" class="back-link" style="color: #64748b; text-decoration: none;"><i class="fas fa-arrow-left"></i> Back</a>
-                <h1>Help Center</h1>
+                <h1 style="color: var(--navy-900); font-weight: 800;"><i class="fas fa-question-circle" style="color: var(--primary-emerald); margin-right: 12px;"></i> Help Center</h1>
             </div>
             <div style="display: flex; align-items: center; gap: 15px;">
                 <?php include_once __DIR__ . '/includes/head_notification.php'; ?>

@@ -55,44 +55,14 @@ $root = rtrim($scriptDir, '/') . '/';
             }
         })();
     </script>
-</head>
-</head>
-<body>
-    <div class="sidebar">
-        <div class="logo">
-            <img src="<?php echo $root; ?>images/deped_bogo_logo.png" alt="Logo">
-            <h2>Inventory System</h2>
-        </div>
-        <ul>
-            <li><a href="<?php echo $root; ?>dashboard" class="<?php echo ($currentRoute == '/dashboard') ? 'active' : ''; ?>"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
-            <li><a href="<?php echo $root; ?>inventory" class="<?php echo ($currentRoute == '/inventory') ? 'active' : ''; ?>"><i class="fas fa-box"></i> <span>Supply</span></a></li>
-            <li class="divider"></li>
-            <li>
-                <a href="<?php echo $root; ?>requests" class="<?php echo ($currentRoute == '/requests') ? 'active' : ''; ?>">
-                    <i class="fas fa-file-invoice"></i> <span>Request</span>
-                    <?php if ($pendingCount > 0): ?>
-                        <span class="sidebar-badge"><?php echo $pendingCount; ?></span>
-                    <?php endif; ?>
-                </a>
-            </li>
-            <li class="divider"></li>
-            <li><a href="<?php echo $root; ?>employees" class="<?php echo ($currentRoute == '/employees') ? 'active' : ''; ?>"><i class="fas fa-users"></i> <span>Employee</span></a></li>
-            <li><a href="<?php echo $root; ?>reports" class="<?php echo ($currentRoute == '/reports') ? 'active' : ''; ?>"><i class="fas fa-file-excel"></i> <span>Reports</span></a></li>
-            <li class="divider"></li>
-            <li><a href="<?php echo $root; ?>settings" class="<?php echo ($currentRoute == '/settings') ? 'active' : ''; ?>"><i class="fas fa-cog"></i> <span>Settings</span></a></li>
-            <li class="divider"></li>
-            <li><a href="<?php echo $root; ?>logout" class="logout-link" onclick="showLogoutModal(event, this.href);"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
-        </ul>
-    </div>
-    <div class="main-content">
-        <div class="header">
-            <h1>System Activity Logs</h1>
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <?php include_once __DIR__ . '/includes/head_notification.php'; ?>
-                <button class="sidebar-toggle"><i class="fas fa-bars"></i></button>
-            </div>
-        </div>
     <style>
+        .header h1 {
+            color: var(--navy-900) !important;
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            margin: 0;
+        }
         .log-container {
             max-width: 1200px;
             margin: 0 auto;

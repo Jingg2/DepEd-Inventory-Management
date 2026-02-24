@@ -179,7 +179,7 @@ $root = rtrim($scriptDir, '/') . '/';
         }
 
         .header h1 {
-            color: var(--navy-800) !important;
+            color: var(--navy-900) !important;
             display: block !important;
             visibility: visible !important;
             opacity: 1 !important;
@@ -929,7 +929,7 @@ $root = rtrim($scriptDir, '/') . '/';
     </div>
     <div class="main-content">
         <div class="header">
-            <h1>Supply Inventory</h1>
+            <h1 style="color: var(--navy-900); font-weight: 800;"><i class="fas fa-boxes" style="color: var(--primary-emerald); margin-right: 12px;"></i> Supply Inventory</h1>
             <div style="display: flex; align-items: center; gap: 15px;">
                 <?php include_once __DIR__ . '/includes/head_notification.php'; ?>
                 <button class="sidebar-toggle"><i class="fas fa-bars"></i></button>
