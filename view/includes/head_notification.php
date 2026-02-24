@@ -100,17 +100,17 @@ $totalNotifCount = count($allNotifications);
         cursor: pointer;
         position: relative;
         font-size: 1.5rem;
-        color: #12086F; /* Deep Navy to match Header */
+        color: rgba(255, 255, 255, 0.85);
         transition: color 0.3s ease;
     }
 
     .notification-bell.has-alerts {
-        color: #e74c3c; /* Red color when alerts exist */
-        animation: bellShake 4s infinite; /* Shake every 4 seconds */
+        color: #fbbf24;
+        animation: bellShake 4s infinite;
     }
 
     .notification-bell:hover {
-        color: #10b981; /* Emerald on hover */
+        color: var(--secondary-emerald);
     }
 
     .notification-badge {
@@ -124,7 +124,7 @@ $totalNotifCount = count($allNotifications);
         font-size: 0.7rem;
         font-weight: bold;
         border: 2px solid white;
-        animation: pulseRed 2s infinite; /* Continuous pulse */
+        animation: pulseRed 2s infinite;
         box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
 
@@ -136,7 +136,7 @@ $totalNotifCount = count($allNotifications);
         width: 320px; /* Slightly wider */
         background-color: white;
         border-radius: 12px;
-        box-shadow: 0 15px 35px rgba(2, 44, 34, 0.15); /* Deep Emerald Shadow */
+        box-shadow: var(--shadow-lg);
         z-index: 99999;
         margin-top: 15px; /* More spacing */
         overflow: hidden;
@@ -163,10 +163,10 @@ $totalNotifCount = count($allNotifications);
 
     .notification-header {
         padding: 15px;
-        background: linear-gradient(to right, #f8f9fa, #ffffff);
-        border-bottom: 1px solid #e2e8f0;
+        background: linear-gradient(135deg, #064e3b, #047857);
+        border-bottom: 1px solid rgba(255,255,255,0.1);
         font-weight: bold;
-        color: #12086F;
+        color: #ffffff;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -181,15 +181,37 @@ $totalNotifCount = count($allNotifications);
     }
 
     .notification-item {
-        padding: 15px;
+        padding: 12px 15px;
         border-bottom: 1px solid #f1f3f5;
         transition: background 0.2s;
         cursor: pointer;
         display: flex;
-        align-items: flex-start; /* Align top for better multiline */
-        gap: 12px;
+        flex-direction: column;
+        gap: 6px;
         color: #333;
     }
+
+    .notification-item-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .notification-item-icon {
+        font-size: 1rem;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        flex-shrink: 0;
+    }
+
+    .icon-critical { background: rgba(220,38,38,0.1); color: #dc2626; }
+    .icon-low      { background: rgba(217,119,6,0.1);  color: #d97706; }
+    .icon-out      { background: rgba(55,65,81,0.08);  color: #374151; }
+    .icon-req      { background: rgba(5,150,105,0.1);  color: #059669; }
 
     .notification-item:hover {
         background-color: #f8f9fa;
@@ -200,17 +222,46 @@ $totalNotifCount = count($allNotifications);
     }
 
     .notification-icon {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
         flex-shrink: 0;
-        margin-top: 5px; /* Align with text */
+        margin-top: 2px;
     }
 
-    .alert-critical { background-color: #e74c3c; box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.2); }
-    .alert-low { background-color: #f39c12; box-shadow: 0 0 0 2px rgba(243, 156, 18, 0.2); }
-    .alert-out { background-color: #7f8c8d; box-shadow: 0 0 0 2px rgba(127, 140, 141, 0.2); }
-    .alert-requisition { background-color: #9b59b6; box-shadow: 0 0 0 2px rgba(155, 89, 182, 0.2); }
+    .alert-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .alert-critical {
+        background: linear-gradient(135deg, #dc2626, #991b1b);
+        color: #fff;
+        box-shadow: 0 2px 8px rgba(220, 38, 38, 0.45);
+    }
+
+    .alert-low {
+        background: linear-gradient(135deg, #d97706, #b45309);
+        color: #fff;
+        box-shadow: 0 2px 8px rgba(217, 119, 6, 0.45);
+    }
+
+    .alert-out {
+        background: linear-gradient(135deg, #374151, #1f2937);
+        color: #fff;
+        box-shadow: 0 2px 8px rgba(31, 41, 55, 0.45);
+    }
+
+    .alert-requisition {
+        background: linear-gradient(135deg, #059669, #064e3b);
+        color: #fff;
+        box-shadow: 0 2px 8px rgba(5, 150, 105, 0.4);
+    }
 
     .notification-content h4 {
         margin: 0 0 4px 0;
@@ -253,11 +304,11 @@ $totalNotifCount = count($allNotifications);
         color: #2c3e50;
         padding: 15px 20px;
         border-radius: 12px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        box-shadow: var(--shadow-lg);
         display: flex;
         align-items: center;
         gap: 15px;
-        border-left: 5px solid #9b59b6;
+        border-left: 5px solid var(--primary-emerald);
         cursor: pointer;
         opacity: 0;
         transform: translateX(50px);
@@ -272,8 +323,8 @@ $totalNotifCount = count($allNotifications);
     .toast-icon {
         width: 40px;
         height: 40px;
-        background: #f3e5f5;
-        color: #9b59b6;
+        background: var(--bg-emerald-light);
+        color: var(--primary-emerald);
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -290,7 +341,7 @@ $totalNotifCount = count($allNotifications);
         margin: 0;
         font-size: 0.95rem;
         font-weight: 700;
-        color: #12086F;
+        color: #064e3b;
     }
 
     .toast-content p {
@@ -322,39 +373,63 @@ $totalNotifCount = count($allNotifications);
     <div class="notification-dropdown" id="notification-dropdown">
         <div class="notification-header">
             <span>Notifications</span>
-            <span style="font-size: 0.8rem; font-weight: normal; color: #666;"><?php echo $totalNotifCount; ?> total</span>
+            <span style="font-size: 0.8rem; font-weight: normal; color: rgba(255,255,255,0.7);"><?php echo $totalNotifCount; ?> total</span>
         </div>
         <ul class="notification-list">
             <?php if ($totalNotifCount === 0): ?>
                 <li class="empty-notifications">No new notifications.</li>
             <?php else: ?>
                 <?php foreach ($allNotifications as $notif): 
-                    $dotClass = '';
-                    $icon = '';
+                    $pillClass = '';
+                    $iconClass = '';
+                    $faIcon = '';
+                    $pillLabel = '';
                     $onClick = '';
                     
                     if ($notif['notif_type'] === 'requisition') {
-                        $dotClass = 'alert-requisition';
-                        $icon = '<i class="fas fa-file-invoice"></i>';
-                        $onClick = "handleRequisitionClick(" . $notif['id'] . ")";
+                        $pillClass    = 'alert-pill alert-requisition';
+                        $iconClass    = 'notification-item-icon icon-req';
+                        $faIcon       = 'fas fa-file-invoice';
+                        $pillLabel    = '<i class="fas fa-file-alt"></i> New Request';
+                        $onClick      = "handleRequisitionClick(" . $notif['id'] . ")";
                     } else {
-                        if ($notif['alert_type'] === 'Out of Stock') $dotClass = 'alert-out';
-                        elseif ($notif['alert_type'] === 'Critical') $dotClass = 'alert-critical';
-                        else $dotClass = 'alert-low';
-                        $icon = '<i class="fas fa-box"></i>';
+                        if ($notif['alert_type'] === 'Out of Stock') {
+                            $pillClass = 'alert-pill alert-out';
+                            $iconClass = 'notification-item-icon icon-out';
+                            $faIcon    = 'fas fa-box-open';
+                            $pillLabel = '<i class="fas fa-times-circle"></i> Out of Stock';
+                        } elseif ($notif['alert_type'] === 'Critical') {
+                            $pillClass = 'alert-pill alert-critical';
+                            $iconClass = 'notification-item-icon icon-critical';
+                            $faIcon    = 'fas fa-exclamation-circle';
+                            $pillLabel = '<i class="fas fa-fire"></i> Critical';
+                        } else {
+                            $pillClass = 'alert-pill alert-low';
+                            $iconClass = 'notification-item-icon icon-low';
+                            $faIcon    = 'fas fa-box';
+                            $pillLabel = '<i class="fas fa-exclamation-triangle"></i> Low Stock';
+                        }
                         $onClick = "handleNotificationClick('" . addslashes(htmlspecialchars($notif['item'])) . "')";
                     }
                 ?>
                     <li class="notification-item" onclick="<?php echo $onClick; ?>">
-                        <div class="notification-icon <?php echo $dotClass; ?>"></div>
-                        <div class="notification-content">
-                            <h4><?php echo $icon; ?> <?php echo htmlspecialchars($notif['item']); ?></h4>
-                            <p><?php echo $notif['alert_type']; ?></p>
-                            <?php if (isset($notif['subtext'])): ?>
-                                <p style="font-size: 0.75rem; color: #95a5a6; margin-top: 2px;"><?php echo htmlspecialchars($notif['subtext']); ?></p>
-                            <?php else: ?>
-                                <p style="font-size: 0.75rem; color: #a0aec0;">Qty: <?php echo $notif['quantity'] ?? $notif['previous_month'] ?? 0; ?></p>
-                            <?php endif; ?>
+                        <div class="notification-item-row">
+                            <div class="<?php echo $iconClass; ?>">
+                                <i class="<?php echo $faIcon; ?>"></i>
+                            </div>
+                            <div class="notification-content" style="flex:1; min-width:0;">
+                                <h4 style="margin:0 0 5px 0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                                    <?php echo htmlspecialchars($notif['item']); ?>
+                                </h4>
+                                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                                    <span class="<?php echo $pillClass; ?>"><?php echo $pillLabel; ?></span>
+                                    <?php if (isset($notif['subtext'])): ?>
+                                        <span style="font-size:0.75rem; color:#95a5a6;"><?php echo htmlspecialchars($notif['subtext']); ?></span>
+                                    <?php else: ?>
+                                        <span style="font-size:0.75rem; color:#a0aec0;">Qty: <?php echo $notif['quantity'] ?? $notif['previous_month'] ?? 0; ?></span>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
                         </div>
                     </li>
                 <?php endforeach; ?>
@@ -404,47 +479,53 @@ foreach ($alertItems as $item) {
             container.style.cssText = `
                 display: flex;
                 align-items: center;
-                gap: 10px;
-                margin-left: 25px;
-                padding: 6px 16px;
-                background: #f8fafc;
-                border: 1px solid #e2e8f0;
-                border-radius: 25px;
-                font-size: 0.95rem;
-                font-weight: 700;
+                gap: 8px;
+                margin-left: 20px;
+                flex-wrap: wrap;
                 cursor: pointer;
-                transition: all 0.2s ease;
                 animation: fadeIn 0.5s ease-out;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             `;
             container.onclick = () => window.location.href = '<?php echo $root; ?>inventory?search=alert';
             container.title = "Click to view all stock alerts";
 
-            let html = '<i class="fas fa-exclamation-circle" style="color: #64748b; margin-right: 4px; font-size: 1.1rem;"></i>';
-            
+            const pillStyle = `
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+                padding: 4px 12px;
+                border-radius: 20px;
+                font-size: 0.78rem;
+                font-weight: 700;
+                letter-spacing: 0.03em;
+                text-transform: uppercase;
+                white-space: nowrap;
+                color: #fff;
+            `;
+
+            let html = '';
+
             if (outCount > 0) {
                 html += `
-                    <span style="color: #ef4444; background: #fee2e2; padding: 4px 12px; border-radius: 15px; display: flex; align-items: center; gap: 6px;">
-                        <i class="fas fa-ban" style="font-size: 0.85rem;"></i> ${outCount} Out
+                    <span style="${pillStyle} background: linear-gradient(135deg, #374151, #1f2937); box-shadow: 0 2px 8px rgba(31,41,55,0.45);">
+                        <i class="fas fa-times-circle"></i> ${outCount} Out of Stock
                     </span>`;
             }
             if (criticalCount > 0) {
                 html += `
-                    <span style="color: #f59e0b; background: #fef3c7; padding: 4px 12px; border-radius: 15px; display: flex; align-items: center; gap: 6px;">
-                        <i class="fas fa-exclamation-triangle" style="font-size: 0.85rem;"></i> ${criticalCount} Critical
+                    <span style="${pillStyle} background: linear-gradient(135deg, #dc2626, #991b1b); box-shadow: 0 2px 8px rgba(220,38,38,0.45);">
+                        <i class="fas fa-fire"></i> ${criticalCount} Critical
                     </span>`;
             }
             if (lowStockCount > 0) {
                 html += `
-                    <span style="color: #10b981; background: #d1fae5; padding: 4px 12px; border-radius: 15px; display: flex; align-items: center; gap: 6px;">
-                        <i class="fas fa-info-circle" style="font-size: 0.85rem;"></i> ${lowStockCount} Low
+                    <span style="${pillStyle} background: linear-gradient(135deg, #d97706, #b45309); box-shadow: 0 2px 8px rgba(217,119,6,0.45);">
+                        <i class="fas fa-exclamation-triangle"></i> ${lowStockCount} Low Stock
                     </span>`;
             }
-
             if (realPendingCount > 0) {
                 html += `
-                    <span onclick="event.stopPropagation(); window.location.href='<?php echo $root; ?>requests'" style="color: #6b21a8; background: #f3e8ff; padding: 4px 12px; border-radius: 15px; display: flex; align-items: center; gap: 6px; border: 1px solid #d8b4fe;">
-                        <i class="fas fa-file-invoice" style="font-size: 0.85rem;"></i> ${realPendingCount} Pending
+                    <span onclick="event.stopPropagation(); window.location.href='<?php echo $root; ?>requests'" style="${pillStyle} background: linear-gradient(135deg, #059669, #064e3b); box-shadow: 0 2px 8px rgba(5,150,105,0.4); cursor:pointer;">
+                        <i class="fas fa-file-alt"></i> ${realPendingCount} Pending
                     </span>`;
             }
 

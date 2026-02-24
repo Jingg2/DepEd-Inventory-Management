@@ -308,9 +308,9 @@ document.addEventListener('DOMContentLoaded', function () {
                         lowT: card.getAttribute('data-low-threshold'),
                         critT: card.getAttribute('data-critical-threshold'),
                         img: card.getAttribute('data-image'),
-                        prevMonth: card.getAttribute('data-previous-month'),
                         addStock: card.getAttribute('data-add-stock'),
-                        issuance: card.getAttribute('data-issuance')
+                        issuance: card.getAttribute('data-issuance'),
+                        requisition: card.getAttribute('data-requisition')
                     };
 
                     // Populate Fields
@@ -334,6 +334,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                     if (document.getElementById('edit-issuance')) {
                         document.getElementById('edit-issuance').value = data.issuance || '0';
+                    }
+                    if (document.getElementById('edit-requisition')) {
+                        document.getElementById('edit-requisition').value = data.requisition || '0';
                     }
 
 
@@ -791,7 +794,9 @@ document.addEventListener('DOMContentLoaded', function () {
                         deliveryDate: card.getAttribute('data-delivery-date'),
                         img: card.getAttribute('data-image') || (basePath + 'img/Bogo_City_logo.png'),
                         lowT: card.getAttribute('data-low-threshold') || '10',
-                        critT: card.getAttribute('data-critical-threshold') || '5'
+                        critT: card.getAttribute('data-critical-threshold') || '5',
+                        requisition: card.getAttribute('data-requisition') || '0',
+                        issuance: card.getAttribute('data-issuance') || '0'
                     };
 
                     // Basic UI Population
@@ -806,7 +811,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     document.getElementById('modal-low-threshold').textContent = details.lowT;
                     document.getElementById('modal-critical-threshold').textContent = details.critT;
                     document.getElementById('modal-property-classification').textContent = details.propClass || 'N/A';
-                    document.getElementById('modal-school').textContent = details.school || 'N/A';
+                    document.getElementById('modal-requisition').textContent = details.requisition || '0';
+                    document.getElementById('modal-issuance').textContent = details.issuance || '0';
+                    if (document.getElementById('modal-school')) {
+                        document.getElementById('modal-school').textContent = details.school || 'N/A';
+                    }
                     document.getElementById('modal-description').textContent = details.description || 'No description';
 
                     // Image Handling

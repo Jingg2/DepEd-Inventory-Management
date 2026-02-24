@@ -19,12 +19,12 @@ $supplies = $model->getAllSupplies();
 
 // Map DB columns directly to report columns
 // previous_month = Previous Month Balance
-// add_stock      = Acquisition for the Month
+// requisition    = Acquisition for the Month
 // issuance       = Issuance for the Month
 // quantity       = Balance for the Month
 foreach ($supplies as &$supply) {
     $supply['prev'] = (float)($supply['previous_month'] ?? 0);
-    $supply['acq']  = (float)($supply['add_stock'] ?? 0);
+    $supply['acq']  = (float)($supply['requisition'] ?? 0);
     $supply['iss']  = (float)($supply['issuance'] ?? 0);
     $supply['reported_bal'] = (float)($supply['quantity'] ?? 0);
 }
@@ -132,9 +132,9 @@ foreach ($groupedSupplies as $cat => $items) {
         echo '<td align="center" style="border:1px solid black;">' . htmlspecialchars($item['unit']) . '</td>';
         echo '<td style="border:1px solid black; padding-left:5px;">' . htmlspecialchars($item['item'] . ($item['description'] ? ' - ' . $item['description'] : '')) . '</td>';
         echo '<td align="center" style="border:1px solid black;">' . ($prev > 0 ? $prev : '0') . '</td>';
-        echo '<td align="center" style="border:1px solid black;">' . ($acq > 0 ? $acq : '') . '</td>';
-        echo '<td align="center" style="border:1px solid black;">' . ($iss > 0 ? $iss : '') . '</td>';
-        echo '<td align="center" style="border:1px solid black;">' . ($bal > 0 ? $bal : '0') . '</td>';
+        echo '<td align="center" style="border:1px solid black;">' . ($acq >= 0 ? $acq : '0') . '</td>';
+        echo '<td align="center" style="border:1px solid black;">' . ($iss >= 0 ? $iss : '0') . '</td>';
+        echo '<td align="center" style="border:1px solid black;">' . ($bal >= 0 ? $bal : '0') . '</td>';
         echo '<td align="right" style="border:1px solid black; padding-right:5px;">' . number_format($cost, 2) . '</td>';
         echo '<td align="right" style="border:1px solid black; padding-right:5px;">' . number_format($total, 2) . '</td>';
         echo '</tr>';

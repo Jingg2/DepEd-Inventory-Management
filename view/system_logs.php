@@ -56,13 +56,47 @@ $root = rtrim($scriptDir, '/') . '/';
         })();
     </script>
 </head>
+</head>
 <body>
-    <?php include __DIR__ . '/../includes/navbar.php'; ?>
+    <div class="sidebar">
+        <div class="logo">
+            <img src="<?php echo $root; ?>images/deped_bogo_logo.png" alt="Logo">
+            <h2>Inventory System</h2>
+        </div>
+        <ul>
+            <li><a href="<?php echo $root; ?>dashboard" class="<?php echo ($currentRoute == '/dashboard') ? 'active' : ''; ?>"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+            <li><a href="<?php echo $root; ?>inventory" class="<?php echo ($currentRoute == '/inventory') ? 'active' : ''; ?>"><i class="fas fa-box"></i> <span>Supply</span></a></li>
+            <li class="divider"></li>
+            <li>
+                <a href="<?php echo $root; ?>requests" class="<?php echo ($currentRoute == '/requests') ? 'active' : ''; ?>">
+                    <i class="fas fa-file-invoice"></i> <span>Request</span>
+                    <?php if ($pendingCount > 0): ?>
+                        <span class="sidebar-badge"><?php echo $pendingCount; ?></span>
+                    <?php endif; ?>
+                </a>
+            </li>
+            <li class="divider"></li>
+            <li><a href="<?php echo $root; ?>employees" class="<?php echo ($currentRoute == '/employees') ? 'active' : ''; ?>"><i class="fas fa-users"></i> <span>Employee</span></a></li>
+            <li><a href="<?php echo $root; ?>reports" class="<?php echo ($currentRoute == '/reports') ? 'active' : ''; ?>"><i class="fas fa-file-excel"></i> <span>Reports</span></a></li>
+            <li class="divider"></li>
+            <li><a href="<?php echo $root; ?>settings" class="<?php echo ($currentRoute == '/settings') ? 'active' : ''; ?>"><i class="fas fa-cog"></i> <span>Settings</span></a></li>
+            <li class="divider"></li>
+            <li><a href="<?php echo $root; ?>logout" class="logout-link" onclick="showLogoutModal(event, this.href);"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+        </ul>
+    </div>
+    <div class="main-content">
+        <div class="header">
+            <h1>System Activity Logs</h1>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <?php include_once __DIR__ . '/includes/head_notification.php'; ?>
+                <button class="sidebar-toggle"><i class="fas fa-bars"></i></button>
+            </div>
+        </div>
     <style>
         .log-container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 100px 20px 40px;
+            padding: 20px;
         }
         .log-table {
             width: 100%;
@@ -80,7 +114,7 @@ $root = rtrim($scriptDir, '/') . '/';
         .log-table th {
             background: #f8f9fa;
             font-weight: 700;
-            color: #2A4D88;
+            color: var(--navy-800);
         }
         .log-table tr:hover {
             background: #fdfdfd;
@@ -110,14 +144,15 @@ $root = rtrim($scriptDir, '/') . '/';
             background: white;
             border: 1px solid #e2e8f0;
             text-decoration: none;
-            color: #2A4D88;
+            color: var(--navy-800);
             font-weight: 600;
             transition: all 0.2s;
         }
         .pagination a.active {
-            background: #2A4D88;
+            background: var(--gradient-primary);
             color: white;
-            border-color: #2A4D88;
+            border: none;
+            box-shadow: 0 4px 12px var(--primary-glow);
         }
         .pagination a:hover:not(.active) {
             background: #f8fafc;
@@ -125,14 +160,10 @@ $root = rtrim($scriptDir, '/') . '/';
     </style>
 </head>
     <div class="log-container">
-        <div class="header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <div>
-                <a href="<?php echo $root; ?>settings" style="color: #10b981; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+        <div style="margin-bottom: 20px;">
+                <a href="<?php echo $root; ?>settings" style="color: var(--primary-emerald); text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;">
                     <i class="fas fa-arrow-left"></i> Back to Settings
                 </a>
-                <h1 style="color: #022c22; font-size: 1.8rem;">System Activity Logs</h1>
-            </div>
-            <!-- Notification area removed -->
         </div>
 
         <table class="log-table">

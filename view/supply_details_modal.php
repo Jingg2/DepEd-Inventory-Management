@@ -10,7 +10,7 @@
 
         <div class="modal-body" style="padding: 30px 40px;">
             <div class="image-preview-container" style="text-align: center; margin-bottom: 25px; display: none;" id="modal-img-container">
-                <img id="modal-img" src="" alt="Item Image" style="max-height: 250px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid #e2e8f0;">
+                <img id="modal-img" src="" alt="Item Image" style="max-height: 250px; border-radius: 12px; box-shadow: var(--shadow-md); border: 1px solid var(--border-color);">
             </div>
 
             <div class="details-grid">
@@ -22,6 +22,8 @@
                 <p><strong>Unit Cost:</strong> ₱<span id="modal-unit-cost"></span></p>
                 <p><strong>Total Cost:</strong> ₱<span id="modal-total-cost"></span></p>
                 <p><strong>Status:</strong> <span id="modal-status"></span></p>
+                <p><strong>Monthly Acquisition:</strong> <span id="modal-requisition"></span></p>
+                <p><strong>Monthly Issuance:</strong> <span id="modal-issuance"></span></p>
                 <p><strong>Low Stock Threshold:</strong> <span id="modal-low-threshold"></span></p>
                 <p><strong>Critical Threshold:</strong> <span id="modal-critical-threshold"></span></p>
                 <p><strong>Property Class:</strong> <span id="modal-property-classification"></span></p>
@@ -37,7 +39,7 @@
 
         </div>
         
-        <div class="modal-footer" style="padding: 20px 40px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 15px; border-radius: 0 0 16px 16px;">
+        <div class="modal-footer" style="padding: 20px 40px; background: var(--bg-light); border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 15px; border-radius: 0 0 16px 16px;">
             <!-- Actions will be handled by JS or direct buttons if needed, currently using icons for edit/delete in card, but valid to have them here too if requested. 
                  For now, keeping it clean as a 'View' modal. If actions are needed, they can be re-injected. -->
                  <button type="button" class="cancel-btn" id="close-view-btn" style="padding: 10px 24px;">Close</button>

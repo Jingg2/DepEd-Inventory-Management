@@ -73,7 +73,7 @@ try {
             box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
         .add-btn {
-            background: #1e3a8a;
+            background: var(--primary-emerald);
             color: white;
             border: none;
             padding: 12px 24px;
@@ -86,9 +86,9 @@ try {
             transition: all 0.3s ease;
         }
         .add-btn:hover {
-            background: #1e40af;
+            background: var(--primary-hover);
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
+            box-shadow: 0 4px 12px var(--primary-glow);
         }
         .inventory-table th {
             background: #f8fafc;
@@ -143,7 +143,7 @@ try {
             <li><a href="<?php echo $root; ?>controlled_assets/deliveries" class="active"><i class="fas fa-box"></i> <span>Deliveries</span></a></li>
             <li><a href="<?php echo $root; ?>controlled_assets/reports"><i class="fas fa-file-alt"></i> <span>Reports</span></a></li>
             <li class="divider"></li>
-            <li><a href="<?php echo $root; ?>inventory" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;"><i class="fas fa-arrow-left"></i> <span>Back to Inventory</span></a></li>
+            <li><a href="<?php echo $root; ?>inventory" style="background: rgba(66, 167, 106, 0.1); color: var(--primary-emerald);"><i class="fas fa-arrow-left"></i> <span>Back to Inventory</span></a></li>
         </ul>
     </div>
     <div class="main-content">
@@ -156,7 +156,7 @@ try {
         </div>
 
         <div class="action-bar">
-            <h2 style="margin: 0; color: #1e293b; font-size: 1.25rem;">Asset Inventory</h2>
+            <h2 style="margin: 0; color: var(--navy-800); font-size: 1.25rem;">Asset Inventory</h2>
             <div style="display: flex; gap: 10px;">
                 <button class="add-btn" onclick="openDeliveryModal()">
                     <i class="fas fa-truck-loading"></i> New Delivery
@@ -193,7 +193,7 @@ try {
                          data-item-count="<?php echo $itemCount; ?>"
                          data-total-quantity="<?php echo $totalQty; ?>">
                         
-                        <i class="fas fa-school" style="font-size: 3rem; margin: 20px auto; display: block; color: #10b981; opacity: 0.8;"></i>
+                        <i class="fas fa-school" style="font-size: 3rem; margin: 20px auto; display: block; color: var(--primary-emerald); opacity: 0.8;"></i>
                         
                         <h3><?php echo htmlspecialchars($school['school']); ?></h3>
                         <p style="font-size: 0.9rem; color: #64748b; margin-bottom: 10px;">

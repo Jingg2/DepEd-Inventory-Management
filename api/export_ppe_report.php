@@ -5,6 +5,8 @@ require_once __DIR__ . '/../model/SystemLogModel.php';
 
 // Parameters
 $selectedMonth = $_GET['month'] ?? null;
+$startDate = $_GET['start_date'] ?? null;
+$endDate = $_GET['end_date'] ?? null;
 
 // Get PPE/Semi-Expendable items directly from the database
 $model = new SupplyModel();

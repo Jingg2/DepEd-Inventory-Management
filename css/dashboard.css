@@ -1,32 +1,120 @@
 :root {
-    /* Wow Emerald Palette */
+    /* Original Forest Green & Navy Blue Palette */
     --primary-emerald: #059669;
     --primary-hover: #047857;
     --primary-glow: rgba(5, 150, 105, 0.3);
-    --secondary-emerald: #10b981;
-    --accent-emerald: #34d399;
-    --bg-emerald-light: #f0fdf4;
-    --bg-light: #f8fafc;
+    --secondary-emerald: #34d399;
+    --accent-emerald: #6ee7b7;
+    --bg-emerald-light: #d1fae5;
 
-    /* Sidebar Deep Theme */
-    --sidebar-bg: #022c22;
+    /* Tonal Navies */
+    --navy-900: #0a1628;
+    --navy-800: #2A4D88;
+    --navy-700: #1e3a6e;
+    --slate-600: #4b5563;
+    --slate-500: #6b7280;
+    --slate-400: #9ca3af;
+    --slate-300: #d1d5db;
+    --slate-200: #e5e7eb;
+    --slate-100: #f3f4f6;
+    --bg-light: #f9fafb;
+
+    /* Theme Aliases */
+    --text-main: #1a202c;
+    --text-muted: #4a5568;
+    --sidebar-bg: #064e3b;
     --sidebar-hover: rgba(255, 255, 255, 0.08);
-    --sidebar-active-bg: rgba(5, 150, 105, 0.15);
+    --sidebar-active-bg: rgba(52, 211, 153, 0.15);
     --sidebar-text: #ffffff;
-    --sidebar-text-muted: #94a3b8;
+    --sidebar-text-muted: #a7f3d0;
+
+    /* Semantic Colors */
+    --success: #059669;
+    --warning: #d97706;
+    --danger: #dc2626;
+    --info: #2563eb;
 
     /* Effects */
-    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-bg: rgba(255, 255, 255, 0.85);
     --glass-border: rgba(255, 255, 255, 0.5);
-    --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 10px 40px rgba(5, 150, 105, 0.12);
-    --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.15);
+    --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
     --radius-lg: 16px;
     --radius-md: 12px;
+    --radius-sm: 8px;
 
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    --gradient-sidebar: linear-gradient(180deg, #022c22 0%, #011612 100%);
+    /* Gradients - Original Deep Forest Green & Navy */
+    --gradient-primary: linear-gradient(135deg, #059669 0%, #064e3b 100%);
+    --gradient-sidebar: linear-gradient(180deg, #064e3b 0%, #022c22 100%);
+    --gradient-navy: linear-gradient(135deg, #2A4D88 0%, #1e3a6e 100%);
+    --gradient-danger: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+    --gradient-warning: linear-gradient(135deg, #d97706 0%, #92400e 100%);
+    --gradient-hero: linear-gradient(135deg, #022c22 0%, #064e3b 50%, #022c22 100%);
+}
+
+/* Global Transitions */
+* {
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+/* Standard Button Styles */
+.btn-primary {
+    background: var(--gradient-primary);
+    color: white !important;
+    border: none !important;
+    box-shadow: 0 4px 12px var(--primary-glow);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px var(--primary-glow);
+    opacity: 0.95;
+}
+
+.btn-danger {
+    background: var(--gradient-danger);
+    color: white !important;
+    border: none !important;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+.btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(239, 68, 68, 0.3);
+}
+
+/* Modern Badge System */
+.badge {
+    padding: 6px 12px;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.badge-success {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.badge-danger {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+.badge-warning {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.badge-info {
+    background-color: #dbeafe;
+    color: #1e40af;
 }
 
 /* Dashboard Styles */
@@ -159,7 +247,7 @@ html.sidebar-collapsed h2 {
 .sidebar ul li a {
     display: flex;
     align-items: center;
-    color: var(--sidebar-text-muted);
+    color: var(--sidebar-text);
     text-decoration: none;
     padding: 12px 20px;
     margin: 4px 15px;
@@ -349,7 +437,7 @@ html.sidebar-collapsed .main-content {
 .header h1 {
     margin: 0;
     font-size: 1.6rem;
-    color: #1e293b;
+    color: #064e3b;
     font-weight: 800;
     letter-spacing: -0.02em;
 }
@@ -922,7 +1010,7 @@ html.sidebar-collapsed .main-content {
 
 .supply-form select:hover,
 .supply-form textarea:hover {
-    border-color: #7C94B8;
+    border-color: var(--navy-800);
     background-color: #fafbfc;
 }
 
@@ -983,7 +1071,7 @@ html.sidebar-collapsed .main-content {
 .settings-form button:hover,
 .supply-form button:hover,
 .request-form button:hover {
-    background-color: #7C94B8;
+    background-color: var(--navy-800);
 }
 
 .backup-btn,
@@ -999,7 +1087,7 @@ html.sidebar-collapsed .main-content {
 
 .backup-btn:hover,
 .restore-btn:hover {
-    background-color: #7C94B8;
+    background-color: var(--navy-800);
 }
 
 /* Card Styles for Supply Items */
@@ -1092,7 +1180,7 @@ html.sidebar-collapsed .main-content {
 .backup-btn,
 .restore-btn,
 .btn-primary {
-    background: linear-gradient(135deg, #4361EE 0%, #2B35AF 100%);
+    background: var(--gradient-primary);
     color: white;
     border: none;
     padding: 12px 28px;
@@ -1103,7 +1191,7 @@ html.sidebar-collapsed .main-content {
     font-weight: 700;
     font-size: 0.95rem;
     letter-spacing: 0.5px;
-    box-shadow: 0 4px 15px rgba(67, 97, 238, 0.4);
+    box-shadow: 0 4px 15px var(--primary-glow);
     /* Glowing Shadow */
     transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     /* Bouncy transition */
@@ -1178,7 +1266,7 @@ html.sidebar-collapsed .main-content {
 /* Secondary Button Variant */
 .btn-secondary {
     background: white;
-    color: #4361EE;
+    color: var(--primary-emerald);
     border: 2px solid #eef2f7;
     padding: 8px 18px;
     border-radius: 8px;
@@ -1192,10 +1280,10 @@ html.sidebar-collapsed .main-content {
 }
 
 .btn-secondary:hover {
-    background: #4361EE;
+    background: var(--primary-emerald);
     color: white;
-    border-color: #4361EE;
-    box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+    border-color: var(--primary-emerald);
+    box-shadow: 0 5px 15px var(--primary-glow);
     transform: translateY(-2px);
 }
 
@@ -1211,7 +1299,7 @@ html.sidebar-collapsed .main-content {
 /* Secondary / Action Buttons (in cards) */
 .supply-card button {
     background: white;
-    color: #4361EE;
+    color: var(--primary-emerald);
     border: 2px solid #eef2f7;
     padding: 8px 18px;
     border-radius: 8px;
@@ -1221,10 +1309,10 @@ html.sidebar-collapsed .main-content {
 }
 
 .supply-card button:hover {
-    background: #4361EE;
+    background: var(--primary-emerald);
     color: white;
-    border-color: #4361EE;
-    box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+    border-color: var(--primary-emerald);
+    box-shadow: 0 5px 15px var(--primary-glow);
     transform: translateY(-2px);
 }
 
@@ -1304,9 +1392,9 @@ html.sidebar-collapsed .main-content {
 .supply-form select:focus,
 .search-filter input:focus,
 .search-filter select:focus {
-    border-color: #4361EE;
+    border-color: var(--primary-emerald);
     background-color: #fff;
-    box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.15);
+    box-shadow: 0 0 0 4px var(--primary-glow);
     /* Soft Emerald Halo */
     outline: none;
     transform: translateY(-2px);
@@ -1352,24 +1440,24 @@ html.sidebar-collapsed .main-content {
 }
 
 .drag-drop-content i {
-    color: #4361EE;
+    color: var(--primary-emerald);
 }
 
 .browse-link {
-    color: #4361EE;
+    color: var(--primary-emerald);
 }
 
 .browse-link:hover {
     color: var(--primary-emerald);
-    border-bottom-color: #2B35AF;
+    border-bottom-color: var(--navy-700);
 }
 
 /* Inputs Focus */
 .supply-form input:focus,
 .supply-form select:focus,
 .supply-form textarea:focus {
-    border-color: #4361EE;
-    box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.1);
+    border-color: var(--primary-emerald);
+    box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.1);
 }
 
 /* Section Header Icon */
@@ -1550,8 +1638,7 @@ html.sidebar-collapsed .main-content {
 }
 
 .add-supply-modal-content .modal-header-section {
-    background: linear-gradient(135deg, #059669 0%, #10b981 100%);
-    /* Emerald Gradient */
+    background: var(--gradient-primary);
     color: white;
     margin: 0;
     padding: 32px 40px;

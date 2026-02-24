@@ -3,7 +3,7 @@
     <div class="modal-content add-supply-modal-content" style="max-width: 500px;">
         <span class="close item-close-btn" onclick="closeUpdateConditionModal()">&times;</span>
         
-        <div class="modal-header-section" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+        <div class="modal-header-section" style="background: var(--gradient-primary);">
             <h2><i class="fas fa-clipboard-check"></i> Update Condition</h2>
             <p class="modal-subtitle">Update the physical status of this item</p>
         </div>
@@ -24,7 +24,7 @@
 
                 <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 30px;">
                     <button type="button" class="cancel-btn" onclick="closeUpdateConditionModal()" style="padding: 10px 24px;">Cancel</button>
-                    <button type="submit" class="submit-btn" style="background: #3b82f6; color: white; padding: 10px 24px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Save Changes</button>
+                    <button type="submit" class="submit-btn" style="background: var(--primary-emerald); color: white; padding: 10px 24px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Save Changes</button>
                 </div>
             </form>
         </div>

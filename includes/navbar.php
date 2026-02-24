@@ -73,7 +73,7 @@ if (empty($current_nav) || $current_nav == '/') $current_nav = 'home';
     }
 
     .nav-links a {
-        color: #94a3b8;
+        color: rgba(255, 255, 255, 0.75);
         text-decoration: none;
         font-weight: 600;
         font-size: 1rem;
@@ -96,7 +96,7 @@ if (empty($current_nav) || $current_nav == '/') $current_nav = 'home';
         left: 0;
         width: 100%;
         height: 2px;
-        background: #10b981;
+        background: #6ee7b7;
         border-radius: 2px;
     }
 

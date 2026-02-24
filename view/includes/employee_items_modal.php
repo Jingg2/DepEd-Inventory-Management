@@ -3,7 +3,7 @@
     <div class="modal-content add-supply-modal-content" style="max-width: 900px;">
         <span class="close item-close-btn" onclick="closeEmployeeItemsModal()">&times;</span>
         
-        <div class="modal-header-section" style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);">
+        <div class="modal-header-section" style="background: var(--gradient-primary);">
             <h2><i class="fas fa-boxes"></i> Employee Assets</h2>
             <p class="modal-subtitle" id="employee-items-subtitle">Items currently issued to employee</p>
         </div>

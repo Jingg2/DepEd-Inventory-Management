@@ -54,7 +54,7 @@ $root = rtrim($scriptDir, '/') . '/';
     </script>
     <style>
         .add-employee-btn {
-            background-color: #2A4D88;
+            background: var(--gradient-primary);
             color: white;
             padding: 10px 15px;
             border-radius: 8px;
@@ -108,12 +108,13 @@ $root = rtrim($scriptDir, '/') . '/';
         }
 
         .modal-header {
-            background-color: #2A4D88;
+            background: var(--gradient-navy);
             color: white;
             padding: 16px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border-radius: 12px 12px 0 0;
         }
 
         .close-modal {
@@ -165,7 +166,7 @@ $root = rtrim($scriptDir, '/') . '/';
         }
 
         .form-group input:focus {
-            border-color: #2A4D88;
+            border-color: var(--primary-emerald);
             outline: none;
         }
 
@@ -198,17 +199,20 @@ $root = rtrim($scriptDir, '/') . '/';
         }
 
         .btn-save {
-            background-color: #2A4D88;
+            background: var(--gradient-primary);
             color: white;
             padding: 10px 20px;
             border-radius: 6px;
             border: none;
             cursor: pointer;
             font-weight: bold;
+            box-shadow: 0 4px 12px var(--primary-glow);
         }
         
         .btn-save:hover {
-            background-color: #1e3a6a;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px var(--primary-glow);
+            opacity: 0.9;
         }
         
         .status-active {
@@ -229,11 +233,11 @@ $root = rtrim($scriptDir, '/') . '/';
             <h2>Inventory System</h2>
         </div>
         <ul>
-            <li><a href="dashboard" class="<?php echo ($currentRoute == '/dashboard') ? 'active' : ''; ?>"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
-            <li><a href="inventory" class="<?php echo ($currentRoute == '/inventory') ? 'active' : ''; ?>"><i class="fas fa-box"></i> <span>Supply</span></a></li>
+            <li><a href="<?php echo $root; ?>dashboard" class="<?php echo ($currentRoute == '/dashboard') ? 'active' : ''; ?>"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+            <li><a href="<?php echo $root; ?>inventory" class="<?php echo ($currentRoute == '/inventory') ? 'active' : ''; ?>"><i class="fas fa-box"></i> <span>Supply</span></a></li>
             <li class="divider"></li>
             <li>
-                <a href="requests" class="<?php echo ($currentRoute == '/requests') ? 'active' : ''; ?>">
+                <a href="<?php echo $root; ?>requests" class="<?php echo ($currentRoute == '/requests') ? 'active' : ''; ?>">
                     <i class="fas fa-file-invoice"></i> <span>Request</span>
                     <?php if ($pendingCount > 0): ?>
                         <span class="sidebar-badge"><?php echo $pendingCount; ?></span>
@@ -241,11 +245,12 @@ $root = rtrim($scriptDir, '/') . '/';
                 </a>
             </li>
             <li class="divider"></li>
-            <li><a href="employees" class="<?php echo ($currentRoute == '/employees') ? 'active' : ''; ?>"><i class="fas fa-users"></i> <span>Employee</span></a></li>
-            <li><a href="reports" class="<?php echo ($currentRoute == '/reports') ? 'active' : ''; ?>"><i class="fas fa-file-excel"></i> <span>Reports</span></a></li>
+            <li><a href="<?php echo $root; ?>employees" class="<?php echo ($currentRoute == '/employees') ? 'active' : ''; ?>"><i class="fas fa-users"></i> <span>Employee</span></a></li>
+            <li><a href="<?php echo $root; ?>reports" class="<?php echo ($currentRoute == '/reports') ? 'active' : ''; ?>"><i class="fas fa-file-excel"></i> <span>Reports</span></a></li>
             <li class="divider"></li>
-            <li><a href="settings" class="<?php echo ($currentRoute == '/settings') ? 'active' : ''; ?>"><i class="fas fa-cog"></i> <span>Settings</span></a></li>
-            <li><a href="<?php echo $root; ?>logout" style="color: #ef5350;" onclick="showLogoutModal(event, this.href);"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+            <li><a href="<?php echo $root; ?>settings" class="<?php echo ($currentRoute == '/settings') ? 'active' : ''; ?>"><i class="fas fa-cog"></i> <span>Settings</span></a></li>
+            <li class="divider"></li>
+            <li><a href="<?php echo $root; ?>logout" class="logout-link" onclick="showLogoutModal(event, this.href);"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
         </ul>
     </div>
 
@@ -281,7 +286,7 @@ $root = rtrim($scriptDir, '/') . '/';
         </div>
 
         <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
-            <button class="add-employee-btn" id="openModalBtn">
+            <button class="btn-primary" id="openModalBtn" style="padding: 12px 24px; border-radius: 10px; font-weight: 700;">
                 <i class="fas fa-user-plus"></i> Register Employee
             </button>
         </div>
@@ -325,7 +330,7 @@ $root = rtrim($scriptDir, '/') . '/';
                                 <td><?php echo date('Y-m-d', strtotime($emp['created_at'])); ?></td>
                                 <td>
                                     <i class="fas fa-edit update-employee-btn" 
-                                       style="color: #2A4D88; cursor: pointer; margin-right: 10px;" 
+                                       style="color: var(--primary-emerald); cursor: pointer; margin-right: 10px;" 
                                        title="Edit"
                                        data-id="<?php echo htmlspecialchars($emp['employee_id']); ?>"
                                        data-first-name="<?php echo htmlspecialchars($emp['first_name']); ?>"
@@ -413,8 +418,8 @@ $root = rtrim($scriptDir, '/') . '/';
                         </div>
                     </div>
 
-                    <div class="form-group customDepartmentGroup" style="display: none; border: 2px solid #2A4D88; padding: 15px; border-radius: 8px; background-color: #f0f4f8; margin-top: 15px;">
-                        <label style="color: #2A4D88;"><i class="fas fa-plus-circle"></i> New Department Name</label>
+                    <div class="form-group customDepartmentGroup" style="display: none; border: 2px solid var(--primary-emerald); padding: 15px; border-radius: 8px; background-color: var(--bg-emerald-light); margin-top: 15px;">
+                        <label style="color: var(--primary-emerald);"><i class="fas fa-plus-circle"></i> New Department Name</label>
                         <input type="text" name="custom_department" class="customDepartment" placeholder="Type new department name here...">
                     </div>
 
@@ -447,7 +452,7 @@ $root = rtrim($scriptDir, '/') . '/';
     <!-- Edit Employee Modal -->
     <div id="editEmployeeModal" class="modal">
         <div class="modal-content">
-            <div class="modal-header" style="background: linear-gradient(135deg, #2A4D88 0%, #1e3a6a 100%);">
+            <div class="modal-header">
                 <h2><i class="fas fa-user-edit"></i> Edit Employee</h2>
                 <span class="close-modal" id="closeEditModalBtn">&times;</span>
             </div>
@@ -492,8 +497,8 @@ $root = rtrim($scriptDir, '/') . '/';
                         </div>
                     </div>
 
-                    <div class="form-group editCustomDeptGroup" style="display: none; border: 2px solid #2A4D88; padding: 15px; border-radius: 8px; background-color: #f0f4f8; margin-top: 15px;">
-                        <label style="color: #2A4D88;"><i class="fas fa-plus-circle"></i> New Department Name</label>
+                    <div class="form-group editCustomDeptGroup" style="display: none; border: 2px solid var(--primary-emerald); padding: 15px; border-radius: 8px; background-color: var(--bg-emerald-light); margin-top: 15px;">
+                        <label style="color: var(--primary-emerald);"><i class="fas fa-plus-circle"></i> New Department Name</label>
                         <input type="text" name="custom_department" class="customDepartment" placeholder="Type new department name here...">
                     </div>
 

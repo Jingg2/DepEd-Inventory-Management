@@ -856,11 +856,11 @@ footer p {
 
 .form-group input:focus {
     outline: none;
-    border-bottom-color: #2A4D88;
+    border-bottom-color: var(--primary-emerald);
 }
 
 .btn-login {
-    background: linear-gradient(135deg, #2A4D88 0%, #1a2f52 100%);
+    background: var(--gradient-primary);
     color: white;
     border: none;
     padding: 14px 30px;

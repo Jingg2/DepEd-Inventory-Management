@@ -235,7 +235,7 @@ $root = rtrim($scriptDir, '/') . '/';
             to { transform: translateY(0); opacity: 1; }
         }
         .modal-header {
-            background: #2A4D88;
+            background: var(--gradient-navy);
             color: white;
             padding: 16px 20px;
             display: flex;
@@ -266,10 +266,10 @@ $root = rtrim($scriptDir, '/') . '/';
             color: inherit;
         }
         .management-option:hover {
-            border-color: #2A4D88;
-            background: #f8fbff;
+            border-color: var(--primary-emerald);
+            background: var(--bg-emerald-light);
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(42,77,136,0.08);
+            box-shadow: 0 4px 12px var(--primary-glow);
         }
         .option-icon {
             width: 50px;
@@ -298,7 +298,7 @@ $root = rtrim($scriptDir, '/') . '/';
 
         .quick-link {
             font-size: 0.85rem;
-            color: #2A4D88;
+            color: var(--primary-emerald);
             text-decoration: none;
             font-weight: 600;
             display: flex;
@@ -317,11 +317,11 @@ $root = rtrim($scriptDir, '/') . '/';
             <h2>Inventory System</h2>
         </div>
         <ul>
-            <li><a href="dashboard" class="<?php echo ($currentRoute == '/dashboard') ? 'active' : ''; ?>"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
-            <li><a href="inventory" class="<?php echo ($currentRoute == '/inventory') ? 'active' : ''; ?>"><i class="fas fa-box"></i> <span>Supply</span></a></li>
+            <li><a href="<?php echo $root; ?>dashboard" class="<?php echo ($currentRoute == '/dashboard') ? 'active' : ''; ?>"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+            <li><a href="<?php echo $root; ?>inventory" class="<?php echo ($currentRoute == '/inventory') ? 'active' : ''; ?>"><i class="fas fa-box"></i> <span>Supply</span></a></li>
             <li class="divider"></li>
             <li>
-                <a href="requests" class="<?php echo ($currentRoute == '/requests') ? 'active' : ''; ?>">
+                <a href="<?php echo $root; ?>requests" class="<?php echo ($currentRoute == '/requests') ? 'active' : ''; ?>">
                     <i class="fas fa-file-invoice"></i> <span>Request</span>
                     <?php if ($pendingCount > 0): ?>
                         <span class="sidebar-badge"><?php echo $pendingCount; ?></span>
@@ -329,11 +329,12 @@ $root = rtrim($scriptDir, '/') . '/';
                 </a>
             </li>
             <li class="divider"></li>
-            <li><a href="employees" class="<?php echo ($currentRoute == '/employees') ? 'active' : ''; ?>"><i class="fas fa-users"></i> <span>Employee</span></a></li>
-            <li><a href="reports" class="<?php echo ($currentRoute == '/reports') ? 'active' : ''; ?>"><i class="fas fa-file-excel"></i> <span>Reports</span></a></li>
+            <li><a href="<?php echo $root; ?>employees" class="<?php echo ($currentRoute == '/employees') ? 'active' : ''; ?>"><i class="fas fa-users"></i> <span>Employee</span></a></li>
+            <li><a href="<?php echo $root; ?>reports" class="<?php echo ($currentRoute == '/reports') ? 'active' : ''; ?>"><i class="fas fa-file-excel"></i> <span>Reports</span></a></li>
             <li class="divider"></li>
-            <li><a href="settings" class="<?php echo ($currentRoute == '/settings') ? 'active' : ''; ?>"><i class="fas fa-cog"></i> <span>Settings</span></a></li>
-            <li><a href="<?php echo $root; ?>logout" style="color: #ef5350;" onclick="showLogoutModal(event, this.href);"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+            <li><a href="<?php echo $root; ?>settings" class="<?php echo ($currentRoute == '/settings') ? 'active' : ''; ?>"><i class="fas fa-cog"></i> <span>Settings</span></a></li>
+            <li class="divider"></li>
+            <li><a href="<?php echo $root; ?>logout" class="logout-link" onclick="showLogoutModal(event, this.href);"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
         </ul>
     </div>
     <div class="main-content">
@@ -347,7 +348,7 @@ $root = rtrim($scriptDir, '/') . '/';
 
         <div class="settings-container">
             <?php if ($message): ?>
-                <div class="alert alert-<?php echo $messageType; ?>" style="padding: 15px; border-radius: 10px; margin-bottom: 20px; <?php echo $messageType === 'success' ? 'background: #e6f4ea; color: #1e8e3e; border: 1px solid #ceead6;' : 'background: #fce8e6; color: #d93025; border: 1px solid #fad2cf;'; ?>">
+                <div class="alert alert-<?php echo $messageType; ?>" style="padding: 15px; border-radius: 10px; margin-bottom: 20px; <?php echo $messageType === 'success' ? 'background: var(--bg-emerald-light); color: var(--navy-800); border: 1px solid var(--secondary-emerald);' : 'background: #fce8e6; color: #d93025; border: 1px solid #fad2cf;'; ?>">
                     <i class="fas <?php echo $messageType === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'; ?>"></i> <?php echo $message; ?>
                 </div>
             <?php endif; ?>
@@ -471,7 +472,7 @@ $root = rtrim($scriptDir, '/') . '/';
                     <p style="font-size: 0.85rem; color: #666; margin-bottom: 10px;">View administrative activity</p>
                     <a href="<?php echo $root; ?>system_logs" class="btn-secondary-settings" style="text-decoration: none; display: block; text-align: center;">View Logs</a>
                 </div>
-                <div class="settings-card small-card" style="border-top: 4px solid #2A4D88;">
+                <div class="settings-card small-card" style="border-top: 4px solid var(--primary-emerald);">
                     <h3><i class="fas fa-question-circle"></i> Help Center</h3>
                     <p style="font-size: 0.85rem; color: #666; margin-bottom: 10px;">Guides & Step-by-step instructions</p>
                     <a href="<?php echo $root; ?>help_center" class="btn-primary-settings" style="text-decoration: none; display: block; text-align: center; width: 100%; padding: 10px;">Open Help Center</a>
@@ -502,7 +503,7 @@ $root = rtrim($scriptDir, '/') . '/';
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: linear-gradient(135deg, #2A4D88 0%, #1a3a6b 100%);
+            background: var(--gradient-primary);
             color: white;
             transition: transform 0.2s;
             cursor: pointer;
@@ -549,7 +550,7 @@ $root = rtrim($scriptDir, '/') . '/';
 
         .btn-edit-profile:hover {
             background: white;
-            color: #2A4D88;
+            color: var(--primary-emerald);
         }
 
         .card-header {
@@ -608,9 +609,9 @@ $root = rtrim($scriptDir, '/') . '/';
         }
 
         .input-group input:focus {
-            border-color: #2A4D88;
+            border-color: var(--primary-emerald);
             outline: none;
-            box-shadow: 0 0 0 4px rgba(42, 77, 136, 0.1);
+            box-shadow: 0 0 0 4px var(--primary-glow);
         }
 
         .form-footer {
@@ -620,7 +621,7 @@ $root = rtrim($scriptDir, '/') . '/';
         }
 
         .btn-primary-settings {
-            background: #2A4D88;
+            background: var(--gradient-primary);
             color: white;
             border: none;
             padding: 14px 40px;
@@ -631,9 +632,9 @@ $root = rtrim($scriptDir, '/') . '/';
         }
 
         .btn-primary-settings:hover {
-            background: #1a3a6b;
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(42, 77, 136, 0.3);
+            box-shadow: 0 6px 20px var(--primary-glow);
+            opacity: 0.9;
         }
 
         .other-settings-grid {

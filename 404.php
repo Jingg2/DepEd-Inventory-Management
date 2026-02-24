@@ -108,7 +108,7 @@ $root = rtrim($scriptDir, '/') . '/';
         /* Right Side - Visual */
         .visual-side {
             flex: 1;
-            background: linear-gradient(135deg, #022c22 0%, #064e3b 100%);
+            background: var(--gradient-primary);
             position: relative;
             clip-path: ellipse(100% 150% at 100% 50%);
             display: flex;

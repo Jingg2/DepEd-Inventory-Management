@@ -104,7 +104,7 @@ try {
     </script>
     <style>
         .back-btn {
-            background: #10b981;
+            background: var(--primary-emerald);
             color: white;
             border: none;
             padding: 12px 24px;
@@ -118,9 +118,9 @@ try {
             text-decoration: none;
         }
         .back-btn:hover {
-            background: #059669;
+            background: var(--primary-hover);
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            box-shadow: 0 4px 12px var(--primary-glow);
         }
         .status-badge {
             padding: 6px 12px;
@@ -163,7 +163,7 @@ try {
             padding: 15px 25px;
             border-radius: 12px;
             margin-bottom: 20px;
-            border-left: 5px solid #10b981;
+            border-left: 5px solid var(--primary-emerald);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -195,7 +195,7 @@ try {
             <li><a href="<?php echo $root; ?>controlled_assets/deliveries" class="active"><i class="fas fa-box"></i> <span>Deliveries</span></a></li>
             <li><a href="<?php echo $root; ?>controlled_assets/reports"><i class="fas fa-file-alt"></i> <span>Reports</span></a></li>
             <li class="divider"></li>
-            <li><a href="<?php echo $root; ?>inventory" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;"><i class="fas fa-arrow-left"></i> <span>Back to Inventory</span></a></li>
+            <li><a href="<?php echo $root; ?>inventory" style="background: rgba(66, 167, 106, 0.1); color: var(--primary-emerald);"><i class="fas fa-arrow-left"></i> <span>Back to Inventory</span></a></li>
         </ul>
     </div>
     <div class="main-content">
@@ -212,10 +212,10 @@ try {
                 <i class="fas fa-arrow-left"></i> Back to Schools
             </a>
             <div style="display: flex; gap: 10px;">
-                <button class="add-btn" onclick="openSchoolMonitoringModal()" style="background: #3b82f6;">
+                <button class="add-btn" onclick="openSchoolMonitoringModal()" style="background: var(--secondary-emerald);">
                     <i class="fas fa-chart-pie"></i> Monitor Status
                 </button>
-                <button class="add-btn" onclick="openEditSchoolModal()" style="background: #10b981;">
+                <button class="add-btn" onclick="openEditSchoolModal()" style="background: var(--primary-emerald);">
                     <i class="fas fa-edit"></i> Edit School Info
                 </button>
             </div>
@@ -248,7 +248,7 @@ try {
                     <div class="receipt-group">
                         <div class="receipt-header">
                             <h2>
-                                <i class="fas fa-file-invoice" style="color: #10b981;"></i> 
+                                <i class="fas fa-file-invoice" style="color: var(--primary-emerald);"></i> 
                                 Receipt #: <?php echo htmlspecialchars($receiptNo); ?>
                             </h2>
                             <?php if ($group['delivery_date']): ?>
@@ -311,7 +311,7 @@ try {
                                     
                                     <div class="actions">
                                         <i class="fas fa-eye icon view-icon" title="View Details"></i>
-                                        <i class="fas fa-clipboard-check icon update-condition-icon" title="Update Condition" style="color: #3b82f6;"></i>
+                                        <i class="fas fa-clipboard-check icon update-condition-icon" title="Update Condition" style="color: var(--secondary-emerald);"></i>
                                         <i class="fas <?php echo $cardIcon; ?> icon stock-card-icon" title="<?php echo $cardTitle; ?>"></i>
                                         <!-- <i class="fas fa-edit icon edit-icon" title="Edit"></i> -->
                                         <!-- <i class="fas fa-trash icon delete-icon" title="Delete"></i> -->
@@ -392,7 +392,7 @@ try {
                             <button class="small-btn update-btn" 
                                 data-id="${item.supply_id}" 
                                 data-condition="${condition}"
-                                style="background: #3b82f6; color: white; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">
+                                style="background: var(--primary-emerald); color: white; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">
                                 <i class="fas fa-edit"></i> Update
                             </button>
                         </td>

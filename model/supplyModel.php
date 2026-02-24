@@ -9,6 +9,13 @@ class SupplyModel {
         require_once __DIR__ . '/../db/database.php';
         $this->db = new Database(); // Store reference to prevent destruction
         $this->conn = $this->db->getConnection();
+        
+        // Ensure necessary RPCI columns exist
+        $this->ensureRPCIColumnsExist();
+        
+        // Automatically check and perform rollover if a new month has started
+        $this->checkAndPerformRollover();
+        
         $this->ensureHistoryTableExists();
         $this->ensureSchoolTablesExist();
     }
@@ -82,6 +89,53 @@ class SupplyModel {
             
         } catch (Exception $e) {
             error_log("Failed to ensure history table: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Checks if the current month matches the last rollover month.
+     * If it's a new month, it resets monthly counters and updates previous_month balance.
+     */
+    public function checkAndPerformRollover() {
+        require_once __DIR__ . '/settingsModel.php';
+        $settings = new SettingsModel();
+        
+        $currentMonth = date('Y-m');
+        $lastRollover = $settings->getSetting('last_rollover_month');
+        
+        if ($lastRollover !== $currentMonth) {
+            try {
+                $this->conn->beginTransaction();
+                
+                // previous_month becomes the current quantity
+                // requisition (Acquisition) and issuance (Issuance) reset to 0
+                $sql = "UPDATE supply SET 
+                        previous_month = quantity, 
+                        requisition = 0, 
+                        issuance = 0";
+                $this->conn->exec($sql);
+                
+                // Update the last rollover month setting
+                $settings->updateSetting('last_rollover_month', $currentMonth);
+                
+                $this->conn->commit();
+                error_log("Monthly rollover performed successfully for $currentMonth");
+            } catch (PDOException $e) {
+                if ($this->conn->inTransaction()) $this->conn->rollBack();
+                error_log("Monthly rollover failed: " . $e->getMessage());
+            }
+        }
+    }
+
+    private function ensureRPCIColumnsExist() {
+        try {
+            // Requisition: tracks monthly Acquisitions (Add Stock)
+            $this->conn->exec("ALTER TABLE supply ADD COLUMN IF NOT EXISTS requisition INT NOT NULL DEFAULT 0 AFTER issuance");
+            
+            // Clean up any historical NULLs from previous steps
+            $this->conn->exec("UPDATE supply SET requisition = 0 WHERE requisition IS NULL");
+        } catch (Exception $e) {
+            error_log("Failed to ensure RPCI columns: " . $e->getMessage());
         }
     }
 
@@ -234,8 +288,8 @@ class SupplyModel {
             $updated_at = date('Y-m-d H:i:s');
             
             if ($imageData !== null && strlen($imageData) > 0) {
-                $sql = "INSERT INTO supply (stock_no, category, unit, item, description, quantity, unit_cost, total_cost, status, updated_by, updated_at, image, property_classification, low_stock_threshold, critical_stock_threshold, school, previous_month, issuance)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                $sql = "INSERT INTO supply (stock_no, category, unit, item, description, quantity, unit_cost, total_cost, status, updated_by, updated_at, image, property_classification, low_stock_threshold, critical_stock_threshold, school, previous_month, issuance, requisition)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                 $stmt = $this->conn->prepare($sql);
                 $params = [
                     $stock_no, $data['category'], $data['unit'], $data['item'],
@@ -246,12 +300,13 @@ class SupplyModel {
                     $data['critical_stock_threshold'] ?? 5,
                     $data['school'] ?? null,
                     $data['previous_month'] ?? 0,
-                    $data['issuance'] ?? 0
+                    $data['issuance'] ?? 0,
+                    $data['requisition'] ?? 0
                 ];
                 $result = $stmt->execute($params);
             } else {
-                $sql = "INSERT INTO supply (stock_no, category, unit, item, description, quantity, unit_cost, total_cost, status, updated_by, updated_at, property_classification, low_stock_threshold, critical_stock_threshold, school, previous_month, issuance)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                $sql = "INSERT INTO supply (stock_no, category, unit, item, description, quantity, unit_cost, total_cost, status, updated_by, updated_at, property_classification, low_stock_threshold, critical_stock_threshold, school, previous_month, issuance, requisition)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                 $stmt = $this->conn->prepare($sql);
                 $params = [
                     $stock_no, $data['category'], $data['unit'], $data['item'],
@@ -262,7 +317,8 @@ class SupplyModel {
                     $data['critical_stock_threshold'] ?? 5,
                     $data['school'] ?? null,
                     $data['previous_month'] ?? 0,
-                    $data['issuance'] ?? 0
+                    $data['issuance'] ?? 0,
+                    $data['requisition'] ?? 0
                 ];
                 $result = $stmt->execute($params);
             }
@@ -462,9 +518,16 @@ class SupplyModel {
                     critical_stock_threshold = ?,
                     school = ?,
                     previous_month = ?,
-                    issuance = ?
+                    issuance = ?,
+                    requisition = ?
                     WHERE supply_id = ?";
             $stmt = $this->conn->prepare($sql);
+            
+            // Calculate new requisition value: base form value + any added stock
+            $baseRequisition = isset($data['requisition']) ? (int)$data['requisition'] : 0;
+            $updatedRequisition = $baseRequisition + $addStock;
+            $issuance = isset($data['issuance']) ? (int)$data['issuance'] : 0;
+
             $stmt->bindValue(1, !empty($data['stock_no']) ? $data['stock_no'] : null);
             $stmt->bindValue(2, $data['category']);
             $stmt->bindValue(3, $data['unit']);
@@ -484,8 +547,9 @@ class SupplyModel {
             $stmt->bindValue(17, $data['critical_stock_threshold'] ?? 5, PDO::PARAM_INT);
             $stmt->bindValue(18, $data['school'] ?? null);
             $stmt->bindValue(19, $data['previous_month'] ?? 0, PDO::PARAM_INT);
-            $stmt->bindValue(20, $data['issuance'] ?? 0, PDO::PARAM_INT);
-            $stmt->bindValue(21, (int)$id, PDO::PARAM_INT);
+            $stmt->bindValue(20, $issuance, PDO::PARAM_INT);
+            $stmt->bindValue(21, $updatedRequisition, PDO::PARAM_INT);
+            $stmt->bindValue(22, (int)$id, PDO::PARAM_INT);
         } else {
             $sql = "UPDATE supply SET 
                     stock_no = ?, 
@@ -506,9 +570,16 @@ class SupplyModel {
                     critical_stock_threshold = ?,
                     school = ?,
                     previous_month = ?,
-                    issuance = ?
+                    issuance = ?,
+                    requisition = ?
                     WHERE supply_id = ?";
             $stmt = $this->conn->prepare($sql);
+            
+            // Calculate new requisition value: base form value + any added stock
+            $baseRequisition = isset($data['requisition']) ? (int)$data['requisition'] : 0;
+            $updatedRequisition = $baseRequisition + $addStock;
+            $issuance = isset($data['issuance']) ? (int)$data['issuance'] : 0;
+
             $stmt->bindValue(1, !empty($data['stock_no']) ? $data['stock_no'] : null);
             $stmt->bindValue(2, $data['category']);
             $stmt->bindValue(3, $data['unit']);
@@ -527,8 +598,9 @@ class SupplyModel {
             $stmt->bindValue(16, $data['critical_stock_threshold'] ?? 5, PDO::PARAM_INT);
             $stmt->bindValue(17, $data['school'] ?? null);
             $stmt->bindValue(18, $data['previous_month'] ?? 0, PDO::PARAM_INT);
-            $stmt->bindValue(19, $data['issuance'] ?? 0, PDO::PARAM_INT);
-            $stmt->bindValue(20, (int)$id, PDO::PARAM_INT);
+            $stmt->bindValue(19, $issuance, PDO::PARAM_INT);
+            $stmt->bindValue(20, $updatedRequisition, PDO::PARAM_INT);
+            $stmt->bindValue(21, (int)$id, PDO::PARAM_INT);
         }
             
             $result = $stmt->execute();
@@ -618,7 +690,7 @@ class SupplyModel {
     public function getSupplyById($id) {
         $sql = "SELECT supply_id as id, item, unit, stock_no, quantity, quantity as current_qty, unit_cost, 
                        updated_at as created_at, property_classification, description, school, image,
-                       previous_month, add_stock, issuance
+                       previous_month, add_stock, issuance, requisition
                 FROM supply
                 WHERE supply_id = ?";
         $stmt = $this->conn->prepare($sql);

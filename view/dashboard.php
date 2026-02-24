@@ -73,7 +73,8 @@ $root = rtrim($scriptDir, '/') . '/';
             <li><a href="<?php echo $root; ?>reports" class="<?php echo ($currentRoute == '/reports') ? 'active' : ''; ?>"><i class="fas fa-file-excel"></i> <span>Reports</span></a></li>
             <li class="divider"></li>
             <li><a href="<?php echo $root; ?>settings" class="<?php echo ($currentRoute == '/settings') ? 'active' : ''; ?>"><i class="fas fa-cog"></i> <span>Settings</span></a></li>
-            <li><a href="<?php echo $root; ?>logout" style="color: #ef5350;" onclick="showLogoutModal(event, this.href);"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+            <li class="divider"></li>
+            <li><a href="<?php echo $root; ?>logout" class="logout-link" onclick="showLogoutModal(event, this.href);"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
         </ul>
     </div>
     <div class="main-content">
@@ -120,32 +121,32 @@ $root = rtrim($scriptDir, '/') . '/';
         ?>
         <div class="stats">
             <div class="stat-card">
-                <i class="fas fa-box stat-card-bg-icon" style="color: var(--primary-emerald);"></i>
+                <i class="fas fa-box stat-card-bg-icon"></i>
                 <h3>Total Products</h3>
                 <p><?php echo $totalItems; ?></p>
             </div>
             <div class="stat-card">
-                <i class="fas fa-coins stat-card-bg-icon" style="color: #2ecc71;"></i>
+                <i class="fas fa-coins stat-card-bg-icon" style="color: var(--primary-emerald);"></i>
                 <h3>Total Cost</h3>
                 <p>₱<?php echo number_format($totalInventoryCost, 2); ?></p>
             </div>
             <div class="stat-card">
-                <i class="fas fa-users stat-card-bg-icon" style="color: #764ba2;"></i>
+                <i class="fas fa-users stat-card-bg-icon" style="color: var(--primary-emerald);"></i>
                 <h3>Total Employee</h3>
                 <p><?php echo $totalEmployees; ?></p>
             </div>
             <div class="stat-card">
-                <i class="fas fa-file-invoice stat-card-bg-icon" style="color: #10b981;"></i>
+                <i class="fas fa-file-invoice stat-card-bg-icon" style="color: var(--primary-emerald);"></i>
                 <h3>Total Requisitions</h3>
                 <p><?php echo $totalRequisitions; ?></p>
             </div>
             <div class="stat-card">
-                <i class="fas fa-exclamation-triangle stat-card-bg-icon" style="color: #ed8936;"></i>
+                <i class="fas fa-exclamation-triangle stat-card-bg-icon" style="color: var(--warning);"></i>
                 <h3>Low Stock Items</h3>
                 <p><?php echo $lowStockTotal; ?></p>
             </div>
             <div class="stat-card">
-                <i class="fas fa-times-circle stat-card-bg-icon" style="color: #ef5350;"></i>
+                <i class="fas fa-times-circle stat-card-bg-icon" style="color: var(--danger);"></i>
                 <h3>Total Out of Stock</h3>
                 <p><?php echo $outOfStockTotal; ?></p>
             </div>
@@ -344,14 +345,14 @@ $root = rtrim($scriptDir, '/') . '/';
                             datasets: [{
                                 data: Object.values(data.categoryDistribution),
                                 backgroundColor: [
-                                    '#6366f1', // Indigo
-                                    '#0ea5e9', // Sky
-                                    '#10b981', // Emerald
-                                    '#f59e0b', // Amber
-                                    '#ef4444', // Red
-                                    '#ec4899', // Pink
-                                    '#8b5cf6', // Violet
-                                    '#64748b'  // Slate
+                                    '#064e3b', // Forest Green
+                                    '#2A4D88', // Navy Blue
+                                    '#059669', // Emerald Green
+                                    '#1e3a6e', // Dark Navy
+                                    '#34d399', // Light Emerald
+                                    '#047857', // Medium Green
+                                    '#6b7280', // Gray
+                                    '#d1d5db'  // Light Gray
                                 ],
                                 borderWidth: 0,
                                 hoverOffset: 4
@@ -371,7 +372,7 @@ $root = rtrim($scriptDir, '/') . '/';
                                     }
                                 },
                                 tooltip: {
-                                    backgroundColor: '#1f2937',
+                                    backgroundColor: '#1c2722',
                                     padding: 12,
                                     titleFont: { size: 14, weight: 'bold' },
                                     callbacks: {
@@ -405,7 +406,7 @@ $root = rtrim($scriptDir, '/') . '/';
                             datasets: [{
                                 label: 'Value (₱)',
                                 data: Object.values(data.inventoryValue),
-                                backgroundColor: '#10b981',
+                                backgroundColor: 'var(--primary-emerald)',
                                 borderRadius: 4,
                                 barThickness: 20
                             }]
@@ -417,7 +418,7 @@ $root = rtrim($scriptDir, '/') . '/';
                             plugins: {
                                 legend: { display: false },
                                 tooltip: {
-                                    backgroundColor: '#1f2937',
+                                    backgroundColor: '#1c2722',
                                     callbacks: {
                                         label: function(c) {
                                             return ' ₱' + c.parsed.x.toLocaleString(undefined, {minimumFractionDigits: 2});
@@ -455,7 +456,7 @@ $root = rtrim($scriptDir, '/') . '/';
                             datasets: [{
                                 label: 'Requisitions',
                                 data: data.employeeRequisitions.map(e => e.requisition_count),
-                                backgroundColor: '#8b5cf6',
+                                backgroundColor: 'var(--secondary-emerald)',
                                 borderRadius: 4,
                                 barThickness: 20
                             }]
@@ -466,7 +467,7 @@ $root = rtrim($scriptDir, '/') . '/';
                             maintainAspectRatio: false,
                             plugins: {
                                 legend: { display: false },
-                                tooltip: { backgroundColor: '#1f2937' }
+                                tooltip: { backgroundColor: '#1c2722' }
                             },
                             scales: {
                                 x: {
@@ -497,14 +498,14 @@ $root = rtrim($scriptDir, '/') . '/';
                                 {
                                     label: 'Issued',
                                     data: data.turnover.map(t => t.issued),
-                                    backgroundColor: '#ec4899',
+                                    backgroundColor: 'var(--primary-emerald)',
                                     borderWidth: 0,
                                     borderRadius: 5
                                 },
                                 {
                                     label: 'In Stock',
                                     data: data.turnover.map(t => t.stock),
-                                    backgroundColor: '#64748b',
+                                    backgroundColor: 'var(--accent-emerald)',
                                     borderWidth: 0,
                                     borderRadius: 5
                                 }
@@ -526,7 +527,7 @@ $root = rtrim($scriptDir, '/') . '/';
                                     }
                                 },
                                 tooltip: {
-                                    backgroundColor: '#1f2937',
+                                    backgroundColor: '#1c2722',
                                     padding: 12,
                                     titleFont: { size: 14, weight: 'bold' },
                                     bodyFont: { size: 13 }
@@ -561,9 +562,9 @@ $root = rtrim($scriptDir, '/') . '/';
                                     data.lowStockUrgency.caution || 0
                                 ],
                                 backgroundColor: [
-                                    'rgba(239, 68, 68, 0.8)',   // Red
-                                    'rgba(249, 115, 22, 0.8)',  // Orange
-                                    'rgba(245, 158, 11, 0.8)'   // Amber
+                                    'rgba(220, 38, 38, 0.8)',   // Red-600
+                                    'rgba(217, 119, 6, 0.8)',   // Amber-600
+                                    'rgba(5, 150, 105, 0.8)'   // Original Emerald
                                 ],
                                 borderWidth: 0
                             }]

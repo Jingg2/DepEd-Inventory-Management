@@ -218,12 +218,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         border-radius: 50%;
         filter: blur(80px);
         opacity: 0.15;
-        background: #10b981;
+        background: #42a76a;
         animation: floatOrb 20s infinite alternate ease-in-out;
     }
 
     .orb-1 { width: 500px; height: 500px; top: -150px; left: -100px; }
-    .orb-2 { width: 400px; height: 400px; bottom: -100px; right: -50px; background: #34d399; }
+    .orb-2 { width: 400px; height: 400px; bottom: -100px; right: -50px; background: #1c8d4f; }
 
     @keyframes floatOrb {
         0% { transform: translate(0, 0) scale(1); }
@@ -265,14 +265,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         position: relative;
         width: 90px;
         height: 90px;
-        background: rgba(16, 185, 129, 0.1);
-        border: 1px solid rgba(16, 185, 129, 0.2);
+        background: rgba(66, 167, 106, 0.1);
+        border: 1px solid rgba(66, 167, 106, 0.2);
         border-radius: 24px;
         display: flex;
         align-items: center;
         justify-content: center;
         margin: 0 auto 24px;
-        color: #34d399;
+        color: #71be8e;
         font-size: 2.5rem;
     }
 
@@ -281,7 +281,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         width: 100%;
         height: 100%;
         border-radius: inherit;
-        box-shadow: 0 0 30px rgba(16, 185, 129, 0.3);
+        box-shadow: 0 0 30px rgba(66, 167, 106, 0.3);
         animation: pulseGlow 2s infinite;
     }
 
@@ -349,13 +349,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     .premium-input:focus {
         outline: none;
-        border-color: #10b981;
-        background: rgba(16, 185, 129, 0.05);
-        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
+        border-color: #42a76a;
+        background: rgba(66, 167, 106, 0.05);
+        box-shadow: 0 0 0 4px rgba(66, 167, 106, 0.15);
     }
 
     .premium-input:focus + .field-icon {
-        color: #10b981;
+        color: #42a76a;
     }
 
     .password-toggle-btn {
@@ -386,13 +386,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         align-items: center;
         justify-content: center;
         gap: 12px;
-        box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+        box-shadow: 0 10px 25px rgba(66, 167, 106, 0.3);
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .btn-login-premium:hover {
         transform: translateY(-4px);
-        box-shadow: 0 15px 35px rgba(16, 185, 129, 0.5);
+        box-shadow: 0 15px 35px rgba(66, 167, 106, 0.5);
     }
 
     .btn-login-premium:active {
@@ -452,7 +452,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     .forgot-password-link:hover {
         color: white;
-        text-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+        text-shadow: 0 0 10px rgba(66, 167, 106, 0.5);
     }
 
     /* Suspended state */
@@ -499,7 +499,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             this.classList.toggle('fa-eye-slash');
             
             // Re-center icon if needed or add visual feedback
-            this.style.color = type === 'text' ? '#10b981' : '#64748b';
+            this.style.color = type === 'text' ? '#42a76a' : '#64748b';
         });
     }
 
@@ -509,8 +509,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     inputs.forEach(input => {
         input.addEventListener('focus', () => {
-            card.style.borderColor = 'rgba(59, 130, 246, 0.3)';
-            card.style.boxShadow = '0 40px 100px rgba(59, 130, 246, 0.15)';
+            card.style.borderColor = 'rgba(66, 167, 106, 0.3)';
+            card.style.boxShadow = '0 40px 100px rgba(66, 167, 106, 0.15)';
         });
         
         input.addEventListener('blur', () => {

@@ -100,12 +100,13 @@ $urlRoot = str_replace(' ', '%20', $root);
         .report-icon {
             width: 45px;
             height: 45px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--gradient-primary);
             border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             margin-bottom: 12px;
+            box-shadow: 0 4px 10px var(--primary-glow);
         }
 
         .report-icon i {
@@ -132,7 +133,7 @@ $urlRoot = str_replace(' ', '%20', $root);
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--gradient-primary);
             color: white;
             padding: 8px 14px;
             border-radius: 6px;
@@ -143,6 +144,7 @@ $urlRoot = str_replace(' ', '%20', $root);
             cursor: pointer;
             font-size: 0.8rem;
             margin-top: auto;
+            box-shadow: 0 2px 6px var(--primary-glow);
         }
 
         .download-btn:hover {
@@ -159,14 +161,14 @@ $urlRoot = str_replace(' ', '%20', $root);
             display: inline-flex;
             align-items: center;
             gap: 5px;
-            color: #667eea;
+            color: var(--primary-emerald);
             text-decoration: none;
             font-weight: 600;
             transition: all 0.2s ease;
         }
 
         .export-link:hover {
-            color: #764ba2;
+            color: var(--primary-hover);
         }
 
         .badge {
@@ -178,8 +180,8 @@ $urlRoot = str_replace(' ', '%20', $root);
         }
 
         .badge-success {
-            background: #d4edda;
-            color: #155724;
+            background: var(--bg-emerald-light);
+            color: var(--navy-800);
         }
 
         /* Responsive - only for small screens */
@@ -203,11 +205,11 @@ $urlRoot = str_replace(' ', '%20', $root);
             <h2>Inventory System</h2>
         </div>
         <ul>
-            <li><a href="dashboard" class="<?php echo ($currentRoute == '/dashboard') ? 'active' : ''; ?>"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
-            <li><a href="inventory" class="<?php echo ($currentRoute == '/inventory') ? 'active' : ''; ?>"><i class="fas fa-box"></i> <span>Supply</span></a></li>
+            <li><a href="<?php echo $root; ?>dashboard" class="<?php echo ($currentRoute == '/dashboard') ? 'active' : ''; ?>"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+            <li><a href="<?php echo $root; ?>inventory" class="<?php echo ($currentRoute == '/inventory') ? 'active' : ''; ?>"><i class="fas fa-box"></i> <span>Supply</span></a></li>
             <li class="divider"></li>
             <li>
-                <a href="requests" class="<?php echo ($currentRoute == '/requests') ? 'active' : ''; ?>">
+                <a href="<?php echo $root; ?>requests" class="<?php echo ($currentRoute == '/requests') ? 'active' : ''; ?>">
                     <i class="fas fa-file-invoice"></i> <span>Request</span>
                     <?php if ($pendingCount > 0): ?>
                         <span class="sidebar-badge"><?php echo $pendingCount; ?></span>
@@ -215,11 +217,12 @@ $urlRoot = str_replace(' ', '%20', $root);
                 </a>
             </li>
             <li class="divider"></li>
-            <li><a href="employees" class="<?php echo ($currentRoute == '/employees') ? 'active' : ''; ?>"><i class="fas fa-users"></i> <span>Employee</span></a></li>
-            <li><a href="reports" class="<?php echo ($currentRoute == '/reports') ? 'active' : ''; ?>"><i class="fas fa-file-excel"></i> <span>Reports</span></a></li>
+            <li><a href="<?php echo $root; ?>employees" class="<?php echo ($currentRoute == '/employees') ? 'active' : ''; ?>"><i class="fas fa-users"></i> <span>Employee</span></a></li>
+            <li><a href="<?php echo $root; ?>reports" class="<?php echo ($currentRoute == '/reports') ? 'active' : ''; ?>"><i class="fas fa-file-excel"></i> <span>Reports</span></a></li>
             <li class="divider"></li>
-            <li><a href="settings" class="<?php echo ($currentRoute == '/settings') ? 'active' : ''; ?>"><i class="fas fa-cog"></i> <span>Settings</span></a></li>
-            <li><a href="<?php echo $root; ?>logout" style="color: #ef5350;" onclick="showLogoutModal(event, this.href);"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+            <li><a href="<?php echo $root; ?>settings" class="<?php echo ($currentRoute == '/settings') ? 'active' : ''; ?>"><i class="fas fa-cog"></i> <span>Settings</span></a></li>
+            <li class="divider"></li>
+            <li><a href="<?php echo $root; ?>logout" class="logout-link" onclick="showLogoutModal(event, this.href);"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
         </ul>
     </div>
     <div class="main-content">
@@ -256,7 +259,7 @@ $urlRoot = str_replace(' ', '%20', $root);
         <div class="search-filter-container">
             <div style="display: flex; align-items: center; gap: 10px;">
                 <label for="month-selector">
-                    <i class="fas fa-calendar-alt" style="color: #2A4D88;"></i>
+                    <i class="fas fa-calendar-alt" style="color: var(--primary-emerald);"></i>
                     Quick Month:
                 </label>
                 <select id="month-selector">
@@ -305,7 +308,7 @@ $urlRoot = str_replace(' ', '%20', $root);
 
             <!-- RIS Categorized by Office -->
             <div class="report-card">
-                <div class="report-icon" style="background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);">
+                <div class="report-icon" style="background: var(--gradient-navy); box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
                     <i class="fas fa-building"></i>
                 </div>
                 <h3>RIS Grouped by Office</h3>
@@ -323,7 +326,7 @@ $urlRoot = str_replace(' ', '%20', $root);
                 </div>
                 <h3>Individual RIS Reports</h3>
                 <p>Requisition and Issue Slip - Download individual reports for each approved requisition (see table below).</p>
-                <a href="#requisitions" class="download-btn">
+                <a href="#requisitions" class="download-btn" style="background: var(--gradient-navy); box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
                     <i class="fas fa-list"></i>
                     View Available Reports
                 </a>
@@ -349,7 +352,7 @@ $urlRoot = str_replace(' ', '%20', $root);
                 </div>
                 <h3>RPCI (PPE & Semi-Expendable)</h3>
                 <p>Report on the Physical Count of Property, Plant, Equipment & Semi-Expendable items (High Value - Appendix 66).</p>
-                <a href="<?php echo $root; ?>api/export_ppe_report.php" class="download-btn" id="ppe-download-btn" style="background: linear-gradient(135deg, #38a169 0%, #2f855a 100%);">
+                <a href="<?php echo $root; ?>api/export_ppe_report.php" class="download-btn" id="ppe-download-btn" style="background: var(--gradient-warning); box-shadow: 0 4px 10px rgba(245, 158, 11, 0.2);">
                     <i class="fas fa-download"></i>
                     Export RPCI (PPE)
                 </a>
@@ -362,7 +365,7 @@ $urlRoot = str_replace(' ', '%20', $root);
                 </div>
                 <h3>Waste Materials Report</h3>
                 <p>Appendix 65 (WMR) - Report of unserviceable items designated for disposal or destruction.</p>
-                <a href="<?php echo $root; ?>api/export_wmr_excel.php" class="download-btn" id="wmr-download-btn" style="background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);">
+                <a href="<?php echo $root; ?>api/export_wmr_excel.php" class="download-btn" id="wmr-download-btn" style="background: var(--gradient-danger); box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2);">
                     <i class="fas fa-download"></i>
                     Download WMR
                 </a>
@@ -420,7 +423,7 @@ $urlRoot = str_replace(' ', '%20', $root);
                 </table>
             <?php if (count($approved_requisitions) > 5): ?>
                 <div style="text-align: center; margin-top: 15px;">
-                    <button id="btnToggleReqs" class="btn-primary" style="padding: 10px 20px; font-size: 0.9rem; background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);">
+                    <button id="btnToggleReqs" class="btn-primary" style="padding: 10px 20px; font-size: 0.9rem;">
                         <i class="fas fa-chevron-down"></i> View All (<?php echo count($approved_requisitions); ?> records)
                     </button>
                 </div>

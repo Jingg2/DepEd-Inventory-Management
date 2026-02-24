@@ -154,7 +154,7 @@ $root = rtrim($scriptDir, '/') . '/';
 
         /* Standard Emerald Modal Title (for Details/Add/Edit) */
         #modal-title {
-            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            background: var(--gradient-primary);
             color: white !important;
             font-size: 1.25rem;
             font-weight: 700;
@@ -165,7 +165,7 @@ $root = rtrim($scriptDir, '/') . '/';
             display: flex !important;
             align-items: center;
             gap: 12px;
-            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.15);
+            box-shadow: 0 4px 12px var(--primary-glow);
             visibility: visible !important;
             opacity: 1 !important;
         }
@@ -179,7 +179,7 @@ $root = rtrim($scriptDir, '/') . '/';
         }
 
         .header h1 {
-            color: #1e293b !important;
+            color: var(--navy-800) !important;
             display: block !important;
             visibility: visible !important;
             opacity: 1 !important;
@@ -387,11 +387,12 @@ $root = rtrim($scriptDir, '/') . '/';
         }
 
         .modal-header-section {
-            background: linear-gradient(135deg, #0d2137 0%, #2A4D88 100%);
+            background: var(--gradient-primary);
             color: white;
             padding: 20px 30px;
             border-radius: 16px 16px 0 0;
             text-align: center; /* Center for more premium look */
+            box-shadow: 0 4px 15px var(--primary-glow);
         }
 
         .modal-header-section h2 {
@@ -430,11 +431,11 @@ $root = rtrim($scriptDir, '/') . '/';
             gap: 10px;
             margin-bottom: 20px;
             padding-bottom: 12px;
-            border-bottom: 2px solid #667eea;
+            border-bottom: 2px solid var(--primary-emerald);
         }
 
         .section-header i {
-            color: #667eea;
+            color: var(--primary-emerald);
             font-size: 20px;
         }
 
@@ -471,7 +472,7 @@ $root = rtrim($scriptDir, '/') . '/';
         }
 
         .form-group label i {
-            color: #667eea;
+            color: var(--primary-emerald);
             font-size: 14px;
         }
 
@@ -497,8 +498,8 @@ $root = rtrim($scriptDir, '/') . '/';
         select:focus,
         textarea:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: var(--primary-emerald);
+            box-shadow: 0 0 0 3px var(--primary-glow);
         }
 
         textarea {
@@ -519,12 +520,12 @@ $root = rtrim($scriptDir, '/') . '/';
         }
 
         .drag-drop-area:hover {
-            border-color: #667eea;
+            border-color: var(--primary-emerald);
             background: #f7fafc;
         }
 
         .drag-drop-area.drag-over {
-            border-color: #667eea;
+            border-color: var(--primary-emerald);
             background: #edf2f7;
         }
 
@@ -541,7 +542,7 @@ $root = rtrim($scriptDir, '/') . '/';
         }
 
         .browse-link {
-            color: #667eea;
+            color: var(--primary-emerald);
             font-weight: 600;
             cursor: pointer;
         }
@@ -620,14 +621,14 @@ $root = rtrim($scriptDir, '/') . '/';
         }
 
         button[type="submit"] {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--gradient-primary);
             color: white;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 4px 12px var(--primary-glow);
         }
 
         button[type="submit"]:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 6px 16px var(--primary-glow);
         }
 
         /* Scrollbar */
@@ -857,12 +858,12 @@ $root = rtrim($scriptDir, '/') . '/';
             gap: 15px;
             margin-bottom: 25px;
             padding-bottom: 12px;
-            border-bottom: 3px solid #2A4D88;
+            border-bottom: 3px solid var(--primary-emerald);
         }
 
         .category-section-header i {
             font-size: 24px;
-            color: #2A4D88;
+            color: var(--primary-emerald);
         }
 
         .category-section-title {
@@ -889,7 +890,7 @@ $root = rtrim($scriptDir, '/') . '/';
         }
 
         .search-filter-container #search:focus {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%232A4D88' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'%3E%3C/circle%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'%3E%3C/line%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%2342a76a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'%3E%3C/circle%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'%3E%3C/line%3E%3C/svg%3E");
             background-color: #ffffff;
         }
 
@@ -906,11 +907,11 @@ $root = rtrim($scriptDir, '/') . '/';
             <h2>Inventory System</h2>
         </div>
         <ul>
-            <li><a href="<?php echo $root; ?>dashboard"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
-            <li><a href="<?php echo $root; ?>inventory" class="active"><i class="fas fa-box"></i> <span>Supply</span></a></li>
+            <li><a href="<?php echo $root; ?>dashboard" class="<?php echo ($currentRoute == '/dashboard') ? 'active' : ''; ?>"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+            <li><a href="<?php echo $root; ?>inventory" class="<?php echo ($currentRoute == '/inventory') ? 'active' : ''; ?>"><i class="fas fa-box"></i> <span>Supply</span></a></li>
             <li class="divider"></li>
             <li>
-                <a href="<?php echo $root; ?>requests">
+                <a href="<?php echo $root; ?>requests" class="<?php echo ($currentRoute == '/requests') ? 'active' : ''; ?>">
                     <i class="fas fa-file-invoice"></i> <span>Request</span>
                     <?php if ($pendingCount > 0): ?>
                         <span class="sidebar-badge"><?php echo $pendingCount; ?></span>
@@ -918,16 +919,17 @@ $root = rtrim($scriptDir, '/') . '/';
                 </a>
             </li>
             <li class="divider"></li>
-            <li><a href="<?php echo $root; ?>employees"><i class="fas fa-users"></i> <span>Employee</span></a></li>
-            <li><a href="<?php echo $root; ?>reports"><i class="fas fa-file-excel"></i> <span>Reports</span></a></li>
+            <li><a href="<?php echo $root; ?>employees" class="<?php echo ($currentRoute == '/employees') ? 'active' : ''; ?>"><i class="fas fa-users"></i> <span>Employee</span></a></li>
+            <li><a href="<?php echo $root; ?>reports" class="<?php echo ($currentRoute == '/reports') ? 'active' : ''; ?>"><i class="fas fa-file-excel"></i> <span>Reports</span></a></li>
             <li class="divider"></li>
-            <li><a href="<?php echo $root; ?>settings"><i class="fas fa-cog"></i> <span>Settings</span></a></li>
-            <li><a href="<?php echo $root; ?>logout" style="color: #ef5350;" onclick="showLogoutModal(event, this.href);"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+            <li><a href="<?php echo $root; ?>settings" class="<?php echo ($currentRoute == '/settings') ? 'active' : ''; ?>"><i class="fas fa-cog"></i> <span>Settings</span></a></li>
+            <li class="divider"></li>
+            <li><a href="<?php echo $root; ?>logout" class="logout-link" onclick="showLogoutModal(event, this.href);"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
         </ul>
     </div>
     <div class="main-content">
         <div class="header">
-            <h1>Supply Management</h1>
+            <h1>Supply Inventory</h1>
             <div style="display: flex; align-items: center; gap: 15px;">
                 <?php include_once __DIR__ . '/includes/head_notification.php'; ?>
                 <button class="sidebar-toggle"><i class="fas fa-bars"></i></button>
@@ -939,13 +941,13 @@ $root = rtrim($scriptDir, '/') . '/';
                 <h3>Total items</h3>
                 <p><?php echo count($supplies); ?></p>
             </div>
-            <div class="stat-card" id="stat-low-stock" style="cursor: pointer; position: relative; overflow: hidden; border-top-color: #f39c12;">
-                <i class="fas fa-exclamation-triangle" style="position: absolute; right: -10px; bottom: -10px; font-size: 4rem; opacity: 0.1; color: #f39c12;"></i>
+            <div class="stat-card" id="stat-low-stock" style="cursor: pointer; position: relative; overflow: hidden; border-top-color: var(--warning);">
+                <i class="fas fa-exclamation-triangle" style="position: absolute; right: -10px; bottom: -10px; font-size: 4rem; opacity: 0.1; color: var(--warning);"></i>
                 <h3>Low stocks Item</h3>
                 <p><?php echo $lowStockCount ?? 0; ?></p>
             </div>
-            <div class="stat-card" id="stat-out-of-stock" style="cursor: pointer; position: relative; overflow: hidden; border-top-color: #e74c3c;">
-                <i class="fas fa-times-circle" style="position: absolute; right: -10px; bottom: -10px; font-size: 4rem; opacity: 0.1; color: #e74c3c;"></i>
+            <div class="stat-card" id="stat-out-of-stock" style="cursor: pointer; position: relative; overflow: hidden; border-top-color: var(--danger);">
+                <i class="fas fa-times-circle" style="position: absolute; right: -10px; bottom: -10px; font-size: 4rem; opacity: 0.1; color: var(--danger);"></i>
                 <h3>Total Out of Stock</h3>
                 <p><?php echo $outOfStockCount ?? 0; ?></p>
             </div>
@@ -1089,7 +1091,7 @@ $root = rtrim($scriptDir, '/') . '/';
                         $cardIcon = $isSemiExpendable ? 'fa-address-card' : 'fa-file-invoice';
                         $cardTitle = $isSemiExpendable ? 'View Property Card' : 'View Stock Card';
                     ?>
-                        <div class="supply-card" data-id="<?php echo htmlspecialchars($supply['supply_id'] ?? $supply['id'] ?? ''); ?>" data-name="<?php echo htmlspecialchars($supply['item'] ?? ''); ?>" data-category="<?php echo htmlspecialchars($categoryName); ?>" data-quantity="<?php echo $qty; ?>" data-stock-no="<?php echo htmlspecialchars($supply['stock_no'] ?? ''); ?>" data-unit="<?php echo htmlspecialchars($supply['unit'] ?? ''); ?>" data-description="<?php echo htmlspecialchars($supply['description'] ?? ''); ?>" data-unit-cost="<?php echo htmlspecialchars($supply['unit_cost'] ?? ''); ?>" data-total-cost="<?php echo htmlspecialchars($supply['total_cost'] ?? ''); ?>" data-status="<?php echo htmlspecialchars($supply['status'] ?? ''); ?>" data-image="<?php echo htmlspecialchars($supply['image_base64'] ?? $basePath . 'img/Bogo_City_logo.png'); ?>" data-property-classification="<?php echo htmlspecialchars($supply['property_classification'] ?? ''); ?>" data-low-threshold="<?php echo $lowThreshold; ?>" data-critical-threshold="<?php echo $criticalThreshold; ?>" data-previous-month="<?php echo (int)($supply['previous_month'] ?? 0); ?>" data-add-stock="<?php echo (int)($supply['add_stock'] ?? 0); ?>" data-issuance="<?php echo (int)($supply['issuance'] ?? 0); ?>">
+                        <div class="supply-card" data-id="<?php echo htmlspecialchars($supply['supply_id'] ?? $supply['id'] ?? ''); ?>" data-name="<?php echo htmlspecialchars($supply['item'] ?? ''); ?>" data-category="<?php echo htmlspecialchars($categoryName); ?>" data-quantity="<?php echo $qty; ?>" data-stock-no="<?php echo htmlspecialchars($supply['stock_no'] ?? ''); ?>" data-unit="<?php echo htmlspecialchars($supply['unit'] ?? ''); ?>" data-description="<?php echo htmlspecialchars($supply['description'] ?? ''); ?>" data-unit-cost="<?php echo htmlspecialchars($supply['unit_cost'] ?? ''); ?>" data-total-cost="<?php echo htmlspecialchars($supply['total_cost'] ?? ''); ?>" data-status="<?php echo htmlspecialchars($supply['status'] ?? ''); ?>" data-image="<?php echo htmlspecialchars($supply['image_base64'] ?? $basePath . 'img/Bogo_City_logo.png'); ?>" data-property-classification="<?php echo htmlspecialchars($supply['property_classification'] ?? ''); ?>" data-low-threshold="<?php echo $lowThreshold; ?>" data-critical-threshold="<?php echo $criticalThreshold; ?>" data-previous-month="<?php echo (int)($supply['previous_month'] ?? 0); ?>" data-add-stock="<?php echo (int)($supply['add_stock'] ?? 0); ?>" data-issuance="<?php echo (int)($supply['issuance'] ?? 0); ?>" data-requisition="<?php echo (int)($supply['requisition'] ?? 0); ?>">
                             <div class="status-badge <?php echo $badgeClass; ?>"><?php echo $badgeText; ?></div>
                             <img src="<?php echo htmlspecialchars($supply['image_base64'] ?? $basePath . 'img/Bogo_City_logo.png'); ?>" alt="<?php echo htmlspecialchars($supply['item'] ?? ''); ?>">
                             <h3><?php echo htmlspecialchars($supply['item'] ?? 'NO NAME'); ?></h3>
@@ -1100,7 +1102,7 @@ $root = rtrim($scriptDir, '/') . '/';
                             </div>
                             <div class="actions">
                                 <i class="fas fa-eye icon view-icon" title="View Details"></i>
-                                <i class="fas fa-plus icon btn-admin-request-item" title="Issue/Request" style="color: #2A4D88;"></i>
+                                <i class="fas fa-plus icon btn-admin-request-item" title="Issue/Request" style="color: var(--primary-emerald);"></i>
                                 <i class="fas <?php echo $cardIcon; ?> icon stock-card-icon" title="<?php echo $cardTitle; ?>"></i>
                                 <i class="fas fa-edit icon edit-icon" title="Edit"></i>
                                 <i class="fas fa-trash icon delete-icon" title="Delete"></i>

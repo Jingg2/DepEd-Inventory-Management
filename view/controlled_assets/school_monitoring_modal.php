@@ -3,7 +3,7 @@
     <div class="modal-content add-supply-modal-content" style="max-width: 800px;">
         <span class="close item-close-btn" onclick="closeSchoolMonitoringModal()">&times;</span>
         
-        <div class="modal-header-section" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+        <div class="modal-header-section" style="background: var(--gradient-primary);">
             <h2><i class="fas fa-chart-pie"></i> Inventory Status Monitor</h2>
             <p class="modal-subtitle">Real-time overview of stock levels for <?php echo htmlspecialchars($schoolName); ?></p>
         </div>

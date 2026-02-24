@@ -185,9 +185,9 @@ if ($officeKey) {
             transition: background 0.2s;
             border: none;
         }
-        .icon-view { background-color: #e3f2fd; color: #1976d2; }
-        .icon-edit { background-color: #d1fae5; color: #059669; }
-        .icon-delete { background-color: #ffebee; color: #d32f2f; }
+        .icon-view { background-color: var(--bg-emerald-light); color: var(--primary-emerald); }
+        .icon-edit { background-color: #dcfce7; color: #166534; }
+        .icon-delete { background-color: #fee2e2; color: #991b1b; }
         
         .icon-box i { font-size: 1.1rem; }
 
@@ -219,12 +219,12 @@ if ($officeKey) {
             align-items: center;
             gap: 12px;
             cursor: pointer;
-            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+            box-shadow: 0 8px 20px var(--primary-glow);
             transition: all 0.3s ease;
         }
         .view-request-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 12px 25px rgba(16, 185, 129, 0.4);
+            box-shadow: 0 12px 25px var(--primary-glow);
         }
         .filter-card {
             background: white;
@@ -399,7 +399,7 @@ if ($officeKey) {
 
 <div class="landing-background" style="background-color: #022c22; min-height: 100vh; padding-top: 80px;">
     <!-- Hero Section -->
-    <section class="hero-mini" style="background: linear-gradient(135deg, #022c22 0%, #064e3b 100%); color: white; padding: 80px 0; margin-bottom: 50px; text-align: center; position: relative; overflow: hidden;">
+    <section class="hero-mini" style="background: var(--gradient-primary); color: white; padding: 80px 0; margin-bottom: 50px; text-align: center; position: relative; overflow: hidden;">
         <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.1; background: radial-gradient(circle at 20% 30%, #10b981 0%, transparent 50%), radial-gradient(circle at 80% 70%, #34d399 0%, transparent 50%); pointer-events: none;"></div>
         <div class="container" style="position: relative; z-index: 2;">
             <h1 style="font-size: 3rem; font-weight: 800; margin-bottom: 12px; letter-spacing: -0.04em;">Available Inventory</h1>
@@ -703,7 +703,7 @@ if ($officeKey) {
     }
 
     .modal-header-custom {
-        background: linear-gradient(135deg, #022c22 0%, #064e3b 100%);
+        background: var(--gradient-primary);
         color: white;
         padding: 24px 30px;
         text-align: left;

@@ -47,7 +47,7 @@ $root = rtrim($scriptDir, '/') . '/';
     </script>
     <style>
         .asset-hero {
-            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            background: var(--gradient-primary);
             color: white;
             padding: 40px;
             border-radius: 20px;

@@ -1,7 +1,7 @@
 <?php $root = $base_path ?? './'; ?>
 <style>
     .premium-footer {
-        background: linear-gradient(135deg, #022c22 0%, #064e3b 100%);
+        background: var(--gradient-primary);
         color: #f8fafc;
         padding: 4rem 0 2rem;
         position: relative;

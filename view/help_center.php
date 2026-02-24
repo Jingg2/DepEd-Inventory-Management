@@ -92,12 +92,12 @@ $root = rtrim($scriptDir, '/') . '/';
             transition: all 0.2s;
         }
         .help-nav a:hover {
-            background: #f8fafc;
-            color: #2A4D88;
+            background: var(--bg-light);
+            color: var(--primary-emerald);
         }
         .help-nav a.active {
-            background: #eff6ff;
-            color: #2A4D88;
+            background: var(--bg-emerald-light);
+            color: var(--primary-emerald);
         }
 
         /* Help Content Areas */
@@ -153,7 +153,7 @@ $root = rtrim($scriptDir, '/') . '/';
             gap: 12px;
         }
         .help-card h4 i {
-            color: #2A4D88;
+            color: var(--primary-emerald);
             font-size: 1rem;
         }
 
@@ -173,7 +173,7 @@ $root = rtrim($scriptDir, '/') . '/';
 
         .alert-info {
             background: #f0f7ff;
-            border-left: 4px solid #3b82f6;
+            border-left: 4px solid var(--primary-emerald);
             padding: 15px;
             border-radius: 8px;
             color: #1e40af;

@@ -73,7 +73,7 @@ try {
         .report-icon {
             width: 50px;
             height: 50px;
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            background: var(--gradient-primary);
             border-radius: 12px;
             display: flex;
             align-items: center;
@@ -81,7 +81,7 @@ try {
             margin-bottom: 15px;
             font-size: 24px;
             color: white;
-            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+            box-shadow: 0 4px 10px var(--primary-glow);
         }
 
         .report-card h3 {
@@ -104,7 +104,7 @@ try {
             align-items: center;
             justify-content: center;
             gap: 8px;
-            background: #1e293b;
+            background: var(--primary-emerald);
             color: white;
             padding: 12px 20px;
             border-radius: 8px;
@@ -118,7 +118,7 @@ try {
         }
 
         .download-btn:hover {
-            background: #334155;
+            background: var(--primary-hover);
             transform: translateY(-1px);
         }
 
@@ -159,7 +159,7 @@ try {
             <li><a href="<?php echo $root; ?>controlled_assets/deliveries"><i class="fas fa-box"></i> <span>Deliveries</span></a></li>
             <li><a href="<?php echo $root; ?>controlled_assets/reports" class="active"><i class="fas fa-file-alt"></i> <span>Reports</span></a></li>
             <li class="divider"></li>
-            <li><a href="<?php echo $root; ?>inventory" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;"><i class="fas fa-arrow-left"></i> <span>Back to Inventory</span></a></li>
+            <li><a href="<?php echo $root; ?>inventory" style="background: rgba(66, 167, 106, 0.1); color: var(--primary-emerald);"><i class="fas fa-arrow-left"></i> <span>Back to Inventory</span></a></li>
         </ul>
     </div>
     <div class="main-content">
@@ -195,7 +195,7 @@ try {
 
             <!-- School Inventory Report -->
             <div class="report-card">
-                <div class="report-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);">
+                <div class="report-icon">
                     <i class="fas fa-school"></i>
                 </div>
                 <h3>School Inventory Report</h3>
@@ -213,7 +213,7 @@ try {
                     </select>
                 </div>
 
-                <a href="#" onclick="downloadSchoolInventory()" class="download-btn" style="background: #10b981;">
+                <a href="#" onclick="downloadSchoolInventory()" class="download-btn">
                     <i class="fas fa-file-excel"></i> Export Inventory
                 </a>
             </div>

@@ -73,7 +73,7 @@ $urlRoot = str_replace(' ', '%20', $root);
         }
 
         .modal-content {
-            background-color: #fff;
+            background: white;
             margin: 2% auto; /* Move closer to top */
             width: 90%; /* Responsive width */
             max-width: 950px; /* Larger for better visibility */
@@ -81,6 +81,7 @@ $urlRoot = str_replace(' ', '%20', $root);
             border-radius: 12px;
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
             overflow: visible; /* Prevent inner cutting */
+            color: var(--text-main);
             animation: slideDown 0.4s ease-out;
         }
 
@@ -90,12 +91,22 @@ $urlRoot = str_replace(' ', '%20', $root);
         }
 
         .modal-header {
-            background-color: #2A4D88;
+            background: var(--gradient-navy);
             color: white;
-            padding: 20px;
+            padding: 20px 25px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border-radius: 12px 12px 0 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
         .close-modal {
@@ -107,37 +118,54 @@ $urlRoot = str_replace(' ', '%20', $root);
 
         .modal-body {
             padding: 25px;
+            background-color: white;
+            border-radius: 0 0 12px 12px;
         }
 
         .items-table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 15px;
+            background: white;
         }
 
         .items-table th, .items-table td {
             text-align: left;
-            padding: 12px;
-            border-bottom: 1px solid #eee;
+            padding: 12px 15px;
+            border-bottom: 1px solid #edf2f7;
         }
 
         .items-table th {
-            background-color: #f8f9fa;
-            color: #2A4D88;
+            background-color: #f7fafc;
+            color: #2d3748;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
+
+        .items-table tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+
+        .items-table td {
+            color: #4a5568;
+            font-size: 0.95rem;
+        }
+
         .btn-view-items:hover { opacity: 0.8; }
         .btn-action-req:hover { opacity: 0.8; }
 
         /* Item Name Link Style */
         .item-link {
-            color: #2A4D88;
+            color: var(--primary-emerald);
             text-decoration: none;
             font-weight: 600;
             cursor: pointer;
         }
         .item-link:hover {
             text-decoration: underline;
-            color: #1a3a6d;
+            color: var(--secondary-emerald);
         }
 
         /* Supply Detail Modal Styles (from supply.php) */
@@ -172,11 +200,11 @@ $urlRoot = str_replace(' ', '%20', $root);
             <h2>Inventory System</h2>
         </div>
         <ul>
-            <li><a href="dashboard" class="<?php echo ($currentRoute == '/dashboard') ? 'active' : ''; ?>"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
-            <li><a href="inventory" class="<?php echo ($currentRoute == '/inventory') ? 'active' : ''; ?>"><i class="fas fa-box"></i> <span>Supply</span></a></li>
+            <li><a href="<?php echo $root; ?>dashboard" class="<?php echo ($currentRoute == '/dashboard') ? 'active' : ''; ?>"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+            <li><a href="<?php echo $root; ?>inventory" class="<?php echo ($currentRoute == '/inventory') ? 'active' : ''; ?>"><i class="fas fa-box"></i> <span>Supply</span></a></li>
             <li class="divider"></li>
             <li>
-                <a href="requests" class="<?php echo ($currentRoute == '/requests') ? 'active' : ''; ?>">
+                <a href="<?php echo $root; ?>requests" class="<?php echo ($currentRoute == '/requests') ? 'active' : ''; ?>">
                     <i class="fas fa-file-invoice"></i> <span>Request</span>
                     <?php if ($pendingCount > 0): ?>
                         <span class="sidebar-badge"><?php echo $pendingCount; ?></span>
@@ -184,11 +212,12 @@ $urlRoot = str_replace(' ', '%20', $root);
                 </a>
             </li>
             <li class="divider"></li>
-            <li><a href="employees" class="<?php echo ($currentRoute == '/employees') ? 'active' : ''; ?>"><i class="fas fa-users"></i> <span>Employee</span></a></li>
-            <li><a href="reports" class="<?php echo ($currentRoute == '/reports') ? 'active' : ''; ?>"><i class="fas fa-file-excel"></i> <span>Reports</span></a></li>
+            <li><a href="<?php echo $root; ?>employees" class="<?php echo ($currentRoute == '/employees') ? 'active' : ''; ?>"><i class="fas fa-users"></i> <span>Employee</span></a></li>
+            <li><a href="<?php echo $root; ?>reports" class="<?php echo ($currentRoute == '/reports') ? 'active' : ''; ?>"><i class="fas fa-file-excel"></i> <span>Reports</span></a></li>
             <li class="divider"></li>
-            <li><a href="settings" class="<?php echo ($currentRoute == '/settings') ? 'active' : ''; ?>"><i class="fas fa-cog"></i> <span>Settings</span></a></li>
-            <li><a href="<?php echo $root; ?>logout" style="color: #ef5350;" onclick="showLogoutModal(event, this.href);"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
+            <li><a href="<?php echo $root; ?>settings" class="<?php echo ($currentRoute == '/settings') ? 'active' : ''; ?>"><i class="fas fa-cog"></i> <span>Settings</span></a></li>
+            <li class="divider"></li>
+            <li><a href="<?php echo $root; ?>logout" class="logout-link" onclick="showLogoutModal(event, this.href);"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
         </ul>
     </div>
     <div class="main-content">
@@ -338,7 +367,7 @@ $urlRoot = str_replace(' ', '%20', $root);
                                             data-date="<?php echo date('Y-m-d', strtotime($req['request_date'])); ?>"
                                             data-status="<?php echo $req['status']; ?>"
                                             data-semi="<?php echo $req['semi_expendable_count'] ?? 0; ?>"
-                                            title="View Items" style="background: #2A4D88; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
+                                            title="View Items" style="background: var(--gradient-primary); color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
                                             <i class="fas fa-eye"></i>
                                         </button>
                                         <button class="btn-open-approval" 
@@ -575,7 +604,7 @@ $urlRoot = str_replace(' ', '%20', $root);
     <!-- Comprehensive Approval Modal -->
     <div id="approvalModal" class="modal">
         <div class="modal-content" style="width: 950px; margin: 2% auto;">
-            <div class="modal-header" style="background-color: #2A4D88;">
+            <div class="modal-header">
                 <h2><i class="fas fa-clipboard-check"></i> Requisition Approval & Issuance</h2>
                 <span class="close-approval-modal" style="font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
             </div>
@@ -584,7 +613,7 @@ $urlRoot = str_replace(' ', '%20', $root);
                 <div class="request-details-card" style="background: #f8f9fa; border: 1px solid #e1e4e8; border-radius: 8px; padding: 20px; margin-bottom: 25px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
                     <div>
                         <label style="display: block; color: #666; font-size: 0.8rem; margin-bottom: 4px;">Requisition No</label>
-                        <strong id="appReqNo" style="color: #2A4D88; font-size: 1.1rem;"></strong>
+                        <strong id="appReqNo" style="color: var(--primary-emerald); font-size: 1.1rem;"></strong>
                     </div>
                     <div>
                         <label style="display: block; color: #666; font-size: 0.8rem; margin-bottom: 4px;">Requester</label>
@@ -606,7 +635,7 @@ $urlRoot = str_replace(' ', '%20', $root);
 
                 <form id="approvalForm">
                     <input type="hidden" id="appRequisitionId">
-                    <h3 style="margin-bottom: 15px; font-size: 1.1rem; color: #2A4D88;"><i class="fas fa-boxes"></i> Requested Items & Stock Availability</h3>
+                    <h3 style="margin-bottom: 15px; font-size: 1.1rem; color: var(--primary-emerald);"><i class="fas fa-boxes"></i> Requested Items & Stock Availability</h3>
                     <table class="items-table">
                         <thead>
                             <tr>
@@ -644,7 +673,7 @@ $urlRoot = str_replace(' ', '%20', $root);
     <div id="itemDetailModal" class="modal">
         <div class="modal-content supply-modal-content">
             <span class="close-item-detail" style="position: absolute; right: 20px; top: 15px; font-size: 28px; cursor: pointer;">&times;</span>
-            <h2 id="modal-item-title" style="background-color: #2A4D88; color: white; margin: -24px -24px 20px -24px; padding: 16px; text-align: center; border-radius: 12px 12px 0 0; font-size: 20px;">Item Details</h2>
+            <h2 id="modal-item-title" style="background: var(--gradient-navy); color: white; margin: -24px -24px 20px -24px; padding: 20px; text-align: center; border-radius: 12px 12px 0 0; font-size: 20px;">Item Details</h2>
             <img id="modal-item-img" src="" alt="Item Image">
             
             <div class="details-grid">

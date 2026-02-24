@@ -89,12 +89,6 @@
                     <textarea id="description" name="description" rows="3" placeholder="Enter detailed description of the item"></textarea>
                 </div>
                 
-                <div class="form-group">
-                    <label for="school">
-                        <i class="fas fa-school"></i> School / Destination
-                    </label>
-                    <input type="text" id="school" name="school" placeholder="Enter school name or destination">
-                </div>
             </div>
 
             <!-- Inventory Details Section -->
@@ -118,20 +112,6 @@
                     </div>
                 </div>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="previous_month">
-                            <i class="fas fa-history"></i> Previous Month Balance
-                        </label>
-                        <input type="number" id="previous_month" name="previous_month" min="0" value="0" placeholder="Value from previous month">
-                    </div>
-                    <div class="form-group">
-                        <label for="issuance">
-                            <i class="fas fa-file-export"></i> Issuance for the Month
-                        </label>
-                        <input type="number" id="issuance" name="issuance" min="0" value="0" placeholder="Total items issued">
-                    </div>
-                </div>
 
                 <div class="form-row">
                     <div class="form-group">
