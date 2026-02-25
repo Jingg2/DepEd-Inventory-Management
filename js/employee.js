@@ -22,11 +22,11 @@
                 const idInput = this.querySelector('input[name="employee_id"]');
                 const idValue = idInput ? idInput.value.trim() : '';
 
-                if (!/^\d{7}$/.test(idValue)) {
+                if (idValue !== '' && !/^\d+$/.test(idValue)) {
                     e.preventDefault();
                     const sm = typeof window.showModal === 'function' ? window.showModal : (typeof showModal === 'function' ? showModal : null);
-                    if (sm) sm('Employee ID must be exactly 7 digits.', 'error');
-                    else alert('Employee ID must be exactly 7 digits.');
+                    if (sm) sm('Employee ID must be numeric.', 'error');
+                    else alert('Employee ID must be numeric.');
                     return false;
                 }
             });

@@ -894,9 +894,218 @@ $root = rtrim($scriptDir, '/') . '/';
             background-color: #ffffff;
         }
 
-        .search-filter-container #filter-category {
+        /* Custom Selection Dropdown Styles */
+        .custom-select-box {
+            width: 100%;
+            padding: 12px 15px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.95rem;
+            color: #475569;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .custom-select-box:hover {
+            border-color: #10b981;
+            background: #fff;
+        }
+
+        .custom-select-box.active {
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+            background: #fff;
+        }
+
+        .custom-select-box i {
+            color: #a0aec0;
+            transition: transform 0.2s;
+        }
+
+        .custom-select-box.active i {
+            transform: rotate(180deg);
+            color: #10b981;
+        }
+
+        .selected-value {
+            font-weight: 500;
+        }
+
+        .placeholder-text {
+            color: #a0aec0;
+            font-weight: 400;
+        }
+
+        /* Searchable Dropdown Styles */
+        .search-results-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            max-height: 300px;
+            overflow-y: auto;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            margin-top: 5px;
+        }
+
+        .search-results-dropdown.active {
+            display: block;
+        }
+
+        .dropdown-group {
+            background: #f1f5f9;
+            padding: 10px 15px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid #e2e8f0;
+            border-top: 1px solid #e2e8f0;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* VIBRANT HOVER FOR DEPARTMENT */
+        .dropdown-group:hover {
+            background-color: #10b981 !important;
+            color: white !important;
+            border-left: 5px solid #059669;
+        }
+
+        .dropdown-group::after {
+            content: "\f105"; /* fa-chevron-right */
+            font-family: "Font Awesome 5 Free";
+            font-weight: 900;
+            font-size: 0.8rem;
+            opacity: 0.6;
+            transition: all 0.2s;
+        }
+
+        .dropdown-group:hover::after {
+            opacity: 1;
+            transform: translateX(4px);
+            color: white;
+        }
+
+        .dropdown-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border-bottom: 1px solid #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .dropdown-item:hover, .dropdown-item.active-item {
+            background-color: #10b981 !important;
+            border-left: 5px solid #059669;
+            transform: translateX(4px);
+        }
+
+        .dropdown-item:hover .emp-name, .dropdown-item.active-item .emp-name {
+            color: white !important;
+        }
+
+        .dropdown-item:hover .emp-details, .dropdown-item.active-item .emp-details {
+            color: rgba(255, 255, 255, 0.9) !important;
+        }
+
+        .dropdown-item .emp-info {
+            display: flex;
+            flex-direction: column;
             flex: 1;
-            min-width: 200px;
+        }
+
+        .dropdown-item .selection-indicator {
+            display: none;
+            color: white;
+            font-size: 1.1rem;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .dropdown-item:hover .selection-indicator, .dropdown-item.active-item .selection-indicator {
+            display: block;
+        }
+
+        .dropdown-item .emp-name {
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 0.95rem;
+        }
+
+        .dropdown-item .emp-details {
+            font-size: 0.8rem;
+            color: #718096;
+        }
+
+        .dropdown-item.no-results {
+            padding: 20px;
+            text-align: center;
+            color: #a0aec0;
+            cursor: default;
+        }
+
+        .dropdown-item.no-results:hover {
+            background: transparent;
+        }
+
+        /* Selection Highlight Animation */
+        @keyframes selected-glow {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); border-color: #10b981; }
+            50% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); border-color: #10b981; }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        .selection-highlight {
+            animation: selected-glow 1s ease-out;
+            border-color: #10b981 !important;
+            background-color: #f0fff4 !important;
+        }
+
+        .browse-categories-btn {
+            position: absolute;
+            right: 45px; /* Before the search icon */
+            top: 50%;
+            transform: translateY(-50%);
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            color: #64748b;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            z-index: 5;
+        }
+
+        .browse-categories-btn:hover {
+            background: #e2e8f0;
+            color: #334155;
+            border-color: #cbd5e0;
+        }
+
+        .browse-categories-btn i {
+            font-size: 0.65rem;
         }
     </style>
 </head>
@@ -1142,8 +1351,20 @@ $root = rtrim($scriptDir, '/') . '/';
                         <h3 class="info-title">Employee Information</h3>
                         <div class="form-grid">
                             <div class="form-group">
-                                <label class="form-label">Employee ID</label>
-                                <input type="text" id="admin-req-emp-id" class="form-control" placeholder="Enter ID">
+                                <label class="form-label">Select Office / Department</label>
+                                <select id="admin-emp-office-filter" class="form-control">
+                                    <option value="">All Offices / Departments</option>
+                                    <!-- Populated by JS -->
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Select Employee Name</label>
+                                <select id="admin-req-emp-id-select" class="form-control">
+                                    <option value="">Select Employee...</option>
+                                    <!-- Populated by JS -->
+                                </select>
+                                <input type="hidden" id="admin-req-emp-id">
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Date</label>

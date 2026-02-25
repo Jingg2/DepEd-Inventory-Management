@@ -73,64 +73,121 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Employee ID Lookup Logic
-    const empIdInput = document.getElementById('admin-req-emp-id');
+    // --- Standardized Employee Selection Logic ---
+    const empSelect = document.getElementById('admin-req-emp-id-select');
+    const empHiddenIdInput = document.getElementById('admin-req-emp-id');
     const empNameInput = document.getElementById('admin-req-name');
     const empPositionInput = document.getElementById('admin-req-designation');
     const empDeptInput = document.getElementById('admin-req-department');
+    const empOfficeFilter = document.getElementById('admin-emp-office-filter');
 
-    let lookupTimeout;
+    let employeeData = null; // Stores { "Dept Name": [employees...] }
 
-    if (empIdInput) {
-        empIdInput.addEventListener('input', function () {
-            const id = this.value.trim();
+    // Fetch employee data and initial UI setup
+    function fetchCategorizedEmployees() {
+        if (employeeData) return Promise.resolve(employeeData);
 
-            // Clear fields immediately on any input change
-            isEmployeeValid = false;
-            empNameInput.value = '';
-            empPositionInput.value = '';
-            empDeptInput.value = '';
-            empIdInput.style.borderColor = '#e2e8f0';
-            empIdInput.style.backgroundColor = '#ffffff';
+        const basePath = typeof window.basePath !== 'undefined' ? window.basePath : '';
+        return fetch(`${basePath}api/get_employees_categorized.php`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    employeeData = data.departments;
+                    populateOfficeFilter();
+                    populateEmployeeSelect();
+                    return employeeData;
+                }
+                throw new Error(data.message || 'Failed to fetch employees');
+            })
+            .catch(error => console.error('Error fetching categorized employees:', error));
+    }
 
-            if (id === '') return;
+    function populateOfficeFilter() {
+        if (!empOfficeFilter || !employeeData) return;
 
-            // Get basePath (usually empty or absolute path)
-            const basePath = typeof window.basePath !== 'undefined' ? window.basePath : '';
+        const currentVal = empOfficeFilter.value;
+        empOfficeFilter.innerHTML = '<option value="">All Offices / Departments</option>';
 
-            clearTimeout(lookupTimeout);
-            lookupTimeout = setTimeout(() => {
-                fetch(`${basePath}api/get_employee.php?id=${encodeURIComponent(id)}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success && data.employee) {
-                            const emp = data.employee;
-                            empNameInput.value = `${emp.first_name} ${emp.last_name}`;
-                            empPositionInput.value = emp.position || '';
-                            empDeptInput.value = emp.department_name || '';
-                            empIdInput.style.borderColor = '#48bb78'; // Green
-                            empIdInput.style.backgroundColor = '#f0fff4';
-                            isEmployeeValid = true;
-                        } else {
-                            // Clear fields and show error state
-                            empIdInput.style.borderColor = '#f56565'; // Red
-                            empIdInput.style.backgroundColor = '#fff5f5';
-                            empNameInput.value = 'Employee Not Found';
-                            empNameInput.style.color = '#c53030';
-                            isEmployeeValid = false;
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error fetching employee:', error);
-                        isEmployeeValid = false;
-                    });
-            }, 500);
+        Object.keys(employeeData).sort().forEach(dept => {
+            const option = document.createElement('option');
+            option.value = dept;
+            option.textContent = dept;
+            empOfficeFilter.appendChild(option);
         });
 
-        empIdInput.addEventListener('change', function () {
-            this.dispatchEvent(new Event('input'));
+        empOfficeFilter.value = currentVal;
+    }
+
+    function populateEmployeeSelect() {
+        if (!empSelect || !employeeData) return;
+
+        const selectedOffice = empOfficeFilter ? empOfficeFilter.value : '';
+        empSelect.innerHTML = '<option value="">Select Employee...</option>';
+
+        for (const [dept, employees] of Object.entries(employeeData)) {
+            if (selectedOffice !== '' && selectedOffice !== dept) continue;
+
+            const group = document.createElement('optgroup');
+            group.label = dept;
+
+            employees.forEach(emp => {
+                const option = document.createElement('option');
+                option.value = emp.employee_id;
+                option.textContent = `${emp.first_name} ${emp.last_name}`; // Only name as requested
+                option._empData = emp;
+                group.appendChild(option);
+            });
+
+            empSelect.appendChild(group);
+        }
+    }
+
+    if (empSelect) {
+        empSelect.addEventListener('change', function () {
+            const selectedOption = this.options[this.selectedIndex];
+            const emp = selectedOption._empData;
+
+            if (emp) {
+                empHiddenIdInput.value = emp.employee_id;
+                empNameInput.value = `${emp.first_name} ${emp.last_name}`;
+                empPositionInput.value = emp.position || '';
+                empDeptInput.value = emp.department_name || '';
+                isEmployeeValid = true;
+
+                // Selection Feedback
+                const fieldsToHighlight = [empNameInput, empPositionInput, empDeptInput, empSelect];
+                fieldsToHighlight.forEach(field => {
+                    if (field) {
+                        field.classList.add('selection-highlight');
+                        setTimeout(() => field.classList.remove('selection-highlight'), 1000);
+                    }
+                });
+            } else {
+                empHiddenIdInput.value = '';
+                empNameInput.value = '';
+                empPositionInput.value = '';
+                empDeptInput.value = '';
+                isEmployeeValid = false;
+            }
         });
     }
+
+    if (empOfficeFilter) {
+        empOfficeFilter.addEventListener('change', () => {
+            if (employeeData) {
+                populateEmployeeSelect();
+            } else {
+                fetchCategorizedEmployees();
+            }
+        });
+    }
+
+    if (adminViewRequestBtn) {
+        adminViewRequestBtn.addEventListener('click', fetchCategorizedEmployees);
+    }
+
+    // Global click listener to close dropdowns (no longer needed for standard select)
+    // document.addEventListener('click', closeAllDropdowns); // Removed as per new UI
 
     if (adminSubmitRequestBtn) {
         adminSubmitRequestBtn.addEventListener('click', function () {

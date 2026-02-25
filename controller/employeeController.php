@@ -46,12 +46,13 @@ class EmployeeController {
                     }
                 }
             } else {
-                // Create or Update
                 // Validate required fields
                 $errors = [];
-                if (empty($_POST['employee_id'])) $errors[] = 'Employee ID is required';
-                if (!empty($_POST['employee_id']) && (!preg_match('/^\d{7}$/', $_POST['employee_id']))) {
-                    $errors[] = 'Employee ID must be exactly 7 digits';
+                if ($action === 'update' && empty($_POST['employee_id'])) {
+                    $errors[] = 'Employee ID is required for updates';
+                }
+                if (!empty($_POST['employee_id']) && (!preg_match('/^\d+$/', $_POST['employee_id']))) {
+                    $errors[] = 'Employee ID must be numeric';
                 }
                 if (empty($_POST['first_name'])) $errors[] = 'First Name is required';
                 if (empty($_POST['last_name'])) $errors[] = 'Last Name is required';
@@ -105,7 +106,7 @@ class EmployeeController {
                     // Only proceed if no errors occurred during department creation
                     if (empty($errors) && $message === '') {
                         $data = [
-                            'employee_id' => trim($_POST['employee_id']),
+                            'employee_id' => !empty($_POST['employee_id']) ? trim($_POST['employee_id']) : null,
                             'first_name' => trim($_POST['first_name']),
                             'last_name' => trim($_POST['last_name']),
                             'position' => trim($_POST['position']),

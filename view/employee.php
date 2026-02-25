@@ -393,8 +393,8 @@ $root = rtrim($scriptDir, '/') . '/';
                 <form class="registration-form" id="employeeForm" method="POST" action="employees">
                     <input type="hidden" name="action" value="create">
                     <div class="form-group">
-                        <label><i class="fas fa-id-card"></i> Employee ID</label>
-                        <input type="text" name="employee_id" placeholder="Enter 7-digit ID" minlength="7" maxlength="7" pattern="\d{7}" title="Employee ID must be exactly 7 digits" required>
+                        <label><i class="fas fa-id-card"></i> Employee ID (Auto-generated if blank)</label>
+                        <input type="text" name="employee_id" placeholder="Leave blank for automated ID" minlength="0" maxlength="7" pattern="\d*" title="Employee ID must be numeric">
                     </div>
                     <div class="form-row">
                         <div class="form-group">

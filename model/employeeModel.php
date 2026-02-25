@@ -52,20 +52,37 @@ class EmployeeModel {
     }
 
     public function insertEmployee($data) {
-        $sql = "INSERT INTO employee (employee_id, first_name, last_name, position, department_id, role, status, created_at) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        if ($data['employee_id'] !== null) {
+            $sql = "INSERT INTO employee (employee_id, first_name, last_name, position, department_id, role, status, created_at) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            $params = [
+                $data['employee_id'],
+                $data['first_name'],
+                $data['last_name'],
+                $data['position'],
+                $data['department_id'],
+                $data['role'],
+                $data['status'],
+                date('Y-m-d H:i:s')
+            ];
+        } else {
+            $sql = "INSERT INTO employee (first_name, last_name, position, department_id, role, status, created_at) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?)";
+            $params = [
+                $data['first_name'],
+                $data['last_name'],
+                $data['position'],
+                $data['department_id'],
+                $data['role'],
+                $data['status'],
+                date('Y-m-d H:i:s')
+            ];
+        }
+
         try {
             $stmt = $this->conn->prepare($sql);
-            $stmt->bindValue(1, $data['employee_id']);
-            $stmt->bindValue(2, $data['first_name']);
-            $stmt->bindValue(3, $data['last_name']);
-            $stmt->bindValue(4, $data['position']);
-            $stmt->bindValue(5, $data['department_id'], PDO::PARAM_INT);
-            $stmt->bindValue(6, $data['role']);
-            $stmt->bindValue(7, $data['status']);
-            $stmt->bindValue(8, date('Y-m-d H:i:s'));
+            $result = $stmt->execute($params);
             
-            $result = $stmt->execute();
             if (!$result) {
                 $errorInfo = $stmt->errorInfo();
                 $this->lastError = $errorInfo[2] ?? 'Unknown error';
