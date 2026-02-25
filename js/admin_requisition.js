@@ -19,12 +19,16 @@ document.addEventListener('DOMContentLoaded', function () {
     // Initialize
     updateRequestCount();
 
+    // Help Function to Open Modal
+    function openAdminRequisitionModal() {
+        renderRequestTable();
+        adminRequestModal.classList.add('active');
+        fetchCategorizedEmployees(); // Ensure data is loaded and UI is populated
+    }
+
     // Event Listeners related to Request Modal
     if (adminViewRequestBtn) {
-        adminViewRequestBtn.addEventListener('click', function () {
-            renderRequestTable();
-            adminRequestModal.classList.add('active');
-        });
+        adminViewRequestBtn.addEventListener('click', openAdminRequisitionModal);
     }
 
     if (adminRequestCloseBtn) {
@@ -34,10 +38,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     if (adminFabBtn) {
-        adminFabBtn.addEventListener('click', function () {
-            renderRequestTable();
-            adminRequestModal.classList.add('active');
-        });
+        adminFabBtn.addEventListener('click', openAdminRequisitionModal);
     }
 
     // Add to Request logic (Event Delegation)
@@ -85,7 +86,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Fetch employee data and initial UI setup
     function fetchCategorizedEmployees() {
-        if (employeeData) return Promise.resolve(employeeData);
+        // If we already have data, just ensure the UI is populated
+        if (employeeData) {
+            populateOfficeFilter();
+            populateEmployeeSelect();
+            return Promise.resolve(employeeData);
+        }
 
         const basePath = typeof window.basePath !== 'undefined' ? window.basePath : '';
         return fetch(`${basePath}api/get_employees_categorized.php`)
@@ -182,9 +188,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    if (adminViewRequestBtn) {
-        adminViewRequestBtn.addEventListener('click', fetchCategorizedEmployees);
-    }
 
     // Global click listener to close dropdowns (no longer needed for standard select)
     // document.addEventListener('click', closeAllDropdowns); // Removed as per new UI
