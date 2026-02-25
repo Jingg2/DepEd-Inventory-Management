@@ -1371,6 +1371,10 @@ $root = rtrim($scriptDir, '/') . '/';
                                 <input type="date" id="admin-req-date" class="form-control" value="<?php echo date('Y-m-d'); ?>">
                             </div>
                             <div class="form-group">
+                                <label class="form-label">Employee ID</label>
+                                <input type="text" id="admin-req-emp-id-display" class="form-control" placeholder="ID Number" readonly>
+                            </div>
+                            <div class="form-group">
                                 <label class="form-label">Name</label>
                                 <input type="text" id="admin-req-name" class="form-control" placeholder="Full Name" readonly>
                             </div>

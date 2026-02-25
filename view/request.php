@@ -371,6 +371,7 @@ $urlRoot = str_replace(' ', '%20', $root);
                                             data-id="<?php echo $req['requisition_id']; ?>" 
                                             data-no="<?php echo $req['requisition_no']; ?>" 
                                             data-requester="<?php echo htmlspecialchars($req['first_name'] . ' ' . $req['last_name']); ?>"
+                                            data-emp-id="<?php echo htmlspecialchars($req['employee_id']); ?>"
                                             data-dept="<?php echo htmlspecialchars($req['department_name']); ?>"
                                             data-purpose="<?php echo htmlspecialchars($req['purpose'] ?? 'N/A'); ?>"
                                             data-date="<?php echo date('Y-m-d', strtotime($req['request_date'])); ?>"
@@ -383,6 +384,7 @@ $urlRoot = str_replace(' ', '%20', $root);
                                             data-id="<?php echo $req['requisition_id']; ?>" 
                                             data-no="<?php echo $req['requisition_no']; ?>" 
                                             data-requester="<?php echo htmlspecialchars($req['first_name'] . ' ' . $req['last_name']); ?>"
+                                            data-emp-id="<?php echo htmlspecialchars($req['employee_id']); ?>"
                                             data-dept="<?php echo htmlspecialchars($req['department_name']); ?>"
                                             data-purpose="<?php echo htmlspecialchars($req['purpose'] ?? 'N/A'); ?>"
                                             data-date="<?php echo date('Y-m-d', strtotime($req['request_date'])); ?>"
@@ -455,6 +457,7 @@ $urlRoot = str_replace(' ', '%20', $root);
                                             data-id="<?php echo $req['requisition_id']; ?>" 
                                             data-no="<?php echo $req['requisition_no']; ?>" 
                                             data-requester="<?php echo htmlspecialchars($req['first_name'] . ' ' . $req['last_name']); ?>"
+                                            data-emp-id="<?php echo htmlspecialchars($req['employee_id']); ?>"
                                             data-dept="<?php echo htmlspecialchars($req['department_name']); ?>"
                                             data-purpose="<?php echo htmlspecialchars($req['purpose'] ?? 'N/A'); ?>"
                                             data-date="<?php echo date('Y-m-d', strtotime($req['request_date'])); ?>"
@@ -499,7 +502,7 @@ $urlRoot = str_replace(' ', '%20', $root);
                 <!-- Requisition Details Header -->
                 <div id="viewDetailsHeader" style="background: #f8f9fa; border: 1px solid #e1e4e8; border-radius: 8px; padding: 15px; margin-bottom: 20px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; font-size: 0.9rem;">
                     <div>
-                        <span style="color: #666;">Requester:</span> <strong id="viewRequester"></strong>
+                        <span style="color: #666;">Requester:</span> <strong id="viewRequester"></strong> (<span id="viewEmpId" style="color: var(--primary-emerald); font-weight: 700;"></span>)
                     </div>
                     <div>
                         <span style="color: #666;">Department:</span> <strong id="viewDept"></strong>
@@ -578,6 +581,7 @@ $urlRoot = str_replace(' ', '%20', $root);
                                                data-id="<?php echo $req['requisition_id']; ?>"
                                                data-no="<?php echo $req['requisition_no']; ?>"
                                                data-requester="<?php echo htmlspecialchars($req['first_name'] . ' ' . $req['last_name']); ?>"
+                                            data-emp-id="<?php echo htmlspecialchars($req['employee_id']); ?>"
                                                data-dept="<?php echo htmlspecialchars($req['department_name']); ?>"
                                                data-purpose="Rejected Request"
                                                data-date="<?php echo date('Y-m-d', strtotime($req['created_at'])); ?>"
@@ -594,6 +598,7 @@ $urlRoot = str_replace(' ', '%20', $root);
                                                 data-id="<?php echo $req['requisition_id']; ?>" 
                                                 data-no="<?php echo $req['requisition_no']; ?>" 
                                                 data-requester="<?php echo htmlspecialchars($req['first_name'] . ' ' . $req['last_name']); ?>"
+                                            data-emp-id="<?php echo htmlspecialchars($req['employee_id']); ?>"
                                                 data-dept="<?php echo htmlspecialchars($req['department_name']); ?>"
                                                 data-purpose="<?php echo htmlspecialchars($req['purpose'] ?? 'N/A'); ?>"
                                                 data-date="<?php echo date('Y-m-d', strtotime($req['request_date'])); ?>"
@@ -627,7 +632,7 @@ $urlRoot = str_replace(' ', '%20', $root);
                     </div>
                     <div>
                         <label style="display: block; color: #666; font-size: 0.8rem; margin-bottom: 4px;">Requester</label>
-                        <strong id="appRequester"></strong>
+                        <strong id="appRequester"></strong> (<span id="appEmpId" style="color: var(--primary-emerald);"></span>)
                     </div>
                     <div>
                         <label style="display: block; color: #666; font-size: 0.8rem; margin-bottom: 4px;">Department</label>
@@ -845,6 +850,7 @@ $urlRoot = str_replace(' ', '%20', $root);
                     const reqId = this.getAttribute('data-id');
                     const reqNo = this.getAttribute('data-no');
                     const requester = this.getAttribute('data-requester');
+                    const empId = this.getAttribute('data-emp-id');
                     const dept = this.getAttribute('data-dept');
                     const purpose = this.getAttribute('data-purpose');
                     const date = this.getAttribute('data-date');
@@ -853,6 +859,7 @@ $urlRoot = str_replace(' ', '%20', $root);
 
                     document.getElementById('modalRequisitionNo').textContent = reqNo;
                     document.getElementById('viewRequester').textContent = requester;
+                    document.getElementById('viewEmpId').textContent = empId;
                     document.getElementById('viewDept').textContent = dept;
                     document.getElementById('viewPurpose').textContent = purpose;
                     document.getElementById('viewDate').textContent = date;
@@ -937,6 +944,7 @@ $urlRoot = str_replace(' ', '%20', $root);
                     const reqId = this.getAttribute('data-id');
                     const reqNo = this.getAttribute('data-no');
                     const requester = this.getAttribute('data-requester');
+                    const empId = this.getAttribute('data-emp-id');
                     const dept = this.getAttribute('data-dept');
                     const purpose = this.getAttribute('data-purpose');
                     const date = this.getAttribute('data-date');
@@ -944,6 +952,7 @@ $urlRoot = str_replace(' ', '%20', $root);
                     // Set Header Info
                     document.getElementById('appReqNo').textContent = reqNo;
                     document.getElementById('appRequester').textContent = requester;
+                    document.getElementById('appEmpId').textContent = empId;
                     document.getElementById('appDept').textContent = dept;
                     document.getElementById('appPurpose').textContent = purpose;
                     document.getElementById('appDate').textContent = date;

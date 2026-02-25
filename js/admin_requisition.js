@@ -155,13 +155,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (emp) {
                 empHiddenIdInput.value = emp.employee_id;
+                const displayIdInput = document.getElementById('admin-req-emp-id-display');
+                if (displayIdInput) displayIdInput.value = emp.employee_id;
                 empNameInput.value = `${emp.first_name} ${emp.last_name}`;
                 empPositionInput.value = emp.position || '';
                 empDeptInput.value = emp.department_name || '';
                 isEmployeeValid = true;
 
                 // Selection Feedback
-                const fieldsToHighlight = [empNameInput, empPositionInput, empDeptInput, empSelect];
+                const fieldsToHighlight = [empNameInput, empPositionInput, empDeptInput, empSelect, displayIdInput];
                 fieldsToHighlight.forEach(field => {
                     if (field) {
                         field.classList.add('selection-highlight');
@@ -170,6 +172,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
             } else {
                 empHiddenIdInput.value = '';
+                const displayIdInput = document.getElementById('admin-req-emp-id-display');
+                if (displayIdInput) displayIdInput.value = '';
                 empNameInput.value = '';
                 empPositionInput.value = '';
                 empDeptInput.value = '';
@@ -246,6 +250,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
                         // Clear form
                         document.getElementById('admin-req-emp-id').value = '';
+                        const displayIdInput = document.getElementById('admin-req-emp-id-display');
+                        if (displayIdInput) displayIdInput.value = '';
                         document.getElementById('admin-req-name').value = '';
                         document.getElementById('admin-req-designation').value = '';
                         document.getElementById('admin-req-department').value = '';
