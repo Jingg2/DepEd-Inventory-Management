@@ -18,14 +18,16 @@ function syncSupplyTotals($pdo) {
     echo "\n--- Syncing Monthly Totals from Transactions ---\n";
     $currentMonth = date('Y-m');
     
-    // Calculate Acquisition totals (from request_item where requisition date is this month)
-    // Assuming 'requisition' column is for acquisitions
-    $sqlAcq = "SELECT ri.supply_id, SUM(ri.quantity) as total_acq
-               FROM request_item ri
-               JOIN requisition r ON ri.requisition_id = r.requisition_id
-               WHERE r.request_date LIKE '$currentMonth%'
-               AND r.status != 'Rejected'
-               GROUP BY ri.supply_id";
+    // CRITICAL: Reset all totals to 0 first to ensure accuracy
+    echo "Resetting all monthly totals to 0...\n";
+    $pdo->exec("UPDATE supply SET requisition = 0, issuance = 0");
+    
+    // Calculate Acquisition totals (from supply_history where type is 'Receipt' and created in this month)
+    $sqlAcq = "SELECT supply_id, SUM(add_stock) as total_acq
+               FROM supply_history
+               WHERE type = 'Receipt'
+               AND created_at LIKE '$currentMonth%'
+               GROUP BY supply_id";
     $acqData = $pdo->query($sqlAcq)->fetchAll(PDO::FETCH_ASSOC);
 
     // Calculate Issuance totals (from request_item where status is 'Issued' and approved in this month)

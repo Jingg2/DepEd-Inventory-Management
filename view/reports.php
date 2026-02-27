@@ -339,29 +339,29 @@ $urlRoot = str_replace(' ', '%20', $root);
                 </a>
             </div>
 
-            <!-- RPCI Inventory Report -->
+            <!-- Monthly Inventory Report -->
             <div class="report-card">
                 <div class="report-icon">
                     <i class="fas fa-boxes"></i>
                 </div>
-                <h3>RPCI Inventory Report</h3>
+                <h3>Monthly Inventory Report</h3>
                 <p>Report on the Physical Count of Inventory (Appendix 66). Comprehensive stock balance and discrepancy report.</p>
                 <a href="<?php echo $root; ?>api/export_supply_excel.php" class="download-btn" id="supply-download-btn">
                     <i class="fas fa-download"></i>
-                    Export RPCI Excel
+                    Monthly Inventory Excel
                 </a>
             </div>
 
-            <!-- RPCI (PPE & Semi-Expendable) -->
+            <!-- Monthly Inventory (PPE & Semi-Expendable) -->
             <div class="report-card">
                 <div class="report-icon" style="background: linear-gradient(135deg, #38a169 0%, #2f855a 100%);">
                     <i class="fas fa-tools"></i>
                 </div>
-                <h3>RPCI (PPE & Semi-Expendable)</h3>
+                <h3>Monthly Inventory (PPE & Semi-Expendable)</h3>
                 <p>Report on the Physical Count of Property, Plant, Equipment & Semi-Expendable items (High Value - Appendix 66).</p>
                 <a href="<?php echo $root; ?>api/export_ppe_report.php" class="download-btn" id="ppe-download-btn" style="background: var(--gradient-warning); box-shadow: 0 4px 10px rgba(245, 158, 11, 0.2);">
                     <i class="fas fa-download"></i>
-                    Export RPCI (PPE)
+                    Monthly Inventory (PPE)
                 </a>
             </div>
 

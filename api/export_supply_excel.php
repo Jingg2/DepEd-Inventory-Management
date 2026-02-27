@@ -63,7 +63,7 @@ require_once __DIR__ . '/../model/SystemLogModel.php';
 // Excel Headers
 if (ob_get_level()) ob_end_clean();
 header('Content-Type: application/vnd.ms-excel');
-header('Content-Disposition: attachment; filename=RPCI_Monthly_Inventory_' . $selectedMonth . '.xls');
+header('Content-Disposition: attachment; filename=Monthly_Inventory_' . $selectedMonth . '.xls');
 header('Pragma: no-cache');
 header('Expires: 0');
 

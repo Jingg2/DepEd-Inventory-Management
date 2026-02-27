@@ -43,11 +43,6 @@ class RequisitionModel {
                 $item['requestQty']
             ]);
 
-            // Increment quantity (Stock In)
-            $updStockSql = "UPDATE supply SET quantity = quantity + ? WHERE supply_id = ?";
-            $updStockStmt = $this->conn->prepare($updStockSql);
-            $updStockStmt->execute([$item['requestQty'], $item['id']]);
-
             // Sync Monthly Totals (Acquisition/Issuance)
             $this->syncSupplyTotals($item['id']);
         }
@@ -218,8 +213,8 @@ class RequisitionModel {
 
                 $supplyId = $ri['supply_id'];
 
-                // Record the final issuance (Stock Out / Assurance)
-                // We previously added the requested qty to stock (Acquisition), now we deduct what is actually issued.
+                // Record the final issuance (Stock Out)
+                // We deduct what is actually issued from the stock.
                 $updStockSql = "UPDATE supply SET quantity = quantity - ? WHERE supply_id = ?";
                 $updStockStmt = $this->conn->prepare($updStockSql);
                 $updStockStmt->execute([$issuedQty, $supplyId]);
@@ -279,22 +274,14 @@ class RequisitionModel {
             }
 
             // 2. If approving, check and deduct stock
-            if ($status === 'Approved') {
-                $items = $this->getRequisitionItems($requisitionId);
-                foreach ($items as $item) {
-                    // Items are already deducted and issuance updated at save time.
-                    // Just update the item status to Approved.
-                    $updateItemStatusSql = "UPDATE request_item SET status = 'Approved', issued_quantity = quantity WHERE request_item_id = ?";
-                    $updateItemStmt = $this->conn->prepare($updateItemStatusSql);
-                    $updateItemStmt->execute([$item['request_item_id']]);
-                }
-                // Undo the initial stock addition (Acquisition) since request is rejected
-                $items = $this->getRequisitionItems($requisitionId);
-                foreach ($items as $item) {
-                    $restoreSql = "UPDATE supply SET quantity = quantity - ? WHERE supply_id = ?";
-                    $restoreStmt = $this->conn->prepare($restoreSql);
-                    $restoreStmt->execute([$item['quantity'], $item['supply_id']]);
+            // Update requisition status
+            $sql = "UPDATE requisition SET status = ?, updated_at = NOW() WHERE requisition_id = ?";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([$status, $requisitionId]);
 
+            if ($status === 'Rejected') {
+                $items = $this->getRequisitionItems($requisitionId);
+                foreach ($items as $item) {
                     // Sync Monthly Totals
                     $this->syncSupplyTotals($item['supply_id']);
 
@@ -412,18 +399,7 @@ class RequisitionModel {
         $currentMonth = date('Y-m');
         
         try {
-            // 1. Calculate Acquisition Total (All non-rejected requests in current month)
-            $acqSql = "SELECT IFNULL(SUM(ri.quantity), 0) as total
-                       FROM request_item ri
-                       JOIN requisition r ON ri.requisition_id = r.requisition_id
-                       WHERE ri.supply_id = ? 
-                       AND r.request_date LIKE ?
-                       AND r.status != 'Rejected'";
-            $acqStmt = $this->conn->prepare($acqSql);
-            $acqStmt->execute([$supplyId, $currentMonth . '%']);
-            $acqTotal = $acqStmt->fetch(PDO::FETCH_ASSOC)['total'];
-
-            // 2. Calculate Issuance Total (All approved/issued quantities in current month)
+            // 1. Calculate Issuance Total (All approved/issued quantities in current month)
             $issSql = "SELECT IFNULL(SUM(ri.issued_quantity), 0) as total
                        FROM request_item ri
                        JOIN requisition r ON ri.requisition_id = r.requisition_id
@@ -434,13 +410,60 @@ class RequisitionModel {
             $issStmt->execute([$supplyId, $currentMonth . '%']);
             $issTotal = $issStmt->fetch(PDO::FETCH_ASSOC)['total'];
 
-            // 3. Update Supply table
-            $updSql = "UPDATE supply SET requisition = ?, issuance = ? WHERE supply_id = ?";
+            // 2. Update Supply table (Only updating issuance)
+            $updSql = "UPDATE supply SET issuance = ? WHERE supply_id = ?";
             $updStmt = $this->conn->prepare($updSql);
-            $updStmt->execute([$acqTotal, $issTotal, $supplyId]);
+            $updStmt->execute([$issTotal, $supplyId]);
 
         } catch (PDOException $e) {
             error_log("Sync Supply Totals Error: " . $e->getMessage());
+        }
+    }
+
+    public function deleteRequisition($requisitionId) {
+        try {
+            $this->conn->beginTransaction();
+
+            // 1. Get all items in the requisition to restore stock
+            $itemsSql = "SELECT supply_id, quantity, issued_quantity, status FROM request_item WHERE requisition_id = ?";
+            $itemsStmt = $this->conn->prepare($itemsSql);
+            $itemsStmt->execute([$requisitionId]);
+            $items = $itemsStmt->fetchAll(PDO::FETCH_ASSOC);
+
+            foreach ($items as $item) {
+                $supplyId = $item['supply_id'];
+                $issuedQty = (int)$item['issued_quantity'];
+
+                if ($item['status'] === 'Issued' || $item['status'] === 'Approved') {
+                    // If approved/issued, we add back the issued quantity (Returning to stock)
+                    $updStockSql = "UPDATE supply SET quantity = quantity + ? WHERE supply_id = ?";
+                    $updStockStmt = $this->conn->prepare($updStockSql);
+                    $updStockStmt->execute([$issuedQty, $supplyId]);
+                }
+
+                // Sync totals (requisition/issuance columns) for this item
+                $this->syncSupplyTotals($supplyId);
+            }
+
+            // 2. Delete request items
+            $delItemsSql = "DELETE FROM request_item WHERE requisition_id = ?";
+            $delItemsStmt = $this->conn->prepare($delItemsSql);
+            $delItemsStmt->execute([$requisitionId]);
+
+            // 3. Delete requisition
+            $delReqSql = "DELETE FROM requisition WHERE requisition_id = ?";
+            $delReqStmt = $this->conn->prepare($delReqSql);
+            $delReqStmt->execute([$requisitionId]);
+
+            $this->conn->commit();
+            return ['success' => true, 'message' => "Requisition deleted and stock restored successfully."];
+
+        } catch (Exception $e) {
+            if ($this->conn->inTransaction()) {
+                $this->conn->rollBack();
+            }
+            error_log("Delete Requisition Error: " . $e->getMessage());
+            return ['success' => false, 'message' => $e->getMessage()];
         }
     }
 }

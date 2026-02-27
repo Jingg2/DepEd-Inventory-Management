@@ -73,12 +73,29 @@ document.addEventListener('DOMContentLoaded', function () {
     if (addUnitCost) addUnitCost.addEventListener('input', () => calculateTotalCost(''));
     if (addQuantity) addQuantity.addEventListener('input', () => calculateTotalCost(''));
 
-    // Attach calculation listeners (EDIT)
-    const editUnitCost = document.getElementById('edit-unit-cost');
-    // Quantity is readonly in edit, so no input event needed usually, but if we change logic:
     const editQuantity = document.getElementById('edit-quantity');
+    const editAddStock = document.getElementById('edit-add-stock');
+    const editSubtractStock = document.getElementById('edit-subtract-stock');
+    const editUnitCost = document.getElementById('edit-unit-cost');
 
     if (editUnitCost) editUnitCost.addEventListener('input', () => calculateTotalCost('edit-'));
+    if (editQuantity) editQuantity.addEventListener('input', () => calculateTotalCost('edit-'));
+
+    // Special logic for Edit Modal: "Add Stock" or "Subtract Stock" should update "Total Quantity" in real-time
+    function updateEditTotals() {
+        if (!editQuantity || !editAddStock || !editSubtractStock) return;
+
+        const currentBase = parseInt(editQuantity.getAttribute('data-base-qty')) || 0;
+        const addVal = parseInt(editAddStock.value) || 0;
+        const subVal = parseInt(editSubtractStock.value) || 0;
+
+        // Final math: Original + Add - Subtract
+        editQuantity.value = Math.max(0, currentBase + addVal - subVal);
+        calculateTotalCost('edit-');
+    }
+
+    if (editAddStock) editAddStock.addEventListener('input', updateEditTotals);
+    if (editSubtractStock) editSubtractStock.addEventListener('input', updateEditTotals);
 
 
 
@@ -256,6 +273,9 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         if (fileInput) fileInput.value = '';
         if (previewImg) previewImg.src = '';
+
+        const subtractStockInput = document.getElementById('edit-subtract-stock');
+        if (subtractStockInput) subtractStockInput.value = '0';
     }
 
     if (editModal) {
@@ -307,10 +327,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         school: card.getAttribute('data-school'),
                         lowT: card.getAttribute('data-low-threshold'),
                         critT: card.getAttribute('data-critical-threshold'),
-                        img: card.getAttribute('data-image'),
-                        addStock: card.getAttribute('data-add-stock'),
-                        issuance: card.getAttribute('data-issuance'),
-                        requisition: card.getAttribute('data-requisition')
+                        img: card.getAttribute('data-image')
                     };
 
                     // Populate Fields
@@ -320,23 +337,15 @@ document.addEventListener('DOMContentLoaded', function () {
                     document.getElementById('edit-unit').value = data.unit || '';
                     document.getElementById('edit-description').value = data.desc || '';
                     document.getElementById('edit-quantity').value = data.qty || '0';
+                    document.getElementById('edit-quantity').setAttribute('data-base-qty', data.qty || '0');
                     document.getElementById('edit-unit-cost').value = data.unitCost || '0.00';
                     document.getElementById('edit-status').value = data.status || 'Available';
                     if (document.getElementById('edit-school')) {
                         document.getElementById('edit-school').value = data.school || '';
                     }
 
-                    if (document.getElementById('edit-previous-month')) {
-                        document.getElementById('edit-previous-month').value = data.prevMonth || '0';
-                    }
                     if (document.getElementById('edit-add-stock')) {
-                        document.getElementById('edit-add-stock').value = data.addStock || '0';
-                    }
-                    if (document.getElementById('edit-issuance')) {
-                        document.getElementById('edit-issuance').value = data.issuance || '0';
-                    }
-                    if (document.getElementById('edit-requisition')) {
-                        document.getElementById('edit-requisition').value = data.requisition || '0';
+                        document.getElementById('edit-add-stock').value = '0';
                     }
 
 
@@ -660,7 +669,9 @@ document.addEventListener('DOMContentLoaded', function () {
                                             const received = parseInt(t.received) || 0;
                                             const issued = parseInt(t.issued) || 0;
                                             const dateFmt = t.date ? (isSemiExpendable ? dateToMDY(t.date) : t.date.split(' ')[0]) : 'N/A';
-                                            const reference = t.reference || (received > 0 ? 'Stock Receipt' : 'Adjustment');
+                                            const isCorrection = t.type === 'Correction';
+                                            const reference = t.reference || (isCorrection ? 'Stock Correction' : (received > 0 ? 'Stock Receipt' : 'Adjustment'));
+                                            const rowStyle = isCorrection ? 'style="background: rgba(229, 57, 53, 0.05);"' : '';
 
                                             let deptOffice = '-';
                                             if (isSemiExpendable) {
@@ -670,11 +681,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
                                                 const amount = (received > 0 ? received : issued) * unitCost;
 
-                                                h += `<tr>
+                                                h += `<tr ${rowStyle}>
                                                     <td class="text-center">${dateFmt}</td>
                                                     <td class="text-center">${reference}</td>
                                                     <td class="text-center">${received > 0 ? received : ''}</td>
-                                                    <td class="text-center">${issued > 0 ? issued : ''}</td>
+                                                    <td class="text-center"${isCorrection && issued > 0 ? ' style="color:#e53935;font-weight:600;"' : ''}>${issued > 0 ? issued : ''}</td>
                                                     <td class="text-center">${deptOffice}</td>
                                                     <td class="text-center">${t.balance}</td>
                                                     <td class="text-right">₱${amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
@@ -682,11 +693,11 @@ document.addEventListener('DOMContentLoaded', function () {
                                                 </tr>`;
                                             } else {
                                                 deptOffice = t.department_name || '-';
-                                                h += `<tr>
+                                                h += `<tr ${rowStyle}>
                                                     <td class="text-center">${dateFmt}</td>
                                                     <td class="text-center">${reference}</td>
                                                     <td class="text-center">${received > 0 ? received : ''}</td>
-                                                    <td class="text-center">${issued > 0 ? issued : ''}</td>
+                                                    <td class="text-center"${isCorrection && issued > 0 ? ' style="color:#e53935;font-weight:600;"' : ''}>${issued > 0 ? issued : ''}</td>
                                                     <td class="text-center">${deptOffice}</td>
                                                     <td class="text-center">${t.balance}</td>
                                                     <td class="text-center">${t.encoder_name || (t.type === 'Issuance' ? 'Requisition' : 'System')}</td>

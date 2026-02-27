@@ -474,6 +474,13 @@ $urlRoot = str_replace(' ', '%20', $root);
                                             <i class="fas fa-address-card"></i> Download ICS
                                         </a>
                                         <?php endif; ?>
+                                        <button class="btn-delete-request" 
+                                            data-id="<?php echo $req['requisition_id']; ?>" 
+                                            data-no="<?php echo htmlspecialchars($req['requisition_no']); ?>"
+                                            title="Delete Approved Request" 
+                                            style="background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-left: 5px; font-size: 0.85rem;">
+                                            <i class="fas fa-trash-alt"></i> Delete
+                                        </button>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -795,6 +802,45 @@ $urlRoot = str_replace(' ', '%20', $root);
                 // Filter Tables
                 filterTable('.request-table', start, end, deptId);
             }
+
+            // --- Delete Requisition Logic ---
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.btn-delete-request')) {
+                    const btn = e.target.closest('.btn-delete-request');
+                    const reqId = btn.dataset.id;
+                    const reqNo = btn.dataset.no;
+
+                    if (confirm(`ARE YOU SURE? \n\nThis will PERMANENTLY DELETE Requisition ${reqNo} and RESTORE the items back to inventory stock. \n\nThis action cannot be undone.`)) {
+                        const originalContent = btn.innerHTML;
+                        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+                        btn.disabled = true;
+
+                        fetch(basePath + 'api/delete_requisition.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ id: reqId })
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert('Success: ' + data.message);
+                                // Remove row from table or refresh
+                                location.reload();
+                            } else {
+                                alert('Error: ' + data.message);
+                                btn.innerHTML = originalContent;
+                                btn.disabled = false;
+                            }
+                        })
+                        .catch(err => {
+                            console.error('Delete Error:', err);
+                            alert('A network error occurred.');
+                            btn.innerHTML = originalContent;
+                            btn.disabled = false;
+                        });
+                    }
+                }
+            });
 
             function filterTable(tableSelector, start, end, deptId) {
                 const tables = document.querySelectorAll(tableSelector);

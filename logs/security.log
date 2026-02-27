@@ -158,3 +158,6 @@
 [2026-02-25 01:14:58] [INFO] [IP: ::1] Successful login for user: benjay11
 [2026-02-25 02:52:03] [INFO] [IP: ::1] Successful login for user: benjay11
 [2026-02-25 06:40:11] [INFO] [IP: ::1] Successful login for user: benjay11
+[2026-02-27 00:59:50] [WARNING] [IP: ::1] Failed login attempt for username: benjay11
+[2026-02-27 00:59:55] [INFO] [IP: ::1] Successful login for user: benjay11
+[2026-02-27 03:06:32] [WARNING] [IP: ::1] Failed login attempt for username: admin

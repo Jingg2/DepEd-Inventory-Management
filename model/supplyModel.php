@@ -238,14 +238,30 @@ class SupplyModel {
         }
     }
 
-    private function recordSupplyHistory($supplyId, $addStock, $change, $prev, $new, $type = 'Receipt', $remarks = '', $date = null, $adminId = null) {
-        $sql = "INSERT INTO supply_history (supply_id, add_stock, quantity_change, previous_quantity, new_quantity, type, remarks, created_at, updated_by) 
+    public function recordSupplyHistory($supplyId, $add_stock, $qtyChange, $prevQty, $newQty, $type, $remarks = '', $createdAt = null, $updatedBy = null) {
+        if ($createdAt === null) {
+            $createdAt = date('Y-m-d H:i:s');
+        }
+
+        // Verify updatedBy is a valid employee_id
+        if ($updatedBy !== null && !$this->isValidEmployeeId($updatedBy)) {
+            $updatedBy = null;
+        }
+
+        $sql = "INSERT INTO supply_history (supply_id, add_stock, quantity_change, previous_quantity, new_quantity, type, remarks, updated_by, created_at) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $stmt = $this->conn->prepare($sql);
+        return $stmt->execute([$supplyId, $add_stock, $qtyChange, $prevQty, $newQty, $type, $remarks, $updatedBy, $createdAt]);
+    }
+    public function isValidEmployeeId($id) {
+        if ($id === null) return false;
         try {
-            $insertDate = $date ?? date('Y-m-d H:i:s');
-            $this->conn->prepare($sql)->execute([$supplyId, $addStock, $change, $prev, $new, $type, $remarks, $insertDate, $adminId]);
-        } catch (Exception $e) {
-            error_log("Failed to record supply history: " . $e->getMessage());
+            $stmt = $this->conn->prepare("SELECT COUNT(*) FROM employee WHERE employee_id = ?");
+            $stmt->execute([$id]);
+            return $stmt->fetchColumn() > 0;
+        } catch (PDOException $e) {
+            error_log("Employee verification error: " . $e->getMessage());
+            return false;
         }
     }
 
@@ -287,6 +303,11 @@ class SupplyModel {
             $total_cost = $unit_cost * $quantity;
             $updated_at = date('Y-m-d H:i:s');
             
+            $adminId = isset($data['admin_id']) ? (int)$data['admin_id'] : null;
+            if (!$this->isValidEmployeeId($adminId)) {
+                $adminId = null;
+            }
+            
             if ($imageData !== null && strlen($imageData) > 0) {
                 $sql = "INSERT INTO supply (stock_no, category, unit, item, description, quantity, unit_cost, total_cost, status, updated_by, updated_at, image, property_classification, low_stock_threshold, critical_stock_threshold, school, previous_month, issuance, requisition)
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -294,7 +315,7 @@ class SupplyModel {
                 $params = [
                     $stock_no, $data['category'], $data['unit'], $data['item'],
                     !empty($data['description']) ? $data['description'] : '',
-                    $quantity, $unit_cost, $total_cost, $data['status'], $data['admin_id'] ?? 1, $updated_at, $imageData,
+                    $quantity, $unit_cost, $total_cost, $data['status'], $adminId, $updated_at, $imageData,
                     $data['property_classification'] ?? null,
                     $data['low_stock_threshold'] ?? 10,
                     $data['critical_stock_threshold'] ?? 5,
@@ -311,7 +332,7 @@ class SupplyModel {
                 $params = [
                     $stock_no, $data['category'], $data['unit'], $data['item'],
                     !empty($data['description']) ? $data['description'] : '',
-                    $quantity, $unit_cost, $total_cost, $data['status'], $data['admin_id'] ?? 1, $updated_at,
+                    $quantity, $unit_cost, $total_cost, $data['status'], $adminId, $updated_at,
                     $data['property_classification'] ?? null,
                     $data['low_stock_threshold'] ?? 10,
                     $data['critical_stock_threshold'] ?? 5,
@@ -331,7 +352,7 @@ class SupplyModel {
             
             // Record initial receipt
             $newId = $this->conn->lastInsertId();
-            $adminId = $data['admin_id'] ?? 1;
+            $adminId = $data['admin_id'] ?? null;
             // Anchor initial stock to the item creation time for perfect sorting
             $initialDate = $updated_at; 
             $this->recordSupplyHistory($newId, $quantity, $quantity, 0, $quantity, 'Receipt', 'Initial stock entry', $initialDate, $adminId);
@@ -424,17 +445,14 @@ class SupplyModel {
     public function updateSupply($id, $data) {
         // Validate required fields
         if (empty($data['item']) || trim($data['item']) === '') {
-            error_log("Update supply validation failed: Missing item");
             $this->lastError = 'Item Name is required';
             return false;
         }
         if (empty($data['category']) || trim($data['category']) === '') {
-            error_log("Update supply validation failed: Missing category");
             $this->lastError = 'Category is required';
             return false;
         }
         if (empty($data['unit']) || trim($data['unit']) === '') {
-            error_log("Update supply validation failed: Missing unit");
             $this->lastError = 'Unit is required';
             return false;
         }
@@ -450,19 +468,15 @@ class SupplyModel {
                 } elseif (function_exists('imagecreatefromstring') && function_exists('imagejpeg')) {
                     $img = @imagecreatefromstring($raw);
                     if ($img) {
-                        $w = imagesx($img);
-                        $h = imagesy($img);
-                        $nw = $w;
-                        $nh = $h;
+                        $w = imagesx($img); $h = imagesy($img);
+                        $nw = $w; $nh = $h;
                         if ($w > 800 || $h > 600) {
-                            $r = min(800 / max(1, $w), 600 / max(1, $h));
-                            $nw = (int) round($w * $r);
-                            $nh = (int) round($h * $r);
+                            $r = min(800 / $w, 600 / $h);
+                            $nw = (int)($w * $r); $nh = (int)($h * $r);
                         }
-                        $thumb = @imagecreatetruecolor($nw, $nh);
-                        if ($thumb && @imagecopyresampled($thumb, $img, 0, 0, 0, 0, $nw, $nh, $w, $h)) {
-                            ob_start();
-                            imagejpeg($thumb, null, 82);
+                        $thumb = imagecreatetruecolor($nw, $nh);
+                        if ($thumb && imagecopyresampled($thumb, $img, 0, 0, 0, 0, $nw, $nh, $w, $h)) {
+                            ob_start(); imagejpeg($thumb, null, 82);
                             $imageData = ob_get_clean();
                             imagedestroy($thumb);
                         }
@@ -476,157 +490,102 @@ class SupplyModel {
         }
 
         try {
-            // Get previous quantity for history tracking
-            $oldSupplyStmt = $this->conn->prepare("SELECT quantity FROM supply WHERE supply_id = ?");
+            // Get previous state
+            $oldSupplyStmt = $this->conn->prepare("SELECT quantity, requisition, issuance FROM supply WHERE supply_id = ?");
             $oldSupplyStmt->execute([$id]);
             $oldSupply = $oldSupplyStmt->fetch(PDO::FETCH_ASSOC);
-            $prevQty = $oldSupply ? (int)$oldSupply['quantity'] : 0;
-            $adminId = $data['admin_id'] ?? 1;
+            if (!$oldSupply) throw new Exception("Supply item not found.");
+            
+            $prevQty = (int)$oldSupply['quantity'];
+            $adminId = !empty($data['admin_id']) ? (int)$data['admin_id'] : null;
+            if (!$this->isValidEmployeeId($adminId)) {
+                $adminId = null;
+            }
 
-            // Handle 'add_stock' logic
+            // Compute new quantity
             $addStock = isset($data['add_stock']) ? (int)$data['add_stock'] : 0;
-            if ($addStock > 0) {
-                $quantity = $prevQty + $addStock;
+            $subStock = isset($data['subtract_stock']) ? (int)$data['subtract_stock'] : 0;
+            
+            // Formula: Original + Add - Subtract (unless a direct quantity override was intended)
+            // If neither Add nor Subtract is used, but quantity is different, it's a direct manual override
+            if ($addStock > 0 || $subStock > 0) {
+                $quantity = max(0, $prevQty + $addStock - $subStock);
             } else {
                 $quantity = isset($data['quantity']) ? (int)$data['quantity'] : $prevQty;
             }
-
-            // Calculate total cost
-            $unit_cost = isset($data['unit_cost']) ? (float)$data['unit_cost'] : 0.00;
+            $unit_cost = (float)($data['unit_cost'] ?? 0);
             $total_cost = $unit_cost * $quantity;
             $updated_at = date('Y-m-d H:i:s');
+
+            // Build SQL dynamically to handle optional image and protect monthly totals
+            // (We NO LONGER update 'requisition' or 'issuance' directly from form data)
+            $sqlSet = "stock_no = ?, category = ?, unit = ?, item = ?, description = ?, 
+                       quantity = ?, add_stock = ?, previous_quantity = ?, 
+                       unit_cost = ?, total_cost = ?, status = ?, 
+                       updated_by = ?, updated_at = ?, property_classification = ?, 
+                       low_stock_threshold = ?, critical_stock_threshold = ?, 
+                       school = ?, previous_month = ?";
             
-            // Build SQL based on whether image is being updated
-        if ($imageData !== null && strlen($imageData) > 0) {
-            $sql = "UPDATE supply SET 
-                    stock_no = ?, 
-                    category = ?, 
-                    unit = ?, 
-                    item = ?, 
-                    description = ?, 
-                    quantity = ?, 
-                    add_stock = ?,
-                    previous_quantity = ?,
-                    unit_cost = ?, 
-                    total_cost = ?, 
-                    status = ?, 
-                    updated_by = ?, 
-                    updated_at = ?, 
-                    image = ?,
-                    property_classification = ?,
-                    low_stock_threshold = ?,
-                    critical_stock_threshold = ?,
-                    school = ?,
-                    previous_month = ?,
-                    issuance = ?,
-                    requisition = ?
-                    WHERE supply_id = ?";
+            if ($imageData !== null) {
+                $sqlSet .= ", image = ?";
+            }
+
+            $sql = "UPDATE supply SET $sqlSet WHERE supply_id = ?";
             $stmt = $this->conn->prepare($sql);
             
-            // Calculate new requisition value: base form value + any added stock
-            $baseRequisition = isset($data['requisition']) ? (int)$data['requisition'] : 0;
-            $updatedRequisition = $baseRequisition + $addStock;
-            $issuance = isset($data['issuance']) ? (int)$data['issuance'] : 0;
+            $i = 1;
+            $stmt->bindValue($i++, !empty($data['stock_no']) ? $data['stock_no'] : null);
+            $stmt->bindValue($i++, $data['category']);
+            $stmt->bindValue($i++, $data['unit']);
+            $stmt->bindValue($i++, $data['item']);
+            $stmt->bindValue($i++, !empty($data['description']) ? $data['description'] : '');
+            $stmt->bindValue($i++, $quantity, PDO::PARAM_INT);
+            $stmt->bindValue($i++, $addStock, PDO::PARAM_INT);
+            $stmt->bindValue($i++, $prevQty, PDO::PARAM_INT);
+            $stmt->bindValue($i++, $unit_cost);
+            $stmt->bindValue($i++, $total_cost);
+            $stmt->bindValue($i++, $data['status']);
+            $stmt->bindValue($i++, $adminId, $adminId ? PDO::PARAM_INT : PDO::PARAM_NULL);
+            $stmt->bindValue($i++, $updated_at);
+            $stmt->bindValue($i++, $data['property_classification'] ?? null);
+            $stmt->bindValue($i++, (int)($data['low_stock_threshold'] ?? 10), PDO::PARAM_INT);
+            $stmt->bindValue($i++, (int)($data['critical_stock_threshold'] ?? 5), PDO::PARAM_INT);
+            $stmt->bindValue($i++, $data['school'] ?? null);
+            $stmt->bindValue($i++, (int)($data['previous_month'] ?? 0), PDO::PARAM_INT);
+            if ($imageData !== null) {
+                $stmt->bindValue($i++, $imageData, PDO::PARAM_LOB);
+            }
+            $stmt->bindValue($i++, (int)$id, PDO::PARAM_INT);
 
-            $stmt->bindValue(1, !empty($data['stock_no']) ? $data['stock_no'] : null);
-            $stmt->bindValue(2, $data['category']);
-            $stmt->bindValue(3, $data['unit']);
-            $stmt->bindValue(4, $data['item']);
-            $stmt->bindValue(5, !empty($data['description']) ? $data['description'] : '');
-            $stmt->bindValue(6, $quantity, PDO::PARAM_INT);
-            $stmt->bindValue(7, $addStock, PDO::PARAM_INT);
-            $stmt->bindValue(8, $prevQty, PDO::PARAM_INT);
-            $stmt->bindValue(9, $unit_cost);
-            $stmt->bindValue(10, $total_cost);
-            $stmt->bindValue(11, $data['status']);
-            $stmt->bindValue(12, $adminId, PDO::PARAM_INT);
-            $stmt->bindValue(13, $updated_at);
-            $stmt->bindValue(14, $imageData, PDO::PARAM_LOB);
-            $stmt->bindValue(15, $data['property_classification'] ?? null);
-            $stmt->bindValue(16, $data['low_stock_threshold'] ?? 10, PDO::PARAM_INT);
-            $stmt->bindValue(17, $data['critical_stock_threshold'] ?? 5, PDO::PARAM_INT);
-            $stmt->bindValue(18, $data['school'] ?? null);
-            $stmt->bindValue(19, $data['previous_month'] ?? 0, PDO::PARAM_INT);
-            $stmt->bindValue(20, $issuance, PDO::PARAM_INT);
-            $stmt->bindValue(21, $updatedRequisition, PDO::PARAM_INT);
-            $stmt->bindValue(22, (int)$id, PDO::PARAM_INT);
-        } else {
-            $sql = "UPDATE supply SET 
-                    stock_no = ?, 
-                    category = ?, 
-                    unit = ?, 
-                    item = ?, 
-                    description = ?, 
-                    quantity = ?, 
-                    add_stock = ?,
-                    previous_quantity = ?,
-                    unit_cost = ?, 
-                    total_cost = ?, 
-                    status = ?, 
-                    updated_by = ?, 
-                    updated_at = ?,
-                    property_classification = ?,
-                    low_stock_threshold = ?,
-                    critical_stock_threshold = ?,
-                    school = ?,
-                    previous_month = ?,
-                    issuance = ?,
-                    requisition = ?
-                    WHERE supply_id = ?";
-            $stmt = $this->conn->prepare($sql);
-            
-            // Calculate new requisition value: base form value + any added stock
-            $baseRequisition = isset($data['requisition']) ? (int)$data['requisition'] : 0;
-            $updatedRequisition = $baseRequisition + $addStock;
-            $issuance = isset($data['issuance']) ? (int)$data['issuance'] : 0;
-
-            $stmt->bindValue(1, !empty($data['stock_no']) ? $data['stock_no'] : null);
-            $stmt->bindValue(2, $data['category']);
-            $stmt->bindValue(3, $data['unit']);
-            $stmt->bindValue(4, $data['item']);
-            $stmt->bindValue(5, !empty($data['description']) ? $data['description'] : '');
-            $stmt->bindValue(6, $quantity, PDO::PARAM_INT);
-            $stmt->bindValue(7, $addStock, PDO::PARAM_INT);
-            $stmt->bindValue(8, $prevQty, PDO::PARAM_INT);
-            $stmt->bindValue(9, $unit_cost);
-            $stmt->bindValue(10, $total_cost);
-            $stmt->bindValue(11, $data['status']);
-            $stmt->bindValue(12, $adminId, PDO::PARAM_INT);
-            $stmt->bindValue(13, $updated_at);
-            $stmt->bindValue(14, $data['property_classification'] ?? null);
-            $stmt->bindValue(15, $data['low_stock_threshold'] ?? 10, PDO::PARAM_INT);
-            $stmt->bindValue(16, $data['critical_stock_threshold'] ?? 5, PDO::PARAM_INT);
-            $stmt->bindValue(17, $data['school'] ?? null);
-            $stmt->bindValue(18, $data['previous_month'] ?? 0, PDO::PARAM_INT);
-            $stmt->bindValue(19, $issuance, PDO::PARAM_INT);
-            $stmt->bindValue(20, $updatedRequisition, PDO::PARAM_INT);
-            $stmt->bindValue(21, (int)$id, PDO::PARAM_INT);
-        }
-            
             $result = $stmt->execute();
-            
-            if (!$result) {
-                $errorInfo = $stmt->errorInfo();
-                $this->lastError = isset($errorInfo[2]) ? $errorInfo[2] : 'Unknown database error';
-                error_log("Update supply failed: " . $this->lastError);
+
+            if ($result) {
+                // If stock was added, increment the requisition (Acquisition) column separately
+                if ($addStock > 0) {
+                    $this->conn->prepare("UPDATE supply SET requisition = requisition + ? WHERE supply_id = ?")
+                               ->execute([$addStock, $id]);
+                    
+                    $this->recordSupplyHistory($id, $addStock, $addStock, $prevQty, $quantity, 'Receipt', 'Manual Restock', $updated_at, $adminId);
+                } 
+                
+                if ($subStock > 0) {
+                    // Log the subtraction as a correction
+                    $this->recordSupplyHistory($id, 0, -$subStock, $prevQty + $addStock, $quantity, 'Correction', 'Stock Correction (Decrease)', $updated_at, $adminId);
+                } else if ($addStock == 0 && $quantity != $prevQty) {
+                    $diff = $quantity - $prevQty;
+                    $type = 'Correction';
+                    $remarks = $diff > 0 ? 'Stock Correction (Increase)' : 'Stock Correction (Decrease)';
+                    $this->recordSupplyHistory($id, 0, $diff, $prevQty, $quantity, $type, $remarks, $updated_at, $adminId);
+                }
+                return true;
+            } else {
+                $error = $stmt->errorInfo();
+                $this->lastError = $error[2] ?? 'Unknown database error';
                 return false;
             }
-
-            // Record history if stock changed
-            if ($addStock > 0) {
-                $this->recordSupplyHistory($id, $addStock, $addStock, $prevQty, $quantity, 'Receipt', 'Manual Restock', $updated_at, $adminId);
-            } else if ($quantity != $prevQty) {
-                $diff = $quantity - $prevQty;
-                // Direct edits are "Corrections" not "Receipts" (Receipts come from Add Stock)
-                $type = 'Correction';
-                $remarks = $diff > 0 ? 'Stock Correction (Increase)' : 'Stock Correction (Decrease)';
-                $this->recordSupplyHistory($id, 0, $diff, $prevQty, $quantity, $type, $remarks, $updated_at, $adminId);
-            }
-            
-            return true;
-        } catch (PDOException $e) {
-            error_log("Update supply PDO Exception: " . $e->getMessage());
+        } catch (Exception $e) {
             $this->lastError = $e->getMessage();
+            error_log("Update supply failed: " . $e->getMessage());
             return false;
         }
     }
@@ -728,6 +687,18 @@ class SupplyModel {
                     $rec['date'] = $newDate;
                     $rec['sort_date'] = $newDate;
                 }
+                
+                // KEY FIX: Split quantity_change into received/issued based on sign
+                // Negative quantity_change = stock decrease (correction) → goes in 'issued'
+                // Positive quantity_change = stock increase (receipt)  → stays in 'received'
+                $qtyChange = (int)$rec['quantity_change'];
+                if ($qtyChange < 0) {
+                    $rec['received'] = 0;
+                    $rec['issued'] = abs($qtyChange);
+                } else {
+                    $rec['received'] = $qtyChange;
+                    $rec['issued'] = 0;
+                }
             }
             unset($rec);
 
@@ -759,12 +730,17 @@ class SupplyModel {
             
             // --- Gap Detection & Self-Healing ---
             $totalReceipts = 0;
-            foreach ($receipts as $r) $totalReceipts += (int)$r['received'];
+            $totalCorrectionIssued = 0;
+            foreach ($receipts as $r) {
+                $totalReceipts += (int)$r['received'];
+                $totalCorrectionIssued += (int)$r['issued']; // includes negative correction amounts
+            }
             
             $totalIssued = 0;
             foreach ($issuances as $i) $totalIssued += (int)$i['issued'];
             
-            $historyBalance = $totalReceipts - $totalIssued;
+            // Balance = Receipts - (Requisition Issuances) - (Correction Decreases)
+            $historyBalance = $totalReceipts - $totalIssued - $totalCorrectionIssued;
             $currentQty = (int)$supply['quantity'];
             
             if ($historyBalance != $currentQty) {

@@ -22,10 +22,10 @@ foreach ($allSupplies as $s) {
 
 // Log the action
 $logModel = new SystemLogModel();
-$logAction = "Exported PPE & Semi-Expendable Report";
+$logAction = "Monthly Inventory (PPE) Report";
 if ($startDate && $endDate) $logAction .= " ($startDate to $endDate)";
 else if ($selectedMonth) $logAction .= " ($selectedMonth)";
-$logModel->log("EXPORT_PPE_REPORT", $logAction);
+$logModel->log("EXPORT_PPE_REPORT", "Exported " . $logAction);
 
 // Clear output buffer
 if (ob_get_level()) ob_end_clean();
@@ -36,7 +36,7 @@ if ($startDate && $endDate) $dateSuffix = $startDate . "_to_" . $endDate;
 else if ($selectedMonth) $dateSuffix = $selectedMonth;
 
 header('Content-Type: application/vnd.ms-excel');
-header('Content-Disposition: attachment; filename=RPCI_PPE_Report_' . $dateSuffix . '.xls');
+header('Content-Disposition: attachment; filename=Monthly_Inventory_PPE_' . $dateSuffix . '.xls');
 header('Pragma: no-cache');
 header('Expires: 0');
 
@@ -79,7 +79,7 @@ echo '<tr><td colspan="10" align="center" style="font-weight:bold; font-size:10p
 echo '<tr><td colspan="10" align="center" style="font-weight:bold; font-size:10pt; border:none;">Buac, Cayang, Bogo City, Cebu</td></tr>';
 echo '<tr><td colspan="10" style="border:none;">&nbsp;</td></tr>';
 
-echo '<tr><td colspan="10" align="center" style="font-weight:bold; font-size:12pt; border:none;">REPORT ON THE PHYSICAL COUNT OF PROPERTY, PLANT AND EQUIPMENT (RPCI)</td></tr>';
+echo '<tr><td colspan="10" align="center" style="font-weight:bold; font-size:12pt; border:none;">MONTHLY INVENTORY REPORT (PPE & SEMI-EXPENDABLE)</td></tr>';
 
 $dateLabel = "AS OF: " . strtoupper(date('F d, Y'));
 if ($startDate && $endDate) {

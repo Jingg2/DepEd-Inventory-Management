@@ -106,33 +106,25 @@
                     </div>
                     <div class="form-group" id="edit-add-stock-group">
                         <label for="edit-add-stock" id="edit-lbl-add-stock">
-                            <i class="fas fa-plus-circle"></i> Add Quantity / Stock (Optional)
+                            <i class="fas fa-plus-circle"></i> Add Quantity / Stock
                         </label>
-                        <input type="number" id="edit-add-stock" name="add_stock" min="0" value="0" placeholder="Amount to add">
+                        <input type="number" id="edit-add-stock" name="add_stock" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group" id="edit-subtract-stock-group">
+                        <label for="edit-subtract-stock" id="edit-lbl-subtract-stock" style="color: #e53935;">
+                            <i class="fas fa-minus-circle"></i> Subtract Quantity (Correction)
+                        </label>
+                        <input type="number" id="edit-subtract-stock" name="subtract_stock" min="0" value="0" placeholder="0" style="border-color: #ffcdd2;">
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="edit-previous-month">
-                            <i class="fas fa-history"></i> Previous Month Balance
+                        <label for="edit-unit-cost">
+                            <i class="fas fa-dollar-sign"></i> Unit Cost
                         </label>
-                        <input type="number" id="edit-previous-month" name="previous_month" min="0" value="0" placeholder="Value from previous month">
+                        <input type="number" id="edit-unit-cost" name="unit_cost" step="0.01" min="0" placeholder="0.00">
                     </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="edit-issuance">
-                            <i class="fas fa-file-export"></i> Issuance for the Month
-                        </label>
-                        <input type="number" id="edit-issuance" name="issuance" min="0" value="0" placeholder="Total items issued">
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-requisition">
-                            <i class="fas fa-cart-plus"></i> Monthly Acquisition
-                        </label>
-                        <input type="number" id="edit-requisition" name="requisition" min="0" value="0" placeholder="Total acquisitions">
-                    </div>
-                </div>
                 </div>
 
                 <div class="form-row">
