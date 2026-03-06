@@ -26,13 +26,23 @@ require_once __DIR__ . '/../model/SystemLogModel.php';
 $logModel = new SystemLogModel();
 $logModel->log("EXPORT_PROPERTY_CARD", "Exported Semi-Expendable Property Card Excel for " . $supply['item']);
 
+// Determine if this is PPE or Semi-Expendable for dynamic headers
+$propClass = ($supply['property_classification'] ?? '');
+$isPPE = stripos($propClass, 'PPE') !== false || stripos($propClass, 'Property') !== false || (float)($supply['unit_cost'] ?? 0) >= 50000;
+
+$title = $isPPE ? "PROPERTY CARD" : "SEMI-EXPENDABLE PROPERTY CARD";
+$label = $isPPE ? "Property :" : "Semi-expendable Property :";
+$numLabel = $isPPE ? "Property Number:" : "Semi-expendable Property Number:";
+$appendix = $isPPE ? "Appendix 68" : "Appendix 69"; // Appendix 68 is Property Card, 69 is Semi-Expendable
+$filenamePrefix = $isPPE ? "Property_Card_" : "Semi_Expendable_Property_Card_";
+
 // Set headers for download as Excel file
 header('Content-Type: application/vnd.ms-excel');
-header('Content-Disposition: attachment; filename=Semi_Expendable_Property_Card_' . str_replace(' ', '_', $supply['item']) . '.xls');
+header('Content-Disposition: attachment; filename=' . $filenamePrefix . str_replace(' ', '_', $supply['item']) . '.xls');
 header('Pragma: no-cache');
 header('Expires: 0');
 
-// Start HTML output for Excel (Appendix 69 - Semi-Expendable Property Card Format)
+// Start HTML output for Excel
 echo '<html xmlns:x="urn:schemas-microsoft-com:office:excel">';
 echo '<head>';
 echo '<!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Property Card</x:Name><x:WorksheetOptions><x:Print><x:ValidPrinterInfo/></x:Print></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->';
@@ -55,11 +65,11 @@ echo '<body>';
 echo '<table>';
 
 // Appendix Label
-echo '<tr><td colspan="12" class="annex-label">Appendix 69</td></tr>';
+echo '<tr><td colspan="12" class="annex-label">' . $appendix . '</td></tr>';
 echo '<tr><td colspan="12" class="no-border">&nbsp;</td></tr>';
 
 // Official Header
-echo '<tr><td colspan="12" class="header-title">SEMI-EXPENDABLE PROPERTY CARD</td></tr>';
+echo '<tr><td colspan="12" class="header-title">' . $title . '</td></tr>';
 echo '<tr><td colspan="12" class="no-border">&nbsp;</td></tr>';
 
 $entityName = !empty($supply['school']) ? htmlspecialchars(strtoupper($supply['school'])) : "DEPED DIVISION OF CITY OF BOGO";
@@ -70,8 +80,8 @@ echo '<tr>
       </tr>';
 echo '<tr><td colspan="12" class="no-border" style="height:5px;"></td></tr>';
 echo '<tr>
-        <td colspan="8" class="no-border"><b>Semi-expendable Property :</b> ' . htmlspecialchars(strtoupper($supply['item'])) . '</td>
-        <td colspan="4" class="no-border"><b>Semi-expendable Property Number:</b> ____________________</td>
+        <td colspan="8" class="no-border"><b>' . $label . '</b> ' . htmlspecialchars(strtoupper($supply['item'])) . '</td>
+        <td colspan="4" class="no-border"><b>' . $numLabel . '</b> ____________________</td>
       </tr>';
 echo '<tr>
         <td colspan="12" class="no-border"><b>Description :</b> ' . htmlspecialchars(strtoupper($supply['description'])) . '</td>

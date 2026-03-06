@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const adminRequestBadge = document.getElementById('admin-view-requisition');
     const adminFabBtn = document.getElementById('admin-fab-view-request');
     const adminFabBadge = document.getElementById('admin-fab-badge');
+    const adminReqPurpose = document.getElementById('admin-req-purpose');
 
     let requestItems = [];
     let isEmployeeValid = false;
@@ -41,20 +42,26 @@ document.addEventListener('DOMContentLoaded', function () {
         adminFabBtn.addEventListener('click', openAdminRequisitionModal);
     }
 
+
+
     // Add to Request logic (Event Delegation)
     document.addEventListener('click', function (e) {
-        const btn = e.target.closest('.btn-admin-request-item');
+        const btn = e.target.closest('.btn-admin-request-item') || e.target.closest('.btn-admin-request-returned');
         if (btn) {
             e.preventDefault();
+            const isReturned = btn.classList.contains('btn-admin-request-returned');
             const card = btn.closest('.supply-card');
             if (card) {
+                const stockType = isReturned ? 'Returned' : 'New';
+                const nameSuffix = isReturned ? ' (Returned/Used)' : '';
                 const item = {
                     id: card.getAttribute('data-id'),
                     stockNo: card.getAttribute('data-stock-no'),
-                    name: card.getAttribute('data-name'),
+                    name: card.getAttribute('data-name') + nameSuffix,
                     description: card.getAttribute('data-description'),
                     unit: card.getAttribute('data-unit'),
-                    maxQty: parseInt(card.getAttribute('data-quantity')),
+                    maxQty: parseInt(isReturned ? card.getAttribute('data-returned-quantity') : card.getAttribute('data-quantity')),
+                    stockType: stockType,
                     requestQty: 1
                 };
                 addToRequest(item);
@@ -232,14 +239,26 @@ document.addEventListener('DOMContentLoaded', function () {
                 items: requestItems
             };
 
+            const apiEndpoint = 'api/submit_requisition.php';
             const basePath = typeof window.basePath !== 'undefined' ? window.basePath : '';
 
-            fetch(`${basePath}api/submit_requisition.php`, {
+            fetch(`${basePath}${apiEndpoint}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             })
-                .then(response => response.json())
+                .then(response => {
+                    // Safely parse — if not JSON, get the raw text for debugging
+                    const contentType = response.headers.get('content-type') || '';
+                    if (contentType.includes('application/json')) {
+                        return response.json();
+                    } else {
+                        return response.text().then(text => {
+                            console.error('Non-JSON response from server:', text);
+                            return { success: false, message: 'Server error. Check console for details.' };
+                        });
+                    }
+                })
                 .then(data => {
                     if (data.success) {
                         // Reset cart
@@ -260,14 +279,19 @@ document.addEventListener('DOMContentLoaded', function () {
                         document.getElementById('admin-req-emp-id').style.backgroundColor = '#ffffff';
                         isEmployeeValid = false;
 
-                        showModal(`Requisition submitted successfully! No: ${data.requisition_no}`, 'success', () => location.reload());
+                        const successMsg = `Requisition submitted successfully! No: ${data.requisition_no}`;
+                        if (typeof showModal === 'function') showModal(successMsg, 'success', () => location.reload());
+                        else { alert(successMsg); location.reload(); }
                     } else {
-                        showModal('Error: ' + data.message, 'error');
+                        const errMsg = 'Error: ' + (data.message || 'Unknown error.');
+                        if (typeof showModal === 'function') showModal(errMsg, 'error');
+                        else alert(errMsg);
                     }
                 })
                 .catch(error => {
                     console.error('Submission Error:', error);
-                    showModal('An error occurred while submitting.', 'error');
+                    const msg = 'A connection error occurred. Please try again.';
+                    try { if (typeof showModal === 'function') showModal(msg, 'error'); else alert(msg); } catch (e) { alert(msg); }
                 })
                 .finally(() => {
                     adminSubmitRequestBtn.disabled = false;
@@ -277,7 +301,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function addToRequest(newItem) {
-        const existingItem = requestItems.find(item => item.id === newItem.id);
+        const existingItem = requestItems.find(item => item.id === newItem.id && item.stockType === newItem.stockType);
 
         if (existingItem) {
             if (existingItem.requestQty < existingItem.maxQty) {
@@ -331,20 +355,28 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        requestItems.forEach(item => {
+        requestItems.forEach((item, index) => {
             const tr = document.createElement('tr');
+            const typeClass = item.stockType === 'Returned' ? 'badge-returned' : 'badge-new';
+            const typeLabel = item.stockType === 'Returned' ? 'Returned' : 'New';
+
             tr.innerHTML = `
                 <td>${item.stockNo}</td>
                 <td>${item.unit}</td>
-                <td>${item.name}</td>
+                <td>
+                    <div style="font-weight: 600;">${item.name}</div>
+                    <div style="font-size: 0.75rem; color: #718096;">
+                        <span class="stock-type-badge ${typeClass}">${typeLabel} Stock</span>
+                    </div>
+                </td>
                 <td>${item.description || 'N/A'}</td>
                 <td>
                     <input type="number" min="1" max="${item.maxQty}" value="${item.requestQty}" 
-                           class="admin-qty-input form-control" data-id="${item.id}"
+                           class="admin-qty-input form-control" data-index="${index}"
                            style="width: 80px;">
                 </td>
                 <td style="text-align: center;">
-                    <button class="admin-remove-btn" data-id="${item.id}" style="background: #fed7d7; color: #c53030; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer;">
+                    <button class="admin-remove-btn" data-index="${index}" style="background: #fed7d7; color: #c53030; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer;">
                         <i class="fas fa-times"></i>
                     </button>
                 </td>
@@ -355,8 +387,8 @@ document.addEventListener('DOMContentLoaded', function () {
         // Add event listeners to newly created elements
         adminRequestTableBody.querySelectorAll('.admin-remove-btn').forEach(btn => {
             btn.addEventListener('click', function () {
-                const id = this.getAttribute('data-id');
-                requestItems = requestItems.filter(item => item.id !== id);
+                const index = parseInt(this.getAttribute('data-index'));
+                requestItems.splice(index, 1);
                 updateRequestCount();
                 renderRequestTable();
             });
@@ -364,14 +396,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
         adminRequestTableBody.querySelectorAll('.admin-qty-input').forEach(input => {
             input.addEventListener('change', function () {
-                const id = this.getAttribute('data-id');
+                const index = parseInt(this.getAttribute('data-index'));
                 let newQty = parseInt(this.value);
-                const item = requestItems.find(i => i.id === id);
+                const item = requestItems[index];
                 if (item) {
                     if (newQty < 1) newQty = 1;
 
                     if (newQty > item.maxQty) {
-                        showModal(`Only ${item.maxQty} available in stock.`, 'warning');
+                        showModal(`Only ${item.maxQty} available in ${item.stockType} stock.`, 'warning');
                         newQty = item.maxQty;
                     }
 

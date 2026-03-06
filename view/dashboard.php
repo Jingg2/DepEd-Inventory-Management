@@ -187,7 +187,11 @@ $root = rtrim($scriptDir, '/') . '/';
             <!-- Employee Requisitions -->
             <div class="chart-container full-width">
                 <h3><i class="fas fa-user-tag"></i> Top Employee Requisitions</h3>
-                <canvas id="trendChart"></canvas>
+                <div style="max-height: 400px; overflow-y: auto; overflow-x: hidden; padding-right: 5px;">
+                    <div id="trendChartWrapper">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
             </div>
 
             <!-- Turnover Analysis -->
@@ -488,8 +492,10 @@ $root = rtrim($scriptDir, '/') . '/';
                 if(data.employeeRequisitions && data.employeeRequisitions.length > 0) {
                     const canvas = document.getElementById('trendChart');
                     const ctxt = canvas.getContext('2d');
-                    const height = Math.max(400, data.employeeRequisitions.length * 40);
-                    canvas.parentElement.style.height = height + 'px';
+                    // Each bar is 40px tall — canvas grows to show ALL employees
+                    const height = data.employeeRequisitions.length * 40;
+                    // Set the inner wrapper height (the scrollable inner div)
+                    document.getElementById('trendChartWrapper').style.height = height + 'px';
                     canvas.height = height;
                     
                     const trendGradient = createGradient(ctxt, '#818cf8', '#4f46e5');

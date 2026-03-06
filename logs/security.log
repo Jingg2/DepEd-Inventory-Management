@@ -161,3 +161,30 @@
 [2026-02-27 00:59:50] [WARNING] [IP: ::1] Failed login attempt for username: benjay11
 [2026-02-27 00:59:55] [INFO] [IP: ::1] Successful login for user: benjay11
 [2026-02-27 03:06:32] [WARNING] [IP: ::1] Failed login attempt for username: admin
+[2026-03-02 02:01:53] [INFO] [IP: ::1] Successful login for user: benjay11
+[2026-03-02 03:15:28] [WARNING] [IP: ::1] Failed login attempt for username: admin
+[2026-03-02 03:19:47] [WARNING] [IP: ::1] Failed login attempt for username: admin
+[2026-03-02 03:21:06] [WARNING] [IP: ::1] Failed login attempt for username: admin
+[2026-03-02 03:23:15] [WARNING] [IP: ::1] Failed login attempt for username: admin
+[2026-03-02 03:27:13] [WARNING] [IP: ::1] Failed login attempt for username: admin
+[2026-03-02 03:34:25] [INFO] [IP: ::1] Successful login for user: admin
+[2026-03-02 03:57:30] [WARNING] [IP: ::1] Failed login attempt for username: admin
+[2026-03-02 06:37:57] [INFO] [IP: ::1] Successful login for user: benjay11
+[2026-03-03 01:03:32] [INFO] [IP: ::1] Successful login for user: benjay11
+[2026-03-03 02:33:33] [WARNING] [IP: ::1] Failed login attempt for username: admin
+[2026-03-03 02:34:21] [INFO] [IP: ::1] Successful login for user: admin
+[2026-03-03 03:24:10] [WARNING] [IP: ::1] Failed login attempt for username: benjay11
+[2026-03-03 03:24:14] [INFO] [IP: ::1] Successful login for user: benjay11
+[2026-03-04 03:43:55] [INFO] [IP: ::1] Successful login for user: benjay11
+[2026-03-05 01:58:49] [INFO] [IP: ::1] Successful login for user: benjay11
+[2026-03-05 03:05:33] [INFO] [IP: ::1] Successful login for user: benjay11
+[2026-03-05 03:40:19] [WARNING] [IP: ::1] Failed login attempt for username: benjay11
+[2026-03-05 03:40:24] [INFO] [IP: ::1] Successful login for user: benjay11
+[2026-03-05 07:10:43] [WARNING] [IP: ::1] Failed login attempt for username: admin
+[2026-03-06 01:02:50] [INFO] [IP: ::1] Successful login for user: benjay11
+[2026-03-06 02:58:41] [WARNING] [IP: ::1] Failed login attempt for username: benjay11
+[2026-03-06 02:58:51] [INFO] [IP: ::1] Successful login for user: benjay11
+[2026-03-06 06:19:10] [WARNING] [IP: ::1] Failed login attempt for username: benjay11
+[2026-03-06 06:19:16] [INFO] [IP: ::1] Successful login for user: benjay11
+[2026-03-06 06:58:08] [INFO] [IP: ::1] Successful login for user: benjay11
+[2026-03-06 07:01:58] [INFO] [IP: 10.124.20.190] Successful login for user: benjay11

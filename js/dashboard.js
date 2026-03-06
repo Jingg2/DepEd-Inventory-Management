@@ -41,19 +41,44 @@ function createSupplyCard(supply) {
         badgeText = 'In Stock';
     }
 
+    const isSemi = (supply.property_classification || "").toLowerCase().includes('semi-expendable');
+    const cardIcon = isSemi ? 'fa-address-card' : 'fa-file-invoice';
+
     card.innerHTML = `
         <div class="status-badge ${badgeClass}">${badgeText}</div>
         <img src="${supply.image_base64 || basePath + 'img/Bogo_City_logo.png'}" alt="${supply.item || ''}">
-        <h3>${supply.item || ''}</h3>
+        <h3>${supply.item || 'NO NAME'}</h3>
         <p>Description: ${supply.description || ''}</p>
-        <div class="qty-display ${badgeClass}">
+        <div class="qty-display qty-stock ${badgeClass}">
             <i class="fas fa-cubes"></i>
-            Quantity: <span class="qty-value">${supply.quantity || supply.previous_month || '0'}</span>
+            Stock: <span class="qty-value">${supply.quantity || '0'}</span>
         </div>
+        ${supply.returned_quantity > 0 ? `
+        <div class="qty-display qty-returned">
+            Returned/Used: <span class="qty-value">${supply.returned_quantity}</span>
+        </div>
+        ` : ''}
         <div class="actions">
-            <i class="fas fa-eye icon view-icon" title="View Details"></i>
-            <i class="fas fa-edit icon edit-icon" title="Edit"></i>
-            <i class="fas fa-trash icon delete-icon" title="Delete"></i>
+             <div class="action-item">
+                <span class="action-label">View</span>
+                <i class="fas fa-eye icon view-icon" title="View Details"></i>
+            </div>
+            <div class="action-item">
+                <span class="action-label">Request</span>
+                <i class="fas fa-plus icon btn-admin-request-item" title="Request New Stock (Stock)" style="color: var(--primary-emerald);"></i>
+            </div>
+            <div class="action-item">
+                <span class="action-label">Card</span>
+                <i class="fas ${cardIcon} icon stock-card-icon" title="View Stock Card"></i>
+            </div>
+            <div class="action-item">
+                <span class="action-label">Edit</span>
+                <i class="fas fa-edit icon edit-icon" title="Edit"></i>
+            </div>
+            <div class="action-item">
+                <span class="action-label">Delete</span>
+                <i class="fas fa-trash icon delete-icon" title="Delete"></i>
+            </div>
         </div>
     `;
 
@@ -158,10 +183,11 @@ document.addEventListener('DOMContentLoaded', function () {
         // Add event listeners for stat cards
         const statTotal = document.getElementById('stat-total');
         const statLow = document.getElementById('stat-low-stock');
+        const statCritical = document.getElementById('stat-critical-stock');
         const statOut = document.getElementById('stat-out-of-stock');
 
         function updateStatCardUI(activeId) {
-            [statTotal, statLow, statOut].forEach(card => {
+            [statTotal, statLow, statCritical, statOut].forEach(card => {
                 if (!card) return;
                 if (card.id === activeId) {
                     card.style.border = '2px solid #2A4D88';
@@ -191,6 +217,19 @@ document.addEventListener('DOMContentLoaded', function () {
                 } else {
                     currentStatusFilter = 'low';
                     updateStatCardUI('stat-low-stock');
+                }
+                filterCards();
+            });
+        }
+
+        if (statCritical) {
+            statCritical.addEventListener('click', () => {
+                if (currentStatusFilter === 'critical') {
+                    currentStatusFilter = 'all';
+                    updateStatCardUI('stat-total');
+                } else {
+                    currentStatusFilter = 'critical';
+                    updateStatCardUI('stat-critical-stock');
                 }
                 filterCards();
             });

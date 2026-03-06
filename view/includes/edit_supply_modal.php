@@ -116,14 +116,11 @@
                         </label>
                         <input type="number" id="edit-subtract-stock" name="subtract_stock" min="0" value="0" placeholder="0" style="border-color: #ffcdd2;">
                     </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="edit-unit-cost">
-                            <i class="fas fa-dollar-sign"></i> Unit Cost
+                    <div class="form-group" id="edit-returned-qty-group">
+                        <label for="edit-returned-quantity">
+                            <i class="fas fa-recycle" style="color: #10b981;"></i> Returned/Used Quantity
                         </label>
-                        <input type="number" id="edit-unit-cost" name="unit_cost" step="0.01" min="0" placeholder="0.00">
+                        <input type="number" id="edit-returned-quantity" name="returned_quantity" min="0" value="0" placeholder="0">
                     </div>
                 </div>
 

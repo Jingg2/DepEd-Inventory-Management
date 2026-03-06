@@ -211,7 +211,10 @@ try {
                         </p>
                         
                         <div class="actions">
-                            <i class="fas fa-eye icon view-school-icon" title="View Items" style="cursor: pointer;"></i>
+                            <div class="action-item">
+                                <span class="action-label">View Items</span>
+                                <i class="fas fa-eye icon view-school-icon" title="View Items" style="cursor: pointer;"></i>
+                            </div>
                         </div>
                     </div>
                 <?php endforeach; ?>

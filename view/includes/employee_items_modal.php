@@ -3,9 +3,14 @@
     <div class="modal-content add-supply-modal-content" style="max-width: 900px;">
         <span class="close item-close-btn" onclick="closeEmployeeItemsModal()">&times;</span>
         
-        <div class="modal-header-section" style="background: var(--gradient-primary);">
-            <h2><i class="fas fa-boxes"></i> Employee Assets</h2>
-            <p class="modal-subtitle" id="employee-items-subtitle">Items currently issued to employee</p>
+        <div class="modal-header-section" style="background: var(--gradient-primary); display: flex; justify-content: space-between; align-items: center; padding: 15px 20px;">
+            <div>
+                <h2 style="margin: 0;"><i class="fas fa-boxes"></i> Employee Assets</h2>
+                <p class="modal-subtitle" id="employee-items-subtitle" style="margin: 5px 0 0 0; opacity: 0.9;">Items currently issued to employee</p>
+            </div>
+            <button id="btn-open-assign-asset" class="btn-primary" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.3s;">
+                <i class="fas fa-plus-circle"></i> Assign Asset
+            </button>
         </div>
 
         <div class="modal-body" style="padding: 20px;">

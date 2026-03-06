@@ -166,30 +166,7 @@ if ($officeKey) {
             margin-bottom: 2px;
         }
 
-        .action-icons {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 15px;
-            width: 100%;
-        }
-
-        .icon-box {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.2s;
-            border: none;
-        }
-        .icon-view { background-color: var(--bg-emerald-light); color: var(--primary-emerald); }
-        .icon-edit { background-color: #dcfce7; color: #166534; }
-        .icon-delete { background-color: #fee2e2; color: #991b1b; }
-        
-        .icon-box i { font-size: 1.1rem; }
+        /* Use global .actions and .icon styles from dashboard.css */
 
         /* Mobile Responsiveness Improvements */
         .section-header {
@@ -514,19 +491,30 @@ if ($officeKey) {
                                         <!-- Centered Content -->
                                         <div class="card-title"><?php echo htmlspecialchars($item['item'] ?? 'Untitled Item'); ?></div>
                                         <div class="card-info">Description: <?php echo htmlspecialchars($item['description'] ?? 'No description.'); ?></div>
-                                        <div class="qty-display <?php echo $badgeClass; ?>" style="margin: 10px auto !important;">
+                                        <div class="qty-display qty-stock <?php echo $badgeClass; ?>">
                                             <i class="fas fa-cubes"></i>
-                                            Quantity: <span class="qty-value"><?php echo $qty; ?></span>
+                                            Stock: <span class="qty-value"><?php echo $qty; ?></span>
                                         </div>
+                                        <?php if ((int)($item['returned_quantity'] ?? 0) > 0): ?>
+                                        <div class="qty-display qty-returned">
+                                            Returned/Used: <span class="qty-value"><?php echo (int)$item['returned_quantity']; ?></span>
+                                        </div>
+                                        <?php endif; ?>
                                         
                                         <!-- Action Icons -->
-                                        <div class="action-icons">
-                                            <button class="icon-box icon-view btn-view-details" title="View Details">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                            <button class="icon-box icon-edit btn-request-item" title="Add to Request">
-                                                <i class="fas fa-cart-plus"></i>
-                                            </button>
+                                        <div class="actions">
+                                            <div class="action-item">
+                                                <span class="action-label">View</span>
+                                                <button class="icon view-icon btn-view-details" title="View Details">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                            </div>
+                                            <div class="action-item">
+                                                <span class="action-label">Request</span>
+                                                <button class="icon edit-icon btn-request-item" title="Add to Request">
+                                                    <i class="fas fa-cart-plus"></i>
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 <?php endforeach; ?>

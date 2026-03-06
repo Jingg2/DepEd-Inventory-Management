@@ -1982,3 +1982,124 @@ html.sidebar-collapsed .main-content {
         grid-template-columns: 1fr;
     }
 }
+
+/* Action Item Labels */
+.actions {
+    display: flex;
+    flex-direction: row;
+    gap: 4px;
+    justify-content: center;
+    align-items: flex-end;
+    margin-top: 15px;
+    flex-wrap: nowrap;
+    width: 100%;
+}
+
+.action-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+    min-width: 48px;
+}
+
+.action-label {
+    font-size: 8px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #1e293b;
+    /* Dark navy for high contrast */
+    white-space: nowrap;
+    letter-spacing: 0.2px;
+    line-height: 1.2;
+    margin-bottom: 2px;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+}
+
+.icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    flex-shrink: 0;
+    background: #f8fafc;
+}
+
+.view-icon {
+    color: #3182ce;
+}
+
+.edit-icon {
+    color: #667eea;
+}
+
+.delete-icon {
+    color: #e53e3e;
+}
+
+.stock-card-icon {
+    color: #38a169;
+}
+
+.view-icon:hover {
+    background: #3182ce;
+    color: white;
+}
+
+.edit-icon:hover {
+    background: #667eea;
+    color: white;
+}
+
+.delete-icon:hover {
+    background: #e53e3e;
+    color: white;
+}
+
+.stock-card-icon:hover {
+    background: #38a169;
+    color: white;
+}
+
+/* Quantity Display Variants */
+.qty-display.qty-stock {
+    background: var(--gradient-primary);
+    /* Use orange/green gradients */
+    color: white;
+    margin: 10px auto !important;
+}
+
+.qty-display.qty-returned {
+    background: #ecfdf5 !important;
+    color: #065f46 !important;
+    border: 1px solid #10b981 !important;
+    margin-top: 5px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    font-weight: 700 !important;
+}
+
+.qty-display.qty-stock.status-out {
+    background: #ef4444 !important;
+}
+
+.qty-display.qty-stock.status-critical {
+    background: #f97316 !important;
+}
+
+.qty-display.qty-stock.status-low {
+    background: #f59e0b !important;
+}
+
+.qty-display.qty-stock.status-in-stock {
+    background: #10b981 !important;
+}

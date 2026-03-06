@@ -317,11 +317,18 @@ try {
                                     </div>
                                     
                                     <div class="actions">
-                                        <i class="fas fa-eye icon view-icon" title="View Details"></i>
-                                        <i class="fas fa-clipboard-check icon update-condition-icon" title="Update Condition" style="color: var(--secondary-emerald);"></i>
-                                        <i class="fas <?php echo $cardIcon; ?> icon stock-card-icon" title="<?php echo $cardTitle; ?>"></i>
-                                        <!-- <i class="fas fa-edit icon edit-icon" title="Edit"></i> -->
-                                        <!-- <i class="fas fa-trash icon delete-icon" title="Delete"></i> -->
+                                        <div class="action-item">
+                                            <span class="action-label">View</span>
+                                            <i class="fas fa-eye icon view-icon" title="View Details"></i>
+                                        </div>
+                                        <div class="action-item">
+                                            <span class="action-label">Update</span>
+                                            <i class="fas fa-clipboard-check icon update-condition-icon" title="Update Condition" style="color: var(--secondary-emerald);"></i>
+                                        </div>
+                                        <div class="action-item">
+                                            <span class="action-label">Card</span>
+                                            <i class="fas <?php echo $cardIcon; ?> icon stock-card-icon" title="<?php echo $cardTitle; ?>"></i>
+                                        </div>
                                     </div>
                                 </div>
                             <?php endforeach; ?>

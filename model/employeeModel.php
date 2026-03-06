@@ -247,13 +247,13 @@ class EmployeeModel {
             $supplyItem = $supStmt->fetchColumn();
 
             if ($condition === 'Functional') {
-                // 3a. Return to Stock
-                $updSupplySql = "UPDATE supply SET quantity = quantity + ? WHERE supply_id = ?";
+                // 3a. Return to Separate Returned Stock (not main quantity)
+                $updSupplySql = "UPDATE supply SET returned_quantity = returned_quantity + ? WHERE supply_id = ?";
                 $updSupplyStmt = $this->conn->prepare($updSupplySql);
                 $updSupplyStmt->execute([$quantity, $supplyId]);
                 
-                // Log return to stock
-                $logModel->log("RETURN_ITEM_STOCK", "Returned $quantity x $supplyItem from Employee $employeeId to Stock. Reason: $reason");
+                // Log return to returned stock
+                $logModel->log("RETURN_ITEM_STOCK", "Returned $quantity x $supplyItem from Employee $employeeId to Returned/Used Stock. Reason: $reason");
             } else {
                 // 3b. Log to Waste Items
                 $wasteSql = "INSERT INTO waste_items (supply_id, employee_id, quantity, reason, condition_status, date_returned) 

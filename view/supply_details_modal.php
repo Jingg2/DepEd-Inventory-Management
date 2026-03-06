@@ -18,7 +18,8 @@
                 <p><strong>Item Name:</strong> <span id="modal-name"></span></p>
                 <p><strong>Category:</strong> <span id="modal-category"></span></p>
                 <p><strong>Unit:</strong> <span id="modal-unit"></span></p>
-                <p><strong>Quantity:</strong> <span id="modal-quantity"></span></p>
+                <p><strong>Stock:</strong> <span id="modal-quantity"></span></p>
+                <p><strong>Returned/Used Qty:</strong> <span id="modal-returned-quantity"></span></p>
                 <p><strong>Unit Cost:</strong> ₱<span id="modal-unit-cost"></span></p>
                 <p><strong>Total Cost:</strong> ₱<span id="modal-total-cost"></span></p>
                 <p><strong>Status:</strong> <span id="modal-status"></span></p>

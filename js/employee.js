@@ -141,6 +141,66 @@
                 });
         }
 
+        // Search and Filter Logic
+        const searchInput = document.getElementById('employeeSearch');
+        const deptFilter = document.getElementById('deptFilter');
+        const statusFilter = document.getElementById('statusFilter');
+        const tableBody = document.getElementById('employeeTableBody');
+
+        if (searchInput && deptFilter && statusFilter && tableBody) {
+            const filterRows = () => {
+                const searchTerm = searchInput.value.toLowerCase().trim();
+                const selectedDept = deptFilter.value;
+                const selectedStatus = statusFilter.value;
+                const rows = tableBody.querySelectorAll('tr');
+                let foundAny = false;
+
+                rows.forEach(row => {
+                    // Skip the "No employees found" row if it exists
+                    if (row.cells.length === 1 && row.cells[0].colSpan === 9) return;
+
+                    const id = row.cells[0].textContent.toLowerCase();
+                    const firstName = row.cells[1].textContent.toLowerCase();
+                    const lastName = row.cells[2].textContent.toLowerCase();
+                    const department = row.cells[4].textContent.trim();
+                    const status = row.cells[6].textContent.trim();
+
+                    const matchesSearch = id.includes(searchTerm) ||
+                        firstName.includes(searchTerm) ||
+                        lastName.includes(searchTerm);
+                    const matchesDept = !selectedDept || department === selectedDept;
+                    const matchesStatus = !selectedStatus || status === selectedStatus;
+
+                    if (matchesSearch && matchesDept && matchesStatus) {
+                        row.style.display = '';
+                        foundAny = true;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+
+                // Handle "No matching results" display
+                let noResultRow = document.getElementById('noResultsRow');
+                if (!foundAny) {
+                    if (!noResultRow) {
+                        noResultRow = document.createElement('tr');
+                        noResultRow.id = 'noResultsRow';
+                        noResultRow.innerHTML = `<td colspan="9" style="text-align: center; padding: 20px; color: var(--slate-500);">
+                            <i class="fas fa-search" style="font-size: 2rem; display: block; margin-bottom: 10px; opacity: 0.3;"></i>
+                            No matching employees found.
+                        </td>`;
+                        tableBody.appendChild(noResultRow);
+                    }
+                } else if (noResultRow) {
+                    noResultRow.remove();
+                }
+            };
+
+            searchInput.addEventListener('input', filterRows);
+            deptFilter.addEventListener('change', filterRows);
+            statusFilter.addEventListener('change', filterRows);
+        }
+
         // Auto-open modal if there's an error message
         const errorMsg = document.querySelector('.error-message');
         if (errorMsg) {

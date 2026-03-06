@@ -9,25 +9,38 @@ $db = new Database();
 $conn = $db->getConnection();
 
 if (!empty($id)) {
-    // Export specific requisition
-    $requisition = $model->getRequisitionById($id);
+    // Export specific requisition(s) - support comma-separated IDs
+    $idArray = explode(',', $id);
+    $placeholders = str_repeat('?,', count($idArray) - 1) . '?';
+    
+    // Fetch first requisition for header info if single, or general header if multiple
+    $requisition = $model->getRequisitionById($idArray[0]);
+    
     $sql = "SELECT ri.*, s.item as item_name, s.unit, s.unit_cost, s.stock_no
             FROM request_item ri
             JOIN supply s ON ri.supply_id = s.supply_id
-            WHERE ri.requisition_id = ? AND ri.issued_quantity > 0";
+            WHERE ri.requisition_id IN ($placeholders) AND ri.issued_quantity > 0";
     $stmt = $conn->prepare($sql);
-    $stmt->execute([$id]);
+    $stmt->execute($idArray);
     $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    if (!$requisition) {
-        echo "Requisition not found";
+    if (!$items) {
+        echo "No items found for the selected requisition(s)";
         exit();
     }
-    $serialNo = $requisition['requisition_no'];
-    $exportDate = date('M d, Y', strtotime($requisition['approved_date'] ?? $requisition['request_date']));
-    $approverName = trim(($requisition['approver_first'] ?? '') . ' ' . ($requisition['approver_last'] ?? ''));
-    if (empty($approverName)) $approverName = $requisition['approver_username'] ?? 'ADMINISTRATOR';
-    $filename = "RSMI_" . preg_replace('/[^A-Za-z0-9]/', '_', $requisition['first_name'] . '_' . $requisition['last_name']) . "_" . date('Ymd') . ".xls";
+    
+    if (count($idArray) === 1 && $requisition) {
+        $serialNo = $requisition['requisition_no'];
+        $exportDate = date('M d, Y', strtotime($requisition['approved_date'] ?? $requisition['request_date']));
+        $approverName = trim(($requisition['approver_first'] ?? '') . ' ' . ($requisition['approver_last'] ?? ''));
+        if (empty($approverName)) $approverName = $requisition['approver_username'] ?? 'ADMINISTRATOR';
+        $filename = "RSMI_" . preg_replace('/[^A-Za-z0-9]/', '_', $requisition['first_name'] . '_' . $requisition['last_name']) . "_" . date('Ymd') . ".xls";
+    } else {
+        $serialNo = "MULTIPLE";
+        $exportDate = date('M d, Y');
+        $approverName = "ADMINISTRATOR";
+        $filename = "RSMI_Multiple_Requests_" . date('Ymd') . ".xls";
+    }
 } else {
     // Export all approved items by month or date range (Summary Mode)
     $selectedMonth = $_GET['month'] ?? '';
@@ -47,8 +60,9 @@ if (!empty($id)) {
     }
 
     if (!$useSnapshot) {
-        $whereClause = "r.status = 'Approved' AND ri.issued_quantity > 0";
-        $params = [];
+        $statusFilter = $_GET['status'] ?? 'Approved';
+        $whereClause = "r.status = ? AND ri.issued_quantity > 0";
+        $params = [$statusFilter];
         
         if (!empty($startDate) && !empty($endDate)) {
             // Custom Date Range

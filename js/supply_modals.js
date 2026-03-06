@@ -338,6 +338,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     document.getElementById('edit-description').value = data.desc || '';
                     document.getElementById('edit-quantity').value = data.qty || '0';
                     document.getElementById('edit-quantity').setAttribute('data-base-qty', data.qty || '0');
+                    document.getElementById('edit-returned-quantity').value = card.getAttribute('data-returned-quantity') || '0';
                     document.getElementById('edit-unit-cost').value = data.unitCost || '0.00';
                     document.getElementById('edit-status').value = data.status || 'Available';
                     if (document.getElementById('edit-school')) {
@@ -590,8 +591,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     // Load function
                     function loadStockCardHistory(supplyId, fromDate = null, toDate = null) {
-                        const isSemiExpendable = (card.getAttribute('data-property-classification') || "").toLowerCase().includes('semi-expendable');
-                        const colCount = isSemiExpendable ? 8 : 7;
+                        const propClass = (card.getAttribute('data-property-classification') || "").toLowerCase();
+                        const isSemiExpendable = propClass.includes('semi-expendable');
+                        const isPPE = propClass.includes('ppe') || propClass.includes('property') || (parseFloat(card.getAttribute('data-unit-cost')) >= 50000);
+                        const isPropertyReport = isSemiExpendable || isPPE;
+                        const colCount = isPropertyReport ? 8 : 7;
 
                         if (scBody) scBody.innerHTML = `<tr><td colspan="${colCount}" class="text-center">Loading transactions...</td></tr>`;
 
@@ -604,8 +608,16 @@ document.addEventListener('DOMContentLoaded', function () {
                             .then(result => {
                                 if (result.success) {
                                     const data = result.data;
-                                    const cardTypeName = isSemiExpendable ? 'Property Card' : 'Stock Card';
-                                    const cardTypeIcon = isSemiExpendable ? 'fa-address-card' : 'fa-file-invoice';
+                                    let cardTypeName = 'Stock Card';
+                                    let cardTypeIcon = 'fa-file-invoice';
+
+                                    if (isPPE) {
+                                        cardTypeName = 'Property Card';
+                                        cardTypeIcon = 'fa-address-card';
+                                    } else if (isSemiExpendable) {
+                                        cardTypeName = 'Semi-Expendable Property Card';
+                                        cardTypeIcon = 'fa-address-card';
+                                    }
 
                                     document.getElementById('sc-item-name').textContent = data.supply.item || 'N/A';
                                     document.getElementById('sc-stock-no').textContent = data.supply.stock_no || '-';
@@ -621,7 +633,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                     // Update Table Headers
                                     const headerRow = document.getElementById('sc-header-row');
                                     if (headerRow) {
-                                        if (isSemiExpendable) {
+                                        if (isPropertyReport) {
                                             // Property Card Headers (Appendix 69 style)
                                             headerRow.innerHTML = `
                                                 <th style="padding: 10px; border: 1px solid #e2e8f0; font-size: 0.8rem;">Date</th>
@@ -650,7 +662,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                     // Update download button
                                     if (scDownloadBtn) {
                                         scDownloadBtn.onclick = () => {
-                                            const exportApi = isSemiExpendable ? 'export_property_card_excel.php' : 'export_stock_card_excel.php';
+                                            const exportApi = isPropertyReport ? 'export_property_card_excel.php' : 'export_stock_card_excel.php';
                                             let exportUrl = (basePath || '') + 'api/' + exportApi + '?id=' + supplyId;
                                             if (fromDate) exportUrl += '&from=' + fromDate;
                                             if (toDate) exportUrl += '&to=' + toDate;
@@ -674,7 +686,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                             const rowStyle = isCorrection ? 'style="background: rgba(229, 57, 53, 0.05);"' : '';
 
                                             let deptOffice = '-';
-                                            if (isSemiExpendable) {
+                                            if (isPropertyReport) {
                                                 deptOffice = (t.first_name || t.last_name)
                                                     ? `${t.first_name || ''} ${t.last_name || ''}`.trim()
                                                     : (t.department_name || '-');
@@ -807,7 +819,8 @@ document.addEventListener('DOMContentLoaded', function () {
                         lowT: card.getAttribute('data-low-threshold') || '10',
                         critT: card.getAttribute('data-critical-threshold') || '5',
                         requisition: card.getAttribute('data-requisition') || '0',
-                        issuance: card.getAttribute('data-issuance') || '0'
+                        issuance: card.getAttribute('data-issuance') || '0',
+                        returnedQuantity: card.getAttribute('data-returned-quantity') || '0'
                     };
 
                     // Basic UI Population
@@ -816,6 +829,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     document.getElementById('modal-category').textContent = details.category || 'N/A';
                     document.getElementById('modal-unit').textContent = details.unit || 'N/A';
                     document.getElementById('modal-quantity').textContent = details.quantity || '0';
+                    document.getElementById('modal-returned-quantity').textContent = details.returnedQuantity || '0';
                     document.getElementById('modal-unit-cost').textContent = details.unitCost || '0.00';
                     document.getElementById('modal-total-cost').textContent = details.totalCost || '0.00';
                     document.getElementById('modal-status').textContent = details.status || 'Unknown';

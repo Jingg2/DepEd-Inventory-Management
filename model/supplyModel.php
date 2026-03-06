@@ -18,7 +18,9 @@ class SupplyModel {
         
         $this->ensureHistoryTableExists();
         $this->ensureSchoolTablesExist();
+        $this->ensureAcquisitionTableExists();
     }
+
 
     private function ensureHistoryTableExists() {
         $sql = "CREATE TABLE IF NOT EXISTS supply_history (
@@ -67,6 +69,16 @@ class SupplyModel {
                 error_log("Failed to add school column: " . $e->getMessage());
             }
 
+            // Auto-migration: Ensure returned_quantity column exists in supply table
+            try {
+                $check = $this->conn->query("SHOW COLUMNS FROM supply LIKE 'returned_quantity'");
+                if ($check->rowCount() == 0) {
+                    $this->conn->exec("ALTER TABLE supply ADD COLUMN returned_quantity INT DEFAULT 0 AFTER quantity");
+                }
+            } catch (Exception $e) {
+                error_log("Failed to add returned_quantity column: " . $e->getMessage());
+            }
+
             // Auto-migration: Ensure deliveries table exists
             $sqlDeliveries = "CREATE TABLE IF NOT EXISTS deliveries (
                 delivery_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -98,15 +110,32 @@ class SupplyModel {
      */
     public function checkAndPerformRollover() {
         require_once __DIR__ . '/settingsModel.php';
+        require_once __DIR__ . '/snapshotModel.php';
         $settings = new SettingsModel();
+        $snapshot = new SnapshotModel();
         
         $currentMonth = date('Y-m');
         $lastRollover = $settings->getSetting('last_rollover_month');
         
         if ($lastRollover !== $currentMonth) {
             try {
+                // 0. Ensure all totals are synced for the month that just ended before snapshotting
+                if ($lastRollover) {
+                    require_once __DIR__ . '/requisitionModel.php';
+                    $reqModel = new RequisitionModel();
+                    $reqModel->syncAllMonthlyTotals($lastRollover);
+                }
+
+                // 1. Create Snapshot for the month that just ended (lastRollover)
+                // This captures the final state (Beginning, Acq, Iss, Qty) as of the end of that month.
+                if ($lastRollover) {
+                    $snapshot->createMonthlySnapshot($lastRollover);
+                    $snapshot->createRSMISnapshot($lastRollover);
+                }
+
                 $this->conn->beginTransaction();
                 
+                // 2. Perform live table rollover
                 // previous_month becomes the current quantity
                 // requisition (Acquisition) and issuance (Issuance) reset to 0
                 $sql = "UPDATE supply SET 
@@ -119,11 +148,104 @@ class SupplyModel {
                 $settings->updateSetting('last_rollover_month', $currentMonth);
                 
                 $this->conn->commit();
-                error_log("Monthly rollover performed successfully for $currentMonth");
+                error_log("Monthly rollover performed successfully for $currentMonth (Snapshot created for $lastRollover)");
             } catch (PDOException $e) {
                 if ($this->conn->inTransaction()) $this->conn->rollBack();
                 error_log("Monthly rollover failed: " . $e->getMessage());
             }
+        }
+    }
+
+    /**
+     * Reconstructs inventory report data for any period using the current stock as an anchor.
+     * Logic: Ending Balance = Current Stock - (Net change after period)
+     *        Previous Balance = Ending Balance - Acquisitions + Issuances
+     * @param string|null $month Format: YYYY-MM
+     * @param string|null $start ISO Date
+     * @param string|null $end ISO Date
+     * @return array Calculated report data
+     */
+    public function getMonthlyReportData($month = null, $start = null, $end = null) {
+        $month = $month ?: date('Y-m');
+        if ($start && $end) {
+            $startDate = $start . ' 00:00:00';
+            $endDate = $end . ' 23:59:59';
+            $reportKey = $start . '_to_' . $end;
+        } else {
+            $startDate = $month . '-01 00:00:00';
+            $endDate = date('Y-m-t', strtotime($startDate)) . ' 23:59:59';
+            $reportKey = $month;
+        }
+        
+        try {
+            // 1. Get all base items with current real-time quantity
+            $sqlItems = "SELECT supply_id, stock_no, item, description, category, unit, quantity, unit_cost, status, property_classification 
+                        FROM supply ORDER BY category, item";
+            $stmtItems = $this->conn->prepare($sqlItems);
+            $stmtItems->execute();
+            $items = $stmtItems->fetchAll(PDO::FETCH_ASSOC);
+            
+            $reportData = [];
+            
+            foreach ($items as $item) {
+                $id = $item['supply_id'];
+                $currentQty = (float)$item['quantity'];
+                
+                // 2. Calculate Actual Historical Ending Balance for the period
+                // We wind back the current quantity by subtracting all net changes that happened AFTER the period's end
+                $sqlNetAfter = "SELECT IFNULL(SUM(quantity_change), 0) FROM supply_history 
+                               WHERE supply_id = ? AND created_at > ?";
+                $stmtNetAfter = $this->conn->prepare($sqlNetAfter);
+                $stmtNetAfter->execute([$id, $endDate]);
+                $netChangeAfter = (float)$stmtNetAfter->fetchColumn();
+                
+                $actualEndingBalance = $currentQty - $netChangeAfter;
+                
+                // 3. Calculate Reported Acquisitions during the period (from acquisition table)
+                $sqlAcq = "SELECT IFNULL(SUM(quantity), 0) FROM acquisition 
+                           WHERE supply_id = ? AND (acquisition_date BETWEEN ? AND ?)";
+                $stmtAcq = $this->conn->prepare($sqlAcq);
+                $stmtAcq->execute([$id, substr($startDate, 0, 10), substr($endDate, 0, 10)]);
+                $acquisitions = (float)$stmtAcq->fetchColumn();
+                
+                // 4. Calculate Reported Issuances during the period (from approved request_item)
+                $sqlIss = "SELECT IFNULL(SUM(ri.issued_quantity), 0) 
+                           FROM request_item ri
+                           JOIN requisition r ON ri.requisition_id = r.requisition_id
+                           WHERE ri.supply_id = ? 
+                           AND (r.approved_date BETWEEN ? AND ?)
+                           AND r.status = 'Approved'
+                           AND ri.stock_type = 'New'";
+                $stmtIss = $this->conn->prepare($sqlIss);
+                $stmtIss->execute([$id, $startDate, $endDate]);
+                $issuances = (float)$stmtIss->fetchColumn();
+                
+                // 5. Calculate Previous Month Balance as requested (Back-calculation to ensure consistency)
+                // PB = EndingBalance - Acquisitions + Issuances
+                $beginningBalance = $actualEndingBalance - $acquisitions + $issuances;
+                
+                $reportData[] = [
+                    'supply_id' => $id,
+                    'stock_no' => $item['stock_no'],
+                    'item' => $item['item'],
+                    'description' => $item['description'] ?? '',
+                    'category' => $item['category'],
+                    'unit' => $item['unit'],
+                    'unit_cost' => $item['unit_cost'],
+                    'property_classification' => $item['property_classification'],
+                    'status' => $item['status'],
+                    'previous_month' => $beginningBalance,
+                    'requisition' => $acquisitions, // Named for backward compatibility with export scripts
+                    'issuance' => $issuances,
+                    'quantity' => $actualEndingBalance
+                ];
+            }
+            
+            return $reportData;
+            
+        } catch (PDOException $e) {
+            error_log("Get Monthly Report Data Error: " . $e->getMessage());
+            return [];
         }
     }
 
@@ -238,6 +360,27 @@ class SupplyModel {
         }
     }
 
+    private function ensureAcquisitionTableExists() {
+        $sql = "CREATE TABLE IF NOT EXISTS acquisition (
+            acquisition_id INT AUTO_INCREMENT PRIMARY KEY,
+            supply_id INT NOT NULL,
+            quantity INT NOT NULL,
+            unit_cost DECIMAL(15, 2) DEFAULT 0.00,
+            total_cost DECIMAL(15, 2) DEFAULT 0.00,
+            acquisition_date DATE,
+            remarks TEXT,
+            updated_by INT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            INDEX (supply_id),
+            FOREIGN KEY (supply_id) REFERENCES supply(supply_id) ON DELETE CASCADE
+        ) ENGINE=InnoDB";
+        try {
+            $this->conn->exec($sql);
+        } catch (Exception $e) {
+            error_log("Failed to create acquisition table: " . $e->getMessage());
+        }
+    }
+
     public function recordSupplyHistory($supplyId, $add_stock, $qtyChange, $prevQty, $newQty, $type, $remarks = '', $createdAt = null, $updatedBy = null) {
         if ($createdAt === null) {
             $createdAt = date('Y-m-d H:i:s');
@@ -252,6 +395,112 @@ class SupplyModel {
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = $this->conn->prepare($sql);
         return $stmt->execute([$supplyId, $add_stock, $qtyChange, $prevQty, $newQty, $type, $remarks, $updatedBy, $createdAt]);
+    }
+
+    /**
+     * Get acquisition/receipt data from supply_history (positive changes) for a given period.
+     * Replaces the old acquisition table.
+     */
+    public function getAcquisitionsReportData($month = null, $startDate = null, $endDate = null) {
+        $sql = "SELECT sh.supply_id, s.stock_no, s.item, s.unit, s.category,
+                       sh.quantity_change as quantity, s.unit_cost,
+                       (sh.quantity_change * s.unit_cost) as total_cost,
+                       DATE(sh.created_at) as acquisition_date,
+                       sh.remarks
+                FROM supply_history sh
+                JOIN supply s ON sh.supply_id = s.supply_id
+                WHERE sh.add_stock > 0";
+        $params = [];
+
+        if ($startDate && $endDate) {
+            $sql .= " AND DATE(sh.created_at) BETWEEN ? AND ?";
+            $params[] = $startDate;
+            $params[] = $endDate;
+        } elseif ($month) {
+            $sql .= " AND sh.created_at LIKE ?";
+            $params[] = $month . '%';
+        }
+
+        $sql .= " ORDER BY sh.created_at DESC";
+        
+        try {
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute($params);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Get Acquisitions Report Data Error: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Record a stock receipt (acquisition) directly into supply_history and increment supply.requisition.
+     * No longer writes to the acquisition table.
+     */
+    public function recordAcquisition($supplyId, $quantity, $unitCost, $remarks = '', $date = null, $updatedBy = null) {
+        if ($date === null) $date = date('Y-m-d');
+        $totalCost = $quantity * $unitCost;
+
+        try {
+            // 1. Increment the current month accumulator on the supply row
+            $upd = $this->conn->prepare("UPDATE supply SET requisition = requisition + ? WHERE supply_id = ?");
+            $upd->execute([$quantity, $supplyId]);
+
+            // 2. Insert into the dedicated acquisition table
+            $sql = "INSERT INTO acquisition (supply_id, quantity, unit_cost, total_cost, acquisition_date, remarks, updated_by)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([$supplyId, $quantity, $unitCost, $totalCost, $date, $remarks, $updatedBy]);
+
+            return true;
+        } catch (PDOException $e) {
+            error_log("recordAcquisition error: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Recalculates supply.requisition from supply_history positive changes for the current month.
+     */
+    /**
+     * Recalculates supply.requisition from supply_history positive changes for the current month.
+     * Also "self-heals" previous_month to ensure mathematical consistency: 
+     * previous_month = quantity - requisition + issuance
+     */
+    public function syncMonthlyAcquisitions($supplyId) {
+        $currentMonth = date('Y-m');
+        try {
+            // 1. Sync Acquisitions (Sum of acquisition table)
+        $sql = "SELECT IFNULL(SUM(quantity), 0) FROM acquisition
+                WHERE supply_id = ? AND acquisition_date LIKE ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute([$supplyId, $currentMonth . '%']);
+        $acqTotal = (int)$stmt->fetchColumn();
+
+        // 2. Sync Issuances (Sum of request_item issued_quantity)
+        $sqlIss = "SELECT IFNULL(SUM(ri.issued_quantity), 0) 
+                   FROM request_item ri
+                   JOIN requisition r ON ri.requisition_id = r.requisition_id
+                   WHERE ri.supply_id = ? 
+                   AND r.approved_date LIKE ?
+                   AND r.status = 'Approved'
+                   AND ri.stock_type = 'New'";
+        $stmtIss = $this->conn->prepare($sqlIss);
+        $stmtIss->execute([$supplyId, $currentMonth . '%']);
+        $issTotal = (int)$stmtIss->fetchColumn();
+
+            // 3. Update all accumulators and ensure Previous Month Balance is the mathematically correct remainder
+            // previous_month = quantity - (acquisitions - issuances)
+            $upd = $this->conn->prepare("UPDATE supply SET 
+                    requisition = ?, 
+                    issuance = ?,
+                    previous_month = quantity - (? - ?)
+                    WHERE supply_id = ?");
+            return $upd->execute([$acqTotal, $issTotal, $acqTotal, $issTotal, $supplyId]);
+        } catch (PDOException $e) {
+            error_log("Sync Monthly Totals/Acquisitions Error: " . $e->getMessage());
+            return false;
+        }
     }
     public function isValidEmployeeId($id) {
         if ($id === null) return false;
@@ -339,7 +588,7 @@ class SupplyModel {
                     $data['school'] ?? null,
                     $data['previous_month'] ?? 0,
                     $data['issuance'] ?? 0,
-                    $data['requisition'] ?? 0
+                    0 // Requisition starts at 0, will be updated by recordAcquisition
                 ];
                 $result = $stmt->execute($params);
             }
@@ -356,6 +605,12 @@ class SupplyModel {
             // Anchor initial stock to the item creation time for perfect sorting
             $initialDate = $updated_at; 
             $this->recordSupplyHistory($newId, $quantity, $quantity, 0, $quantity, 'Receipt', 'Initial stock entry', $initialDate, $adminId);
+            
+            // Record as acquisition
+            if ($quantity > 0) {
+                $this->recordAcquisition($newId, $quantity, $unit_cost, 'Initial stock entry', date('Y-m-d', strtotime($initialDate)), $adminId);
+                $this->syncMonthlyAcquisitions($newId);
+            }
             
             return true;
         } catch (PDOException $e) {
@@ -520,7 +775,7 @@ class SupplyModel {
             // Build SQL dynamically to handle optional image and protect monthly totals
             // (We NO LONGER update 'requisition' or 'issuance' directly from form data)
             $sqlSet = "stock_no = ?, category = ?, unit = ?, item = ?, description = ?, 
-                       quantity = ?, add_stock = ?, previous_quantity = ?, 
+                       quantity = ?, returned_quantity = ?, add_stock = ?, previous_quantity = ?, 
                        unit_cost = ?, total_cost = ?, status = ?, 
                        updated_by = ?, updated_at = ?, property_classification = ?, 
                        low_stock_threshold = ?, critical_stock_threshold = ?, 
@@ -540,6 +795,7 @@ class SupplyModel {
             $stmt->bindValue($i++, $data['item']);
             $stmt->bindValue($i++, !empty($data['description']) ? $data['description'] : '');
             $stmt->bindValue($i++, $quantity, PDO::PARAM_INT);
+            $stmt->bindValue($i++, (int)($data['returned_quantity'] ?? 0), PDO::PARAM_INT);
             $stmt->bindValue($i++, $addStock, PDO::PARAM_INT);
             $stmt->bindValue($i++, $prevQty, PDO::PARAM_INT);
             $stmt->bindValue($i++, $unit_cost);
@@ -562,10 +818,13 @@ class SupplyModel {
             if ($result) {
                 // If stock was added, increment the requisition (Acquisition) column separately
                 if ($addStock > 0) {
-                    $this->conn->prepare("UPDATE supply SET requisition = requisition + ? WHERE supply_id = ?")
-                               ->execute([$addStock, $id]);
-                    
                     $this->recordSupplyHistory($id, $addStock, $addStock, $prevQty, $quantity, 'Receipt', 'Manual Restock', $updated_at, $adminId);
+                    
+                    // Record as acquisition
+                    $this->recordAcquisition($id, $addStock, $unit_cost, 'Manual Restock', date('Y-m-d', strtotime($updated_at)), $adminId);
+
+                    // Sync the monthly total
+                    $this->syncMonthlyAcquisitions($id);
                 } 
                 
                 if ($subStock > 0) {
@@ -575,7 +834,16 @@ class SupplyModel {
                     $diff = $quantity - $prevQty;
                     $type = 'Correction';
                     $remarks = $diff > 0 ? 'Stock Correction (Increase)' : 'Stock Correction (Decrease)';
-                    $this->recordSupplyHistory($id, 0, $diff, $prevQty, $quantity, $type, $remarks, $updated_at, $adminId);
+                    
+                    // If it's a manual increase, also count it as an Acquisition for the month
+                    if ($diff > 0) {
+                        // Also record in acquisition table (via history entry)
+                        $this->recordAcquisition($id, $diff, $unit_cost, $remarks, date('Y-m-d', strtotime($updated_at)), $adminId);
+                        $this->recordSupplyHistory($id, $diff, $diff, $prevQty, $quantity, $type, $remarks, $updated_at, $adminId);
+                        $this->syncMonthlyAcquisitions($id);
+                    } else {
+                        $this->recordSupplyHistory($id, 0, $diff, $prevQty, $quantity, $type, $remarks, $updated_at, $adminId);
+                    }
                 }
                 return true;
             } else {
@@ -647,7 +915,7 @@ class SupplyModel {
     }
 
     public function getSupplyById($id) {
-        $sql = "SELECT supply_id as id, item, unit, stock_no, quantity, quantity as current_qty, unit_cost, 
+        $sql = "SELECT supply_id as id, item, unit, stock_no, quantity, quantity as current_qty, returned_quantity, unit_cost, 
                        updated_at as created_at, property_classification, description, school, image,
                        previous_month, add_stock, issuance, requisition
                 FROM supply
@@ -1086,12 +1354,28 @@ class SupplyModel {
 
     public function updateDeliveryItemCondition($id, $condition) {
         try {
-            $sql = "UPDATE delivery_items SET item_condition = ? WHERE delivery_item_id = ?";
+            $sql = "UPDATE delivery_items SET condition_status = ? WHERE delivery_item_id = ?";
             $stmt = $this->conn->prepare($sql);
             return $stmt->execute([$condition, $id]);
         } catch (PDOException $e) {
             error_log("Update delivery item condition error: " . $e->getMessage());
             return false;
+        }
+    }
+
+    /**
+     * Get all supplies that have a returned_quantity > 0
+     * @return array List of supplies with returned stock
+     */
+    public function getReturnedSupplies() {
+        try {
+            $sql = "SELECT * FROM supply WHERE returned_quantity > 0 ORDER BY item ASC";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Get Returned Supplies Error: " . $e->getMessage());
+            return [];
         }
     }
 

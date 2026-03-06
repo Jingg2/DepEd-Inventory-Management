@@ -231,6 +231,82 @@ $root = rtrim($scriptDir, '/') . '/';
             opacity: 1 !important;
             margin: 0;
         }
+
+        /* Filter Section Styling */
+        .filter-container {
+            background: white;
+            padding: 20px;
+            border-radius: var(--radius-md);
+            margin-bottom: 25px;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .search-wrapper {
+            position: relative;
+            flex: 2;
+            min-width: 250px;
+        }
+
+        .search-wrapper i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--slate-400);
+        }
+
+        .search-wrapper input {
+            width: 100%;
+            padding: 12px 12px 12px 45px;
+            border: 1.5px solid var(--slate-200);
+            border-radius: 10px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .search-wrapper input:focus {
+            border-color: var(--primary-emerald);
+            box-shadow: 0 0 0 4px var(--primary-glow);
+            outline: none;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 180px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filter-group label {
+            white-space: nowrap;
+            font-weight: 600;
+            color: var(--slate-600);
+            font-size: 0.9rem;
+        }
+
+        .filter-group select {
+            flex: 1;
+            padding: 12px;
+            border: 1.5px solid var(--slate-200);
+            border-radius: 10px;
+            font-size: 0.95rem;
+            background-color: white;
+            color: var(--navy-900);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-group select:focus {
+            border-color: var(--primary-emerald);
+            outline: none;
+        }
     </style>
 </head>
 <body>
@@ -298,6 +374,32 @@ $root = rtrim($scriptDir, '/') . '/';
             </button>
         </div>
 
+        <div class="filter-container">
+            <div class="search-wrapper">
+                <i class="fas fa-search"></i>
+                <input type="text" id="employeeSearch" placeholder="Search by ID, First Name, or Last Name...">
+            </div>
+            <div class="filter-group">
+                <label for="deptFilter"><i class="fas fa-filter"></i> Dept:</label>
+                <select id="deptFilter">
+                    <option value="">All Departments</option>
+                    <?php foreach ($departments as $dept): ?>
+                        <option value="<?php echo htmlspecialchars($dept['department_name']); ?>">
+                            <?php echo htmlspecialchars($dept['department_name']); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="statusFilter"><i class="fas fa-info-circle"></i> Status:</label>
+                <select id="statusFilter">
+                    <option value="">All Status</option>
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                </select>
+            </div>
+        </div>
+
         <div class="table-section">
             <h2><i class="fas fa-users"></i> Employee List</h2>
             <div style="overflow-x: auto;">
@@ -335,36 +437,59 @@ $root = rtrim($scriptDir, '/') . '/';
                                     </span>
                                 </td>
                                 <td><?php echo date('Y-m-d', strtotime($emp['created_at'])); ?></td>
-                                <td>
-                                    <i class="fas fa-edit update-employee-btn" 
-                                       style="color: var(--primary-emerald); cursor: pointer; margin-right: 10px;" 
-                                       title="Edit"
-                                       data-id="<?php echo htmlspecialchars($emp['employee_id']); ?>"
-                                       data-first-name="<?php echo htmlspecialchars($emp['first_name']); ?>"
-                                       data-last-name="<?php echo htmlspecialchars($emp['last_name']); ?>"
-                                       data-position="<?php echo htmlspecialchars($emp['position']); ?>"
-                                       data-department-id="<?php echo htmlspecialchars($emp['department_id']); ?>"
-                                       data-role="<?php echo htmlspecialchars($emp['role']); ?>"
-                                       data-status="<?php echo htmlspecialchars($emp['status']); ?>"></i>
+                                <td class="actions">
+                                    <div class="action-item">
+                                        <span class="action-label">Edit</span>
+                                        <i class="fas fa-edit update-employee-btn" 
+                                           style="color: var(--primary-emerald); cursor: pointer;" 
+                                           title="Edit"
+                                           data-id="<?php echo htmlspecialchars($emp['employee_id']); ?>"
+                                           data-first-name="<?php echo htmlspecialchars($emp['first_name']); ?>"
+                                           data-last-name="<?php echo htmlspecialchars($emp['last_name']); ?>"
+                                           data-position="<?php echo htmlspecialchars($emp['position']); ?>"
+                                           data-department-id="<?php echo htmlspecialchars($emp['department_id']); ?>"
+                                           data-role="<?php echo htmlspecialchars($emp['role']); ?>"
+                                           data-status="<?php echo htmlspecialchars($emp['status']); ?>"></i>
+                                    </div>
                                     
-                                    <i class="fas fa-trash delete-employee-btn" 
-                                       style="color: #e74c3c; cursor: pointer; margin-right: 10px;" 
-                                       title="Delete"
-                                       data-id="<?php echo htmlspecialchars($emp['employee_id']); ?>"
-                                       data-name="<?php echo htmlspecialchars($emp['first_name'] . ' ' . $emp['last_name']); ?>"></i>
+                                    <div class="action-item">
+                                        <span class="action-label">Delete</span>
+                                        <i class="fas fa-trash delete-employee-btn" 
+                                           style="color: #e74c3c; cursor: pointer;" 
+                                           title="Delete"
+                                           data-id="<?php echo htmlspecialchars($emp['employee_id']); ?>"
+                                           data-name="<?php echo htmlspecialchars($emp['first_name'] . ' ' . $emp['last_name']); ?>"></i>
+                                    </div>
                                     
-                                    <?php if (($emp['held_items_count'] ?? 0) > 0): ?>
-                                        <i class="fas fa-box-open view-assets-btn" 
-                                           data-id="<?php echo $emp['employee_id']; ?>" 
-                                           data-name="<?php echo htmlspecialchars($emp['first_name'] . ' ' . $emp['last_name']); ?>"
-                                           title="View Assigned Assets" 
-                                           style="color: #3b82f6; cursor: pointer; margin-right: 10px; font-size: 1.1rem;"></i>
+                                    <div class="action-item">
+                                        <span class="action-label">Assign</span>
+                                        <button class="direct-assign-icon" 
+                                            data-id="<?php echo $emp['employee_id']; ?>" 
+                                            data-name="<?php echo htmlspecialchars($emp['first_name'] . ' ' . $emp['last_name']); ?>"
+                                            title="Assign Item (Direct)" 
+                                            style="background: #059669; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 4px; font-weight: 600;">
+                                            <i class="fas fa-plus-circle"></i>
+                                        </button>
+                                    </div>
+
+                                     <?php if (($emp['held_items_count'] ?? 0) > 0): ?>
+                                        <div class="action-item">
+                                            <span class="action-label">Assets</span>
+                                            <i class="fas fa-box-open view-assets-btn" 
+                                               data-id="<?php echo $emp['employee_id']; ?>" 
+                                               data-name="<?php echo htmlspecialchars($emp['first_name'] . ' ' . $emp['last_name']); ?>"
+                                               title="View Assigned Assets" 
+                                               style="color: #3b82f6; cursor: pointer; font-size: 1.1rem;"></i>
+                                        </div>
                                         
-                                        <a href="<?php echo $root; ?>api/export_ics_excel.php?employee_id=<?php echo urlencode($emp['employee_id']); ?>" 
-                                           title="Download Borrowing History (ICS)" 
-                                           style="color: #a87e00; font-size: 1.1rem; text-decoration: none;">
-                                            <i class="fas fa-address-card"></i>
-                                        </a>
+                                        <div class="action-item">
+                                            <span class="action-label">ICS</span>
+                                            <a href="<?php echo $root; ?>api/export_ics_excel.php?employee_id=<?php echo urlencode($emp['employee_id']); ?>" 
+                                               title="Download Borrowing History (ICS)" 
+                                               style="color: #a87e00; font-size: 1.1rem; text-decoration: none;">
+                                                <i class="fas fa-address-card"></i>
+                                            </a>
+                                        </div>
                                     <?php endif; ?>
                                 </td>
                             </tr>
@@ -552,11 +677,16 @@ $root = rtrim($scriptDir, '/') . '/';
         }
     </script>
 
+    <?php include_once __DIR__ . '/includes/employee_items_modal.php'; ?>
+    <?php include_once __DIR__ . '/includes/return_item_modal.php'; ?>
+    <?php include_once __DIR__ . '/includes/assign_item_modal.php'; ?>
+
     <script src="<?php echo $root; ?>js/sidebar.js?v=<?php echo time(); ?>"></script>
     <script src="<?php echo $root; ?>js/dashboard.js?v=<?php echo time(); ?>"></script>
     <script src="<?php echo $root; ?>js/employee.js?v=<?php echo time(); ?>"></script>
     <!-- New Script for Return Feature -->
     <script src="<?php echo $root; ?>js/employee_return.js?v=<?php echo time(); ?>"></script>
+    <script src="<?php echo $root; ?>js/assign_item.js?v=<?php echo time(); ?>"></script>
 
     <?php if (isset($_GET['success'])): ?>
         <script>
@@ -565,12 +695,10 @@ $root = rtrim($scriptDir, '/') . '/';
                 let msg = 'Employee registered successfully!';
                 if (type === 'update') msg = 'Employee updated successfully!';
                 if (type === 'delete') msg = 'Employee deleted successfully!';
-                showModal(msg, 'success');
+                if (typeof showModal === 'function') showModal(msg, 'success');
+                else alert(msg);
             });
         </script>
     <?php endif; ?>
-    <?php include_once __DIR__ . '/../includes/logout_modal.php'; ?>
-    <?php include_once __DIR__ . '/includes/employee_items_modal.php'; ?>
-    <?php include_once __DIR__ . '/includes/return_item_modal.php'; ?>
 </body>
 </html>

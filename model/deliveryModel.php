@@ -183,6 +183,10 @@ class DeliveryModel {
                 $newId, $quantity, $quantity, 0, $quantity, 'Receipt', 
                 $remarks, $updated_at, $data['admin_id']
             ]);
+
+            // Sync monthly acquisition total from supply_history
+            $supplyModel->syncMonthlyAcquisitions($newId);
+
             return true;
         }
         return false;

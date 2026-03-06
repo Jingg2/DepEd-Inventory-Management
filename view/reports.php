@@ -203,6 +203,110 @@ $urlRoot = str_replace(' ', '%20', $root);
             opacity: 1 !important;
             margin: 0;
         }
+
+        /* Multi-select Styles */
+        .multi-select-container {
+            width: 250px;
+            position: relative;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .multi-select-trigger {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 8px 12px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            min-height: 40px;
+        }
+
+        .multi-select-trigger:hover {
+            border-color: var(--primary-emerald);
+        }
+
+        .multi-select-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin-top: 5px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            z-index: 1000;
+            display: none;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .multi-select-dropdown.active {
+            display: block;
+        }
+
+        .multi-select-search {
+            padding: 8px;
+            border-bottom: 1px solid #edf2f7;
+            position: sticky;
+            top: 0;
+            background: #fff;
+            z-index: 1;
+        }
+
+        .multi-select-search input {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+
+        .multi-select-options {
+            padding: 5px 0;
+        }
+
+        .multi-option {
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 0.85rem;
+        }
+
+        .multi-option:hover {
+            background: #f7fafc;
+        }
+
+        .multi-option input {
+            margin: 0;
+            cursor: pointer;
+        }
+
+        .multi-option.selected {
+            background: #f0fff4;
+            color: #2f855a;
+        }
+
+        .no-options {
+            padding: 15px;
+            text-align: center;
+            color: #718096;
+            font-size: 0.85rem;
+            font-style: italic;
+        }
+
+        #trigger-text {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding-right: 5px;
+        }
     </style>
 </head>
 <body>
@@ -285,6 +389,12 @@ $urlRoot = str_replace(' ', '%20', $root);
                 <button id="reset-range" class="cancel-btn" style="padding: 10px 15px; font-size: 0.85rem;">
                     Reset
                 </button>
+                <button id="save-snapshot-btn" class="btn-primary" style="padding: 10px 15px; font-size: 0.85rem; background: var(--primary-emerald); border-color: var(--primary-emerald);">
+                    <i class="fas fa-camera"></i> Save Snapshot
+                </button>
+                <button id="view-snapshot-btn" class="download-btn" style="padding: 10px 15px; font-size: 0.85rem; background: var(--gradient-navy); display: none;">
+                    <i class="fas fa-eye"></i> View Saved Data
+                </button>
             </div>
             
             <div style="display: flex; align-items: center; gap: 10px; border-left: 2px solid #edf2f7; padding-left: 20px;">
@@ -295,6 +405,25 @@ $urlRoot = str_replace(' ', '%20', $root);
                         <option value="<?php echo $dept['department_id']; ?>"><?php echo htmlspecialchars($dept['department_name']); ?></option>
                     <?php endforeach; ?>
                 </select>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 10px; border-left: 2px solid #edf2f7; padding-left: 20px; position: relative;">
+                <label for="request-multi-select">Request No:</label>
+                <div class="multi-select-container" id="request-multi-container">
+                    <div class="multi-select-trigger" id="request-trigger">
+                        <span id="trigger-text">All Approved Requests</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="multi-select-dropdown" id="request-dropdown">
+                        <div class="multi-select-search">
+                            <input type="text" id="request-search" placeholder="Search request...">
+                        </div>
+                        <div class="multi-select-options" id="request-options">
+                            <div class="no-options">Select an office first</div>
+                        </div>
+                    </div>
+                </div>
+                <input type="hidden" id="request-ids" value="">
             </div>
             <span id="snapshot-info" style="color: #666; font-size: 0.85rem; font-style: italic; margin-left: auto;"></span>
         </div>
@@ -339,29 +468,68 @@ $urlRoot = str_replace(' ', '%20', $root);
                 </a>
             </div>
 
-            <!-- Monthly Inventory Report -->
+            <!-- Monthly Inventory Report (Flow Tracking) -->
             <div class="report-card">
                 <div class="report-icon">
                     <i class="fas fa-boxes"></i>
                 </div>
                 <h3>Monthly Inventory Report</h3>
-                <p>Report on the Physical Count of Inventory (Appendix 66). Comprehensive stock balance and discrepancy report.</p>
+                <p>Standard flow report tracking previous balance, acquisitions, and issuances for the month.</p>
                 <a href="<?php echo $root; ?>api/export_supply_excel.php" class="download-btn" id="supply-download-btn">
                     <i class="fas fa-download"></i>
-                    Monthly Inventory Excel
+                    Download Monthly Inventory
                 </a>
             </div>
 
-            <!-- Monthly Inventory (PPE & Semi-Expendable) -->
+            <!-- RCPI - Consumable / Expendable -->
             <div class="report-card">
-                <div class="report-icon" style="background: linear-gradient(135deg, #38a169 0%, #2f855a 100%);">
-                    <i class="fas fa-tools"></i>
+                <div class="report-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); box-shadow: 0 4px 10px rgba(102,126,234,0.25);">
+                    <i class="fas fa-box-open"></i>
                 </div>
-                <h3>Monthly Inventory (PPE & Semi-Expendable)</h3>
-                <p>Report on the Physical Count of Property, Plant, Equipment & Semi-Expendable items (High Value - Appendix 66).</p>
-                <a href="<?php echo $root; ?>api/export_ppe_report.php" class="download-btn" id="ppe-download-btn" style="background: var(--gradient-warning); box-shadow: 0 4px 10px rgba(245, 158, 11, 0.2);">
+                <h3>RCPI &mdash; Consumable / Expendable</h3>
+                <p>Report on the Physical Count of Inventories (Appendix 66) for <strong>consumable and expendable</strong> supplies only.</p>
+                <a href="<?php echo $root; ?>api/export_rcpi_consumable_excel.php" class="download-btn" id="rcpi-consumable-btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); box-shadow: 0 4px 10px rgba(102,126,234,0.2);">
                     <i class="fas fa-download"></i>
-                    Monthly Inventory (PPE)
+                    Download RCPI (Consumable)
+                </a>
+            </div>
+
+            <!-- RCPI - Semi-Expendable Low Value -->
+            <div class="report-card">
+                <div class="report-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); box-shadow: 0 4px 10px rgba(245,87,108,0.25);">
+                    <i class="fas fa-tags"></i>
+                </div>
+                <h3>RCPI &mdash; Semi-Expendable (Low Value &#8369;5,000 &amp; below)</h3>
+                <p>Report on the Physical Count of Inventories (Appendix 66) for <strong>semi-expendable items</strong> with unit cost <strong>&#8369;5,000 and below</strong>.</p>
+                <a href="<?php echo $root; ?>api/export_rcpi_semi_lv_excel.php" class="download-btn" id="rcpi-semi-lv-btn" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); box-shadow: 0 4px 10px rgba(245,87,108,0.2);">
+                    <i class="fas fa-download"></i>
+                    Download RCPI (Semi-Exp LV)
+                </a>
+            </div>
+
+            <!-- RPCSP - Semi-Expendable High Value -->
+            <div class="report-card">
+                <div class="report-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); box-shadow: 0 4px 10px rgba(79,172,254,0.25);">
+                    <i class="fas fa-layer-group"></i>
+                </div>
+                <h3>RPCSP &mdash; Semi-Expendable (Above &#8369;5,000)</h3>
+                <p>Report on the Physical Count of Semi-Expendable Property (Annex A.8) for items with unit cost <strong>above &#8369;5,000</strong>. Submitted annually and by fund.</p>
+                <a href="<?php echo $root; ?>api/export_rpcsp_excel.php" class="download-btn" id="rpcsp-btn" style="background: linear-gradient(135deg, #4facfe 0%, #00c6fb 100%); box-shadow: 0 4px 10px rgba(79,172,254,0.2);">
+                    <i class="fas fa-download"></i>
+                    Download RPCSP
+                </a>
+            </div>
+
+            <!-- RPCPPE - Property Plant and Equipment -->
+            <div class="report-card">
+                <div class="report-icon" style="background: linear-gradient(135deg, #f7971e 0%, #ffd200 100%); box-shadow: 0 4px 10px rgba(247,151,30,0.25);">
+                    <i class="fas fa-desktop"></i>
+                </div>
+                <h3>RPCPPE &mdash; Property, Plant &amp; Equipment</h3>
+                <p>Report on the Physical Count of Property, Plant and Equipment (Appendix 5). Submitted <strong>annually</strong> for PPE items.</p>
+                <a href="<?php echo $root; ?>api/export_rpcppe_excel.php" class="download-btn" id="rpcppe-btn" style="background: linear-gradient(135deg, #f7971e 0%, #ffd200 100%); color: #222; box-shadow: 0 4px 10px rgba(247,151,30,0.2);">
+                    <i class="fas fa-download"></i>
+                    Download RPCPPE
                 </a>
             </div>
 
@@ -375,6 +543,19 @@ $urlRoot = str_replace(' ', '%20', $root);
                 <a href="<?php echo $root; ?>api/export_wmr_excel.php" class="download-btn" id="wmr-download-btn" style="background: var(--gradient-danger); box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2);">
                     <i class="fas fa-download"></i>
                     Download WMR
+                </a>
+            </div>
+
+            <!-- Monthly Acquisition Log (Stocking Tracking) -->
+            <div class="report-card">
+                <div class="report-icon" style="background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);">
+                    <i class="fas fa-truck-loading"></i>
+                </div>
+                <h3>Monthly Acquisition Log</h3>
+                <p>New acquisition tracking report - Detailed list of all stockings, deliveries, and manual restocks for the period.</p>
+                <a href="<?php echo $root; ?>api/export_acquisition_excel.php" class="download-btn" id="acquisition-download-btn" style="background: linear-gradient(135deg, #4299e1 0%, #2b6cb0 100%); box-shadow: 0 4px 10px rgba(66, 153, 225, 0.2);">
+                    <i class="fas fa-file-invoice"></i>
+                    Download Acquisition Log
                 </a>
             </div>
         </div>
@@ -416,6 +597,10 @@ $urlRoot = str_replace(' ', '%20', $root);
                                             <i class="fas fa-file-excel"></i>
                                             Download RIS
                                         </a>
+                                        <a href="<?php echo $urlRoot; ?>api/export_rsmi_excel.php?id=<?php echo $req['requisition_id']; ?>" class="export-link" style="color: #217346; font-weight: 700;">
+                                            <i class="fas fa-file-excel"></i>
+                                            Download RSMI
+                                        </a>
                                         <?php if (($req['semi_expendable_count'] ?? 0) > 0): ?>
                                         <a href="<?php echo $urlRoot; ?>api/export_ics_excel.php?id=<?php echo $req['requisition_id']; ?>" class="export-link" style="color: #a87e00; font-weight: 700;">
                                             <i class="fas fa-address-card"></i>
@@ -440,6 +625,26 @@ $urlRoot = str_replace(' ', '%20', $root);
                     <i class="fas fa-info-circle"></i> No approved requisitions available for export.
                 </p>
             <?php endif; ?>
+        <!-- Recent Snapshots Table -->
+        <div class="table-container" style="margin-top: 30px;">
+            <div class="table-header">
+                <h3><i class="fas fa-history"></i> Recent Inventory Snapshots</h3>
+                <span id="snapshot-info" class="badge badge-info">0 snapshot(s) available</span>
+            </div>
+            <table class="requisition-table" id="snapshots-table">
+                <thead>
+                    <tr>
+                        <th>Snapshot Month</th>
+                        <th>Created Date</th>
+                        <th>Item Count</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="snapshots-body">
+                    <!-- Loaded via JS -->
+                    <tr><td colspan="4" style="text-align: center;">Loading snapshots...</td></tr>
+                </tbody>
+            </table>
         </div>
     </div>
     <script src="<?php echo $root; ?>js/dashboard.js"></script>
@@ -478,10 +683,11 @@ $urlRoot = str_replace(' ', '%20', $root);
             updateDownloadLinks();
         });
 
-        // Update when office changes
+        // Update when office or status changes
         document.getElementById('dept-selector').addEventListener('change', function() {
             updateDownloadLinks();
         });
+
 
         // Apply custom date range
         document.getElementById('apply-range').addEventListener('click', function() {
@@ -505,34 +711,207 @@ $urlRoot = str_replace(' ', '%20', $root);
             document.getElementById('month-selector').value = 'current';
             updateDownloadLinks();
         });
+
+        // Save Snapshot
+        document.getElementById('save-snapshot-btn').addEventListener('click', function() {
+            const selectedMonth = document.getElementById('month-selector').value;
+            const targetMonth = selectedMonth === 'current' ? new Date().toISOString().slice(0, 7) : selectedMonth;
+            
+            if (!confirm('Are you sure you want to save a snapshot for ' + targetMonth + '? Any existing snapshot for this month will be updated.')) {
+                return;
+            }
+            
+            showModal('Saving inventory state for ' + targetMonth + '...', 'info');
+            
+            fetch('<?php echo $urlRoot; ?>api/create_snapshot.php?month=' + targetMonth)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showModal('Snapshot saved successfully! Refreshing list...', 'success');
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1500);
+                    } else {
+                        showModal('Error: ' + data.message, 'danger');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error saving snapshot:', error);
+                    showModal('Request failed. Check console.', 'danger');
+                });
+        });
+
+        // --- MULTI-SELECT REQUEST FILTER LOGIC ---
+        const requestTrigger = document.getElementById('request-trigger');
+        const requestDropdown = document.getElementById('request-dropdown');
+        const requestSearch = document.getElementById('request-search');
+        const requestIdsInput = document.getElementById('request-ids');
+        const triggerText = document.getElementById('trigger-text');
+        
+        if (requestTrigger) {
+            requestTrigger.addEventListener('click', function(e) {
+                e.stopPropagation();
+                requestDropdown.classList.toggle('active');
+                if (requestDropdown.classList.contains('active')) {
+                    requestSearch.focus();
+                }
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function() {
+                requestDropdown.classList.remove('active');
+            });
+
+            requestDropdown.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+
+            // Search logic
+            requestSearch.addEventListener('input', function() {
+                const term = this.value.toLowerCase();
+                const options = document.querySelectorAll('.multi-option');
+                options.forEach(opt => {
+                    const text = opt.textContent.toLowerCase();
+                    opt.style.display = text.includes(term) ? 'flex' : 'none';
+                });
+            });
+        }
+
+        // Office / Date filter listener
+        ['dept-selector', 'start-date', 'end-date'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('change', fetchFilteredRequests);
+        });
+
+        // Initial fetch
+        fetchFilteredRequests();
     });
 
-    function loadAvailableSnapshots() {
-        fetch('<?php echo $root; ?>api/get_snapshots.php')
+    function updateRequestTriggerText() {
+        const selected = document.querySelectorAll('.multi-option input:checked');
+        const triggerText = document.getElementById('trigger-text');
+        const requestIdsInput = document.getElementById('request-ids');
+        
+        if (selected.length === 0) {
+            triggerText.textContent = "All Approved Requests";
+            requestIdsInput.value = "";
+        } else if (selected.length === 1) {
+            const label = selected[0].closest('.multi-option').textContent.trim();
+            triggerText.textContent = label;
+            requestIdsInput.value = selected[0].value;
+        } else {
+            triggerText.textContent = selected.length + " requests selected";
+            const ids = Array.from(selected).map(i => i.value).join(',');
+            requestIdsInput.value = ids;
+        }
+        updateDownloadLinks();
+    }
+
+    function fetchFilteredRequests() {
+        const deptId = document.getElementById('dept-selector').value;
+        const start = document.getElementById('start-date').value;
+        const end = document.getElementById('end-date').value;
+        
+        const optionsContainer = document.getElementById('request-options');
+        if (!optionsContainer) return;
+        
+        optionsContainer.innerHTML = '<div class="no-options"><i class="fas fa-spinner fa-spin"></i> Filtering...</div>';
+        
+        const params = new URLSearchParams({
+            dept_id: deptId,
+            start_date: start,
+            end_date: end
+        });
+
+        fetch('<?php echo $urlRoot; ?>api/get_filtered_requests.php?' + params.toString())
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    const selector = document.getElementById('month-selector');
-                    const currentMonth = data.current_month;
-                    
-                    // Add snapshot options
-                    data.snapshots.forEach(snapshot => {
-                        const option = document.createElement('option');
-                        option.value = snapshot.snapshot_month;
-                        const date = new Date(snapshot.snapshot_month + '-01');
-                        const monthName = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
-                        option.textContent = monthName + ' (Snapshot - ' + snapshot.item_count + ' items)';
-                        selector.appendChild(option);
-                    });
-                    
-                    // Show info
-                    if (data.snapshots.length > 0) {
-                        document.getElementById('snapshot-info').textContent = 
-                            data.snapshots.length + ' snapshot(s) available';
+                    optionsContainer.innerHTML = '';
+                    if (data.requests.length === 0) {
+                        optionsContainer.innerHTML = '<div class="no-options">No approved requests found</div>';
+                    } else {
+                        data.requests.forEach(req => {
+                            const opt = document.createElement('div');
+                            opt.className = 'multi-option';
+                            opt.innerHTML = `
+                                <input type="checkbox" value="${req.requisition_id}" id="req-${req.requisition_id}">
+                                <label for="req-${req.requisition_id}">${req.requisition_no} - ${req.employee_name}</label>
+                            `;
+                            opt.addEventListener('click', function(e) {
+                                if (e.target.tagName !== 'INPUT') {
+                                    const checkbox = this.querySelector('input');
+                                    checkbox.checked = !checkbox.checked;
+                                }
+                                this.classList.toggle('selected', this.querySelector('input').checked);
+                                updateRequestTriggerText();
+                            });
+                            optionsContainer.appendChild(opt);
+                        });
                     }
+                } else {
+                    optionsContainer.innerHTML = '<div class="no-options" style="color: red;">Error loading requests</div>';
                 }
             })
-            .catch(error => console.error('Error loading snapshots:', error));
+            .catch(err => {
+                console.error("Filter error:", err);
+                if (optionsContainer) optionsContainer.innerHTML = '<div class="no-options" style="color: red;">Failed to fetch</div>';
+            });
+    }
+
+    function loadAvailableSnapshots() {
+        fetch('<?php echo $urlRoot; ?>api/get_snapshots.php')
+            .then(response => response.json())
+            .then(data => {
+                const selector = document.getElementById('month-selector');
+                const tbody = document.getElementById('snapshots-body');
+                const info = document.getElementById('snapshot-info');
+                
+                if (data.success) {
+                    // Update dropdown
+                    selector.innerHTML = '<option value="current">Current Month (Live)</option>';
+                    tbody.innerHTML = '';
+                    
+                    if (data.snapshots.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">No snapshots found. Use "Debug Snapshot" to create one.</td></tr>';
+                        info.textContent = '0 snapshot(s) available';
+                        return;
+                    }
+
+                    info.textContent = data.snapshots.length + ' snapshot(s) available';
+
+                    data.snapshots.forEach(snapshot => {
+                        // Dropdown option
+                        const option = document.createElement('option');
+                        option.value = snapshot.snapshot_month;
+                        const dateObj = new Date(snapshot.snapshot_month + '-01');
+                        const monthName = dateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+                        option.textContent = monthName + ' (Snapshot)';
+                        selector.appendChild(option);
+
+                        // Table row
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td><strong>${monthName}</strong></td>
+                            <td>${snapshot.created_at}</td>
+                            <td>${snapshot.item_count} items</td>
+                            <td>
+                                <a href="view_snapshot.php?month=${snapshot.snapshot_month}" target="_blank" class="download-btn" style="background: var(--gradient-navy); padding: 5px 10px; font-size: 0.8rem;">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                                <a href="<?php echo $root; ?>api/export_supply_excel.php?month=${snapshot.snapshot_month}" class="download-btn" style="padding: 5px 10px; font-size: 0.8rem;">
+                                    <i class="fas fa-file-excel"></i> Excel
+                                </a>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error loading snapshots:', error);
+                document.getElementById('snapshots-body').innerHTML = '<tr><td colspan="4" style="text-align: center; color: red;">Error loading snapshots.</td></tr>';
+            });
     }
 
     function updateDownloadLinks() {
@@ -540,13 +919,21 @@ $urlRoot = str_replace(' ', '%20', $root);
         const startDate = document.getElementById('start-date').value;
         const endDate = document.getElementById('end-date').value;
         const deptId = document.getElementById('dept-selector').value;
+        const requestIds = document.getElementById('request-ids').value;
         const basePath = '<?php echo $root; ?>api/';
         
-        let supplyUrl = basePath + 'export_supply_excel.php';
-        let rsmiUrl = basePath + 'export_rsmi_excel.php';
-        let risOfficeUrl = basePath + 'export_ris_by_office.php';
-        let wmrUrl = basePath + 'export_wmr_excel.php';
-        let ppeUrl = basePath + 'export_ppe_report.php';
+        let supplyUrl       = basePath + 'export_supply_excel.php';
+        let rsmiUrl         = basePath + 'export_rsmi_excel.php';
+        let risOfficeUrl    = basePath + 'export_ris_by_office.php';
+        let wmrUrl          = basePath + 'export_wmr_excel.php';
+        let ppeUrl          = basePath + 'export_ppe_report.php';
+        let acquisitionUrl  = basePath + 'export_acquisition_excel.php';
+        let rpciUrl         = basePath + 'export_rpci_excel.php';
+        // New physical count report URLs
+        let rcpiConsumableUrl = basePath + 'export_rcpi_consumable_excel.php';
+        let rcpiSemiLvUrl     = basePath + 'export_rcpi_semi_lv_excel.php';
+        let rpcspUrl          = basePath + 'export_rpcsp_excel.php';
+        let rpcppeUrl         = basePath + 'export_rpcppe_excel.php';
         
         let commonParams = [];
         if (startDate && endDate) {
@@ -556,31 +943,67 @@ $urlRoot = str_replace(' ', '%20', $root);
             commonParams.push(`month=${selectedMonth}`);
         }
 
-        if (commonParams.length > 0) {
-            const paramStr = '?' + commonParams.join('&');
-            supplyUrl += paramStr;
-            rsmiUrl += paramStr;
-            risOfficeUrl += paramStr;
-            wmrUrl += paramStr;
-            ppeUrl += paramStr;
+        // Append Request IDs if any
+        if (requestIds) {
+            rsmiUrl = basePath + 'export_rsmi_excel.php?id=' + requestIds;
         }
 
-        // Add department parameter to risOfficeUrl if selected
+        // Append Dept ID
         if (deptId) {
-            risOfficeUrl += (risOfficeUrl.includes('?') ? '&' : '?') + `dept_id=${deptId}`;
+            commonParams.push(`dept_id=${deptId}`);
         }
+
+        if (commonParams.length > 0) {
+            const paramStr = commonParams.join('&');
+            
+            if (requestIds) {
+                rsmiUrl += '&' + paramStr;
+            } else {
+                rsmiUrl += '?' + paramStr;
+            }
+            
+            const fullParamStr = '?' + paramStr;
+            supplyUrl        += fullParamStr;
+            risOfficeUrl     += fullParamStr;
+            wmrUrl           += fullParamStr;
+            ppeUrl           += fullParamStr;
+            acquisitionUrl   += fullParamStr;
+            rpciUrl          += fullParamStr;
+            // Apply to new report URLs too
+            rcpiConsumableUrl += fullParamStr;
+            rcpiSemiLvUrl     += fullParamStr;
+            rpcspUrl          += fullParamStr;
+            rpcppeUrl         += fullParamStr;
+        }
+
+        document.getElementById('supply-download-btn').href      = supplyUrl;
+        document.getElementById('rsmi-download-btn').href        = rsmiUrl;
+        document.getElementById('ris-office-download-btn').href  = risOfficeUrl;
+        document.getElementById('wmr-download-btn').href         = wmrUrl;
+        document.getElementById('ppe-download-btn').href         = ppeUrl;
+        document.getElementById('acquisition-download-btn').href = acquisitionUrl;
+        document.getElementById('rpci-download-btn').href        = rpciUrl;
+        // Update new report buttons
+        document.getElementById('rcpi-consumable-btn').href = rcpiConsumableUrl;
+        document.getElementById('rcpi-semi-lv-btn').href    = rcpiSemiLvUrl;
+        document.getElementById('rpcsp-btn').href           = rpcspUrl;
+        document.getElementById('rpcppe-btn').href          = rpcppeUrl;
         
-        document.getElementById('supply-download-btn').href = supplyUrl;
-        document.getElementById('rsmi-download-btn').href = rsmiUrl;
-        document.getElementById('ris-office-download-btn').href = risOfficeUrl;
-        document.getElementById('wmr-download-btn').href = wmrUrl;
-        if (document.getElementById('ppe-download-btn')) {
-            document.getElementById('ppe-download-btn').href = ppeUrl;
+        // Handle View Snapshot button visibility
+        const viewBtn = document.getElementById('view-snapshot-btn');
+        if (selectedMonth !== 'current') {
+            viewBtn.style.display = 'inline-flex';
+            viewBtn.onclick = function() {
+                window.open('view_snapshot.php?month=' + selectedMonth, '_blank');
+            };
+        } else {
+            viewBtn.style.display = 'none';
         }
         
         // Filter the requisitions table
-        const table = document.querySelector('.requisition-table');
-        const rows = document.querySelectorAll('.requisition-table tbody tr');
+        const tableContainer = document.getElementById('requisitions');
+        const table = tableContainer ? tableContainer.querySelector('.requisition-table') : null;
+        const rows = table ? table.querySelectorAll('tbody tr') : [];
         
         if (table && rows.length > 0) {
             rows.forEach(row => {

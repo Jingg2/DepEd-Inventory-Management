@@ -1,8 +1,10 @@
 <?php
-// filepath: c:\xampp\htdocs\OJT DEVELOPMENT\Inventory_System\api\submit_requisition.php
+ob_start();
 header('Content-Type: application/json');
 require_once __DIR__ . '/../model/requisitionModel.php';
 require_once __DIR__ . '/../model/employeeModel.php';
+
+ob_clean();
 
 // Get JSON input
 $input = file_get_contents('php://input');
@@ -21,21 +23,21 @@ if (!$employeeInfo || empty($items)) {
     exit();
 }
 
-// 1. Verify Employee and get Department ID
+// Verify Employee and get Department ID
 $empModel = new EmployeeModel();
 $employee = $empModel->getEmployeeById($employeeInfo['id']);
 
 if (!$employee) {
-    echo json_encode(['success' => false, 'message' => 'Invalid Employee ID']);
+    echo json_encode(['success' => false, 'message' => 'Invalid Employee ID: ' . ($employeeInfo['id'] ?? 'none')]);
     exit();
 }
 
-// 2. Prepare data for RequisitionModel
+// Prepare data for RequisitionModel
 $requisitionData = [
-    'employee_id' => $employee['employee_id'],
-    'department_id' => $employee['department_id'],
-    'request_date' => $employeeInfo['date'] ?? date('Y-m-d'),
-    'purpose' => $employeeInfo['purpose'] ?? 'General supply request'
+    'employee_id'   => $employee['employee_id'],
+    'department_id' => $employee['department_id'] ?? null,
+    'request_date'  => $employeeInfo['date'] ?? date('Y-m-d'),
+    'purpose'       => $employeeInfo['purpose'] ?? 'General supply request'
 ];
 
 $reqModel = new RequisitionModel();

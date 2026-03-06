@@ -300,6 +300,15 @@ $urlRoot = str_replace(' ', '%20', $root);
                     <?php endforeach; ?>
                 </select>
             </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <label for="req_id_filter" style="color: var(--slate-600); font-weight: 600;">Request No:</label>
+                <select id="req_id_filter" style="border-radius: 8px; border: 1px solid rgba(0,0,0,0.1); padding: 8px 12px; max-width: 250px;">
+                    <option value="">All Approved Requests</option>
+                    <?php foreach ($approvedRequests as $req): ?>
+                        <option value="<?php echo $req['requisition_id']; ?>"><?php echo htmlspecialchars($req['requisition_no'] . ' - ' . $req['first_name'] . ' ' . $req['last_name']); ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
             <div style="display: flex; gap: 10px;">
                 <button id="btnApplyFilter" class="btn-primary" style="padding: 10px 20px; border-radius: 8px; font-weight: 600;">
                     <i class="fas fa-filter"></i> Apply
@@ -366,32 +375,38 @@ $urlRoot = str_replace(' ', '%20', $root);
                                         </span>
                                     </td>
                                     <td><?php echo date('Y-m-d', strtotime($req['request_date'])); ?></td>
-                                    <td>
-                                        <button class="btn-view-items" 
-                                            data-id="<?php echo $req['requisition_id']; ?>" 
-                                            data-no="<?php echo $req['requisition_no']; ?>" 
-                                            data-requester="<?php echo htmlspecialchars($req['first_name'] . ' ' . $req['last_name']); ?>"
-                                            data-emp-id="<?php echo htmlspecialchars($req['employee_id']); ?>"
-                                            data-dept="<?php echo htmlspecialchars($req['department_name']); ?>"
-                                            data-purpose="<?php echo htmlspecialchars($req['purpose'] ?? 'N/A'); ?>"
-                                            data-date="<?php echo date('Y-m-d', strtotime($req['request_date'])); ?>"
-                                            data-status="<?php echo $req['status']; ?>"
-                                            data-semi="<?php echo $req['semi_expendable_count'] ?? 0; ?>"
-                                            title="View Items" style="background: var(--gradient-primary); color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <button class="btn-open-approval" 
-                                            data-id="<?php echo $req['requisition_id']; ?>" 
-                                            data-no="<?php echo $req['requisition_no']; ?>" 
-                                            data-requester="<?php echo htmlspecialchars($req['first_name'] . ' ' . $req['last_name']); ?>"
-                                            data-emp-id="<?php echo htmlspecialchars($req['employee_id']); ?>"
-                                            data-dept="<?php echo htmlspecialchars($req['department_name']); ?>"
-                                            data-purpose="<?php echo htmlspecialchars($req['purpose'] ?? 'N/A'); ?>"
-                                            data-date="<?php echo date('Y-m-d', strtotime($req['request_date'])); ?>"
-                                            title="View Details & Approve" 
-                                            style="background: #27ae60; color: white; border: none; padding: 5px 12px; border-radius: 4px; cursor: pointer; margin-left: 5px; font-weight: bold;">
-                                            <i class="fas fa-check-circle"></i> Approve
-                                        </button>
+                                    <td class="actions">
+                                        <div class="action-item">
+                                            <span class="action-label">View</span>
+                                            <button class="btn-view-items" 
+                                                data-id="<?php echo $req['requisition_id']; ?>" 
+                                                data-no="<?php echo $req['requisition_no']; ?>" 
+                                                data-requester="<?php echo htmlspecialchars($req['first_name'] . ' ' . $req['last_name']); ?>"
+                                                data-emp-id="<?php echo htmlspecialchars($req['employee_id']); ?>"
+                                                data-dept="<?php echo htmlspecialchars($req['department_name']); ?>"
+                                                data-purpose="<?php echo htmlspecialchars($req['purpose'] ?? 'N/A'); ?>"
+                                                data-date="<?php echo date('Y-m-d', strtotime($req['request_date'])); ?>"
+                                                data-status="<?php echo $req['status']; ?>"
+                                                data-semi="<?php echo $req['semi_expendable_count'] ?? 0; ?>"
+                                                title="View Items" style="background: var(--gradient-primary); color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                        <div class="action-item">
+                                            <span class="action-label">Approve</span>
+                                            <button class="btn-open-approval" 
+                                                data-id="<?php echo $req['requisition_id']; ?>" 
+                                                data-no="<?php echo $req['requisition_no']; ?>" 
+                                                data-requester="<?php echo htmlspecialchars($req['first_name'] . ' ' . $req['last_name']); ?>"
+                                                data-emp-id="<?php echo htmlspecialchars($req['employee_id']); ?>"
+                                                data-dept="<?php echo htmlspecialchars($req['department_name']); ?>"
+                                                data-purpose="<?php echo htmlspecialchars($req['purpose'] ?? 'N/A'); ?>"
+                                                data-date="<?php echo date('Y-m-d', strtotime($req['request_date'])); ?>"
+                                                title="View Details & Approve" 
+                                                style="background: #27ae60; color: white; border: none; padding: 5px 12px; border-radius: 4px; cursor: pointer; font-weight: bold;">
+                                                <i class="fas fa-check-circle"></i>
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -452,35 +467,53 @@ $urlRoot = str_replace(' ', '%20', $root);
                                         </span>
                                     </td>
                                     <td><?php echo date('Y-m-d', strtotime($req['request_date'])); ?></td>
-                                    <td style="text-align: center;">
-                                        <button class="btn-view-items" 
-                                            data-id="<?php echo $req['requisition_id']; ?>" 
-                                            data-no="<?php echo $req['requisition_no']; ?>" 
-                                            data-requester="<?php echo htmlspecialchars($req['first_name'] . ' ' . $req['last_name']); ?>"
-                                            data-emp-id="<?php echo htmlspecialchars($req['employee_id']); ?>"
-                                            data-dept="<?php echo htmlspecialchars($req['department_name']); ?>"
-                                            data-purpose="<?php echo htmlspecialchars($req['purpose'] ?? 'N/A'); ?>"
-                                            data-date="<?php echo date('Y-m-d', strtotime($req['request_date'])); ?>"
-                                            data-status="<?php echo $req['status']; ?>"
-                                            data-semi="<?php echo $req['semi_expendable_count'] ?? 0; ?>"
-                                            title="View Items" style="background: #6c757d; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
-                                            <i class="fas fa-eye"></i> View Details
-                                        </button>
-                                        <a href="<?php echo $urlRoot; ?>api/export_ris_excel.php?id=<?php echo $req['requisition_id']; ?>" class="btn-export-excel" title="Download Excel (RIS)" style="background: #1d6f42; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; text-decoration: none; margin-left: 5px; font-size: 0.85rem; display: inline-block;">
-                                            <i class="fas fa-file-excel"></i> Download RIS
-                                        </a>
+                                    <td class="actions">
+                                        <div class="action-item">
+                                            <span class="action-label">View</span>
+                                            <button class="btn-view-items" 
+                                                data-id="<?php echo $req['requisition_id']; ?>" 
+                                                data-no="<?php echo $req['requisition_no']; ?>" 
+                                                data-requester="<?php echo htmlspecialchars($req['first_name'] . ' ' . $req['last_name']); ?>"
+                                                data-emp-id="<?php echo htmlspecialchars($req['employee_id']); ?>"
+                                                data-dept="<?php echo htmlspecialchars($req['department_name']); ?>"
+                                                data-purpose="<?php echo htmlspecialchars($req['purpose'] ?? 'N/A'); ?>"
+                                                data-date="<?php echo date('Y-m-d', strtotime($req['request_date'])); ?>"
+                                                data-status="<?php echo $req['status']; ?>"
+                                                data-semi="<?php echo $req['semi_expendable_count'] ?? 0; ?>"
+                                                title="View Items" style="background: #6c757d; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                        <div class="action-item">
+                                            <span class="action-label">RIS</span>
+                                            <a href="<?php echo $urlRoot; ?>api/export_ris_excel.php?id=<?php echo $req['requisition_id']; ?>" class="btn-export-excel" title="Download Excel (RIS)" style="background: #1d6f42; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; text-decoration: none; font-size: 0.85rem; display: inline-block;">
+                                                <i class="fas fa-file-excel"></i>
+                                            </a>
+                                        </div>
+                                        <div class="action-item">
+                                            <span class="action-label">RSMI</span>
+                                            <a href="<?php echo $urlRoot; ?>api/export_rsmi_excel.php?id=<?php echo $req['requisition_id']; ?>" class="btn-export-excel" title="Download Excel (RSMI)" style="background: #217346; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; text-decoration: none; font-size: 0.85rem; display: inline-block;">
+                                                <i class="fas fa-file-excel"></i>
+                                            </a>
+                                        </div>
                                         <?php if (($req['semi_expendable_count'] ?? 0) > 0): ?>
-                                        <a href="<?php echo $urlRoot; ?>api/export_ics_excel.php?id=<?php echo $req['requisition_id']; ?>" class="btn-export-excel" title="Download Borrowing Form (ICS)" style="background: #a87e00; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; text-decoration: none; margin-left: 5px; font-size: 0.85rem; display: inline-block;">
-                                            <i class="fas fa-address-card"></i> Download ICS
-                                        </a>
+                                        <div class="action-item">
+                                            <span class="action-label">ICS</span>
+                                            <a href="<?php echo $urlRoot; ?>api/export_ics_excel.php?id=<?php echo $req['requisition_id']; ?>" class="btn-export-excel" title="Download Borrowing Form (ICS)" style="background: #a87e00; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; text-decoration: none; font-size: 0.85rem; display: inline-block;">
+                                                <i class="fas fa-address-card"></i>
+                                            </a>
+                                        </div>
                                         <?php endif; ?>
-                                        <button class="btn-delete-request" 
-                                            data-id="<?php echo $req['requisition_id']; ?>" 
-                                            data-no="<?php echo htmlspecialchars($req['requisition_no']); ?>"
-                                            title="Delete Approved Request" 
-                                            style="background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-left: 5px; font-size: 0.85rem;">
-                                            <i class="fas fa-trash-alt"></i> Delete
-                                        </button>
+                                        <div class="action-item">
+                                            <span class="action-label">Delete</span>
+                                            <button class="btn-delete-request" 
+                                                data-id="<?php echo $req['requisition_id']; ?>" 
+                                                data-no="<?php echo htmlspecialchars($req['requisition_no']); ?>"
+                                                title="Delete Approved Request" 
+                                                style="background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -768,6 +801,7 @@ $urlRoot = str_replace(' ', '%20', $root);
             const startDateInput = document.getElementById('start_date');
             const endDateInput = document.getElementById('end_date');
             const deptFilterSelect = document.getElementById('dept_filter');
+            const reqIdFilterSelect = document.getElementById('req_id_filter');
             const btnExportRSMI = document.getElementById('btnExportRSMI');
             const btnExportRISOffice = document.getElementById('btnExportRISOffice');
 
@@ -775,6 +809,7 @@ $urlRoot = str_replace(' ', '%20', $root);
                 const start = startDateInput.value;
                 const end = endDateInput.value;
                 const deptId = deptFilterSelect.value;
+                const requestId = reqIdFilterSelect ? reqIdFilterSelect.value : '';
                 const apiPath = basePath + 'api/';
 
                 // Update Download Links
@@ -787,13 +822,16 @@ $urlRoot = str_replace(' ', '%20', $root);
                 let rsmiUrl = apiPath + 'export_rsmi_excel.php';
                 let risUrl = apiPath + 'export_ris_by_office.php';
                 
-                if (params.length > 0) {
-                    rsmiUrl += '?' + params.join('&');
-                    risUrl += '?' + params.join('&');
-                }
-
-                if (deptId) {
-                    risUrl += (risUrl.includes('?') ? '&' : '?') + `dept_id=${deptId}`;
+                if (requestId) {
+                    rsmiUrl = apiPath + 'export_rsmi_excel.php?id=' + requestId;
+                } else {
+                    if (params.length > 0) {
+                        rsmiUrl += '?' + params.join('&');
+                        risUrl += '?' + params.join('&');
+                    }
+                    if (deptId) {
+                        risUrl += (risUrl.includes('?') ? '&' : '?') + `dept_id=${deptId}`;
+                    }
                 }
 
                 btnExportRSMI.href = rsmiUrl;

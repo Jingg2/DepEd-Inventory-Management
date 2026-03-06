@@ -20,6 +20,22 @@ function openEmployeeItemsModal(empId, empName) {
     noItemsMsg.style.display = 'none';
 
     modal.style.display = 'block';
+
+    // Store employee info for potential direct assignment
+    if (!document.getElementById('view-assets-emp-id')) {
+        const hidId = document.createElement('input');
+        hidId.type = 'hidden';
+        hidId.id = 'view-assets-emp-id';
+        modal.appendChild(hidId);
+
+        const hidName = document.createElement('input');
+        hidName.type = 'hidden';
+        hidName.id = 'view-assets-emp-name';
+        modal.appendChild(hidName);
+    }
+    document.getElementById('view-assets-emp-id').value = empId;
+    document.getElementById('view-assets-emp-name').value = empName;
+
     setTimeout(() => modal.classList.add('active'), 10);
 
     // Fetch items

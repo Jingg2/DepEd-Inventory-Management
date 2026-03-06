@@ -20,6 +20,7 @@ class SupplyController {
         // Calculate statistics for view
         $totalInventoryValue = 0;
         $lowStockCount = 0;
+        $criticalStockCount = 0;
         $outOfStockCount = 0;
         $alertItems = [];
         foreach ($supplies as $supply) {
@@ -39,10 +40,16 @@ class SupplyController {
                 $supply['alert_type'] = 'Out of Stock';
                 $alertItems[] = $supply;
             }
-            // Count low stock items (Custom threshold check)
+            // Count critical stock items (Separate from low stock)
+            elseif ($qty <= $criticalThreshold) {
+                $criticalStockCount++;
+                $supply['alert_type'] = 'Critical';
+                $alertItems[] = $supply;
+            }
+            // Count low stock items (Excluding critical)
             elseif ($qty <= $lowThreshold) {
                 $lowStockCount++;
-                $supply['alert_type'] = ($qty <= $criticalThreshold) ? 'Critical' : 'Low Stock';
+                $supply['alert_type'] = 'Low Stock';
                 $alertItems[] = $supply;
             }
         }

@@ -469,6 +469,53 @@ $root = rtrim($scriptDir, '/') . '/';
 
             <!-- Other Settings Grid -->
             <div class="other-settings-grid">
+                <!-- Network Information Card -->
+                <div class="settings-card small-card" style="border-top: 4px solid var(--primary-emerald);">
+                    <h3><i class="fas fa-network-wired"></i> Network Information</h3>
+                    <p style="font-size: 0.85rem; color: #666; margin-bottom: 10px;">Active server addresses for network access</p>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
+                        <?php 
+                        // Function to get active network IP addresses
+                        function getIPInfo() {
+                            $ips = [];
+                            exec('ipconfig', $output);
+                            $currentAdapter = '';
+                            foreach ($output as $line) {
+                                if (preg_match('/^(?:Ethernet adapter|Wireless LAN adapter|Adapter) (.*):$/i', trim($line), $matches)) {
+                                    $currentAdapter = $matches[1];
+                                }
+                                if (preg_match('/IPv4 Address.*: ([\d\.]+)/', $line, $matches)) {
+                                    $ip = $matches[1];
+                                    if ($ip !== '127.0.0.1') {
+                                        $ips[] = ['adapter' => $currentAdapter ?: 'Network', 'ip' => $ip];
+                                    }
+                                }
+                            }
+                            if (empty($ips)) {
+                                $serverIP = gethostbyname(gethostname());
+                                if ($serverIP && $serverIP !== '127.0.0.1') {
+                                    $ips[] = ['adapter' => 'Server', 'ip' => $serverIP];
+                                }
+                            }
+                            return $ips;
+                        }
+                        $networkIPs = getIPInfo();
+                        
+                        foreach ($networkIPs as $net): 
+                        ?>
+                        <div style="background: var(--slate-50); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--slate-200); text-align: left; display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 0.8rem; color: var(--slate-600); font-weight: 600;"><?php echo htmlspecialchars($net['adapter']); ?></span>
+                            <strong style="font-size: 0.9rem; color: var(--navy-900); font-family: monospace;"><?php echo htmlspecialchars($net['ip']); ?></strong>
+                        </div>
+                        <?php endforeach; ?>
+                        
+                        <?php if (empty($networkIPs)): ?>
+                        <div style="color: var(--slate-400); font-size: 0.85rem; font-style: italic;">No active network detected</div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
                 <div class="settings-card small-card">
                     <h3><i class="fas fa-database"></i> Data Management</h3>
                     <p style="font-size: 0.85rem; color: #666; margin-bottom: 10px;">Maintenance and backups</p>
