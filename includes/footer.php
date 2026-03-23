@@ -25,18 +25,21 @@
         text-align: left;
     }
     .footer-section h4 {
-        color: #10b981;
+        color: #ffffff;
         font-size: 1.1rem;
         font-weight: 700;
         margin-bottom: 1.5rem;
         text-transform: uppercase;
         letter-spacing: 0.1rem;
         font-family: 'Outfit', sans-serif;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.25);
     }
     .footer-section p {
         font-size: 0.95rem;
         line-height: 1.6;
-        opacity: 0.8;
+        color: #f8fafc;
+        opacity: 0.9;
         font-family: 'Inter', sans-serif;
     }
     .footer-links {
@@ -51,9 +54,9 @@
         color: #10b981;
     }
     .footer-links a {
-        color: #f8fafc;
+        color: #ffffff;
         text-decoration: none;
-        opacity: 0.7;
+        opacity: 0.85;
         transition: all 0.2s ease;
         display: flex;
         align-items: center;
@@ -62,11 +65,11 @@
     }
     .footer-links li i {
         font-size: 0.85rem;
-        color: #10b981;
+        color: #ffffff;
     }
     .footer-links a:hover {
         opacity: 1;
-        color: #10b981;
+        color: #ffffff;
         transform: translateX(5px);
     }
     .footer-bottom {
@@ -81,7 +84,8 @@
     }
     .footer-bottom p {
         font-size: 0.9rem;
-        opacity: 0.6;
+        color: #f8fafc;
+        opacity: 0.85;
         margin: 0;
     }
     .dev-team {
@@ -139,9 +143,9 @@
             <div class="footer-section">
                 <h4>Support & Contact</h4>
                 <p>
-                    <i class="fas fa-map-marker-alt" style="color: #10b981; width: 20px;"></i>Gabaldon Bldg., BCS I, Cogon, Bogo City, Cebu<br>
-                    <i class="fas fa-envelope" style="color: #10b981; width: 20px;"></i> bogo.city@deped.gov.ph<br>
-                    <i class="fas fa-phone-alt" style="color: #10b981; width: 20px;"></i> (032) 260-1234
+                    <i class="fas fa-map-marker-alt" style="color: #ffffff; width: 20px;"></i>Gabaldon Bldg., BCS I, Cogon, Bogo City, Cebu<br>
+                    <i class="fas fa-envelope" style="color: #ffffff; width: 20px;"></i> bogo.city@deped.gov.ph<br>
+                    <i class="fas fa-phone-alt" style="color: #ffffff; width: 20px;"></i> (032) 260-1234
                 </p>
             </div>
         </div>

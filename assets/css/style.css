@@ -258,19 +258,9 @@ nav a:hover::after {
     font-weight: 500;
 }
 
-/* Footer */
+/* Footer - base only, .premium-footer handles background/color */
 footer {
-    background-color: #064e3b;
-    color: #D9D9D8;
-    text-align: center;
-    padding: 40px 50px;
-    margin-top: 60px;
-}
-
-footer p {
-    opacity: 0.9;
-    font-size: 15px;
-    margin: 8px 0;
+    margin-top: 0;
 }
 
 /* Responsive Design */

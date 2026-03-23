@@ -976,18 +976,29 @@ $urlRoot = str_replace(' ', '%20', $root);
             rpcppeUrl         += fullParamStr;
         }
 
-        document.getElementById('supply-download-btn').href      = supplyUrl;
-        document.getElementById('rsmi-download-btn').href        = rsmiUrl;
-        document.getElementById('ris-office-download-btn').href  = risOfficeUrl;
-        document.getElementById('wmr-download-btn').href         = wmrUrl;
-        document.getElementById('ppe-download-btn').href         = ppeUrl;
-        document.getElementById('acquisition-download-btn').href = acquisitionUrl;
-        document.getElementById('rpci-download-btn').href        = rpciUrl;
-        // Update new report buttons
-        document.getElementById('rcpi-consumable-btn').href = rcpiConsumableUrl;
-        document.getElementById('rcpi-semi-lv-btn').href    = rcpiSemiLvUrl;
-        document.getElementById('rpcsp-btn').href           = rpcspUrl;
-        document.getElementById('rpcppe-btn').href          = rpcppeUrl;
+        const supplyBtn = document.getElementById('supply-download-btn');
+        const rsmiBtn = document.getElementById('rsmi-download-btn');
+        const risOfficeBtn = document.getElementById('ris-office-download-btn');
+        const wmrBtn = document.getElementById('wmr-download-btn');
+        const ppeBtn = document.getElementById('ppe-download-btn');
+        const acquisitionBtn = document.getElementById('acquisition-download-btn');
+        const rpciBtn = document.getElementById('rpci-download-btn');
+        const rcpiConsumableBtn = document.getElementById('rcpi-consumable-btn');
+        const rcpiSemiLvBtn = document.getElementById('rcpi-semi-lv-btn');
+        const rpcspBtn = document.getElementById('rpcsp-btn');
+        const rpcppeBtn = document.getElementById('rpcppe-btn');
+
+        if (supplyBtn)        supplyBtn.href        = supplyUrl;
+        if (rsmiBtn)          rsmiBtn.href          = rsmiUrl;
+        if (risOfficeBtn)     risOfficeBtn.href     = risOfficeUrl;
+        if (wmrBtn)           wmrBtn.href           = wmrUrl;
+        if (ppeBtn)           ppeBtn.href           = ppeUrl;
+        if (acquisitionBtn)   acquisitionBtn.href   = acquisitionUrl;
+        if (rpciBtn)          rpciBtn.href          = rpciUrl;
+        if (rcpiConsumableBtn) rcpiConsumableBtn.href = rcpiConsumableUrl;
+        if (rcpiSemiLvBtn)    rcpiSemiLvBtn.href    = rcpiSemiLvUrl;
+        if (rpcspBtn)         rpcspBtn.href         = rpcspUrl;
+        if (rpcppeBtn)        rpcppeBtn.href        = rpcppeUrl;
         
         // Handle View Snapshot button visibility
         const viewBtn = document.getElementById('view-snapshot-btn');

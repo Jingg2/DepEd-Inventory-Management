@@ -188,3 +188,15 @@
 [2026-03-06 06:19:16] [INFO] [IP: ::1] Successful login for user: benjay11
 [2026-03-06 06:58:08] [INFO] [IP: ::1] Successful login for user: benjay11
 [2026-03-06 07:01:58] [INFO] [IP: 10.124.20.190] Successful login for user: benjay11
+[2026-03-09 01:53:42] [INFO] [IP: ::1] Successful login for user: benjay11
+[2026-03-09 06:14:31] [INFO] [IP: ::1] Successful login for user: benjay11
+[2026-03-10 01:43:41] [WARNING] [IP: ::1] Failed login attempt for username: benjay11
+[2026-03-10 01:43:45] [INFO] [IP: ::1] Successful login for user: benjay11
+[2026-03-11 01:24:37] [WARNING] [IP: ::1] Failed login attempt for username: benjay11
+[2026-03-11 01:24:43] [INFO] [IP: ::1] Successful login for user: benjay11
+[2026-03-11 01:47:38] [WARNING] [IP: ::1] Failed login attempt for username: benjay11
+[2026-03-11 01:47:49] [WARNING] [IP: ::1] Failed login attempt for username: benjay11
+[2026-03-11 01:47:57] [INFO] [IP: ::1] Successful login for user: benjay11
+[2026-03-23 01:03:00] [WARNING] [IP: ::1] Failed login attempt for username: benjay11
+[2026-03-23 01:03:07] [WARNING] [IP: ::1] Failed login attempt for username: benjay11
+[2026-03-23 01:03:14] [INFO] [IP: ::1] Successful login for user: benjay11

@@ -67,6 +67,34 @@ try {
             }
         }
 
+        if (isset($_POST['edit_profile'])) {
+            $first_name = sanitizeInput($_POST['profile_first_name']);
+            $last_name  = sanitizeInput($_POST['profile_last_name']);
+            $edit_email = sanitizeInput($_POST['profile_email']);
+            $edit_username = sanitizeInput($_POST['profile_username']);
+            $edit_phone = sanitizeInput($_POST['profile_phone']);
+
+            // Check username uniqueness (exclude current user)
+            $stmtCheck = $pdo->prepare("SELECT COUNT(*) FROM admin WHERE username = ? AND admin_id != ?");
+            $stmtCheck->execute([$edit_username, $_SESSION['admin_id']]);
+            if ($stmtCheck->fetchColumn() > 0) {
+                $message = "Username already taken by another account.";
+                $messageType = "error";
+            } else {
+                $stmtUp = $pdo->prepare("UPDATE admin SET first_name=?, last_name=?, email=?, username=?, phone=? WHERE admin_id=?");
+                if ($stmtUp->execute([$first_name, $last_name, $edit_email, $edit_username, $edit_phone, $_SESSION['admin_id']])) {
+                    $_SESSION['admin_username'] = $edit_username;
+                    $message = "Profile updated successfully!";
+                    $messageType = "success";
+                    require_once __DIR__ . '/../model/SystemLogModel.php';
+                    (new SystemLogModel())->log("EDIT_PROFILE", "Administrator updated profile: $edit_username");
+                } else {
+                    $message = "Failed to update profile. Please try again.";
+                    $messageType = "error";
+                }
+            }
+        }
+
         if (isset($_POST['change_password'])) {
             $current = $_POST['current_password'];
             $new = $_POST['new_password'];
@@ -371,7 +399,7 @@ $root = rtrim($scriptDir, '/') . '/';
                         <p><?php echo htmlspecialchars($username); ?> &bull; <?php echo htmlspecialchars($email); ?> &bull; <span style="text-transform: uppercase; font-size: 0.8rem; font-weight: 700; opacity: 0.8;"><?php echo htmlspecialchars($role); ?></span></p>
                     </div>
                 </div>
-                <button class="btn-edit-profile">
+                <button class="btn-edit-profile" onclick="openEditProfileModal()">
                     <i class="fas fa-user-edit"></i> Edit Profile
                 </button>
             </div>
@@ -788,6 +816,69 @@ $root = rtrim($scriptDir, '/') . '/';
         </div>
     </div>
 
+    <!-- Edit Profile Modal -->
+    <div id="editProfileModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header" style="background: var(--gradient-primary);">
+                <h3><i class="fas fa-user-edit"></i> Edit Profile</h3>
+                <span class="close-btn" onclick="closeEditProfileModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="" class="focused-form">
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="profile_first_name">First Name</label>
+                            <input type="text" id="profile_first_name" name="profile_first_name"
+                                value="<?php echo htmlspecialchars($adminData['first_name'] ?? ''); ?>" required
+                                placeholder="First Name">
+                        </div>
+                        <div class="input-group">
+                            <label for="profile_last_name">Last Name</label>
+                            <input type="text" id="profile_last_name" name="profile_last_name"
+                                value="<?php echo htmlspecialchars($adminData['last_name'] ?? ''); ?>" required
+                                placeholder="Last Name">
+                        </div>
+                    </div>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="profile_username">Username</label>
+                            <input type="text" id="profile_username" name="profile_username"
+                                value="<?php echo htmlspecialchars($adminData['username'] ?? ''); ?>" required
+                                placeholder="Username">
+                        </div>
+                        <div class="input-group">
+                            <label for="profile_email">Email Address</label>
+                            <input type="email" id="profile_email" name="profile_email"
+                                value="<?php echo htmlspecialchars($adminData['email'] ?? ''); ?>" required
+                                placeholder="Email address">
+                        </div>
+                    </div>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="profile_phone">Phone Number</label>
+                            <input type="text" id="profile_phone" name="profile_phone"
+                                value="<?php echo htmlspecialchars($adminData['phone'] ?? ''); ?>"
+                                placeholder="e.g. 09123456789">
+                        </div>
+                        <div class="input-group">
+                            <label>Role</label>
+                            <input type="text" value="<?php echo htmlspecialchars($adminData['role'] ?? 'Admin'); ?>" disabled
+                                style="background: #f8f9fa; cursor: not-allowed; color: #6c757d;">
+                        </div>
+                    </div>
+                    <div class="form-footer" style="gap: 10px;">
+                        <button type="button" class="btn-secondary-settings" onclick="closeEditProfileModal()" style="padding: 12px 25px; width: auto;">
+                            Cancel
+                        </button>
+                        <button type="submit" name="edit_profile" class="btn-primary-settings">
+                            <i class="fas fa-save"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <?php include_once __DIR__ . '/../includes/logout_modal.php'; ?>
     <script>
         function openDataManagementModal() {
@@ -798,6 +889,22 @@ $root = rtrim($scriptDir, '/') . '/';
             document.getElementById('dataManagementModal').classList.remove('show');
             document.getElementById('importForm').style.display = 'none';
         }
+
+        function openEditProfileModal() {
+            document.getElementById('editProfileModal').classList.add('show');
+        }
+
+        function closeEditProfileModal() {
+            document.getElementById('editProfileModal').classList.remove('show');
+        }
+
+        // Close modals on outside click
+        window.addEventListener('click', function(e) {
+            const editModal = document.getElementById('editProfileModal');
+            if (e.target === editModal) closeEditProfileModal();
+            const dataModal = document.getElementById('dataManagementModal');
+            if (e.target === dataModal) closeDataManagementModal();
+        });
 
         function toggleImportForm() {
             const form = document.getElementById('importForm');

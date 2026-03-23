@@ -177,6 +177,9 @@ class SupplyModel {
             $reportKey = $month;
         }
         
+        // The "cutoff" for the beginning balance is 1 second before the start of the period
+        $prevEndDate = date('Y-m-d H:i:s', strtotime($startDate) - 1);
+        
         try {
             // 1. Get all base items with current real-time quantity
             $sqlItems = "SELECT supply_id, stock_no, item, description, category, unit, quantity, unit_cost, status, property_classification 
@@ -191,8 +194,8 @@ class SupplyModel {
                 $id = $item['supply_id'];
                 $currentQty = (float)$item['quantity'];
                 
-                // 2. Calculate Actual Historical Ending Balance for the period
-                // We wind back the current quantity by subtracting all net changes that happened AFTER the period's end
+                // 2. Calculate the Ending Balance for this period by winding back from today
+                //    to the end of the selected period
                 $sqlNetAfter = "SELECT IFNULL(SUM(quantity_change), 0) FROM supply_history 
                                WHERE supply_id = ? AND created_at > ?";
                 $stmtNetAfter = $this->conn->prepare($sqlNetAfter);
@@ -201,14 +204,25 @@ class SupplyModel {
                 
                 $actualEndingBalance = $currentQty - $netChangeAfter;
                 
-                // 3. Calculate Reported Acquisitions during the period (from acquisition table)
+                // 3. Calculate the Beginning Balance (opening stock) for this period by 
+                //    winding back from today to the second BEFORE the period starts.
+                //    This correctly chains periods: Feb ending balance = Mar beginning balance.
+                $sqlNetAfterPrev = "SELECT IFNULL(SUM(quantity_change), 0) FROM supply_history 
+                                   WHERE supply_id = ? AND created_at > ?";
+                $stmtNetAfterPrev = $this->conn->prepare($sqlNetAfterPrev);
+                $stmtNetAfterPrev->execute([$id, $prevEndDate]);
+                $netChangeAfterPrev = (float)$stmtNetAfterPrev->fetchColumn();
+                
+                $beginningBalance = $currentQty - $netChangeAfterPrev;
+                
+                // 4. Calculate Reported Acquisitions during the period (from acquisition table)
                 $sqlAcq = "SELECT IFNULL(SUM(quantity), 0) FROM acquisition 
                            WHERE supply_id = ? AND (acquisition_date BETWEEN ? AND ?)";
                 $stmtAcq = $this->conn->prepare($sqlAcq);
                 $stmtAcq->execute([$id, substr($startDate, 0, 10), substr($endDate, 0, 10)]);
                 $acquisitions = (float)$stmtAcq->fetchColumn();
                 
-                // 4. Calculate Reported Issuances during the period (from approved request_item)
+                // 5. Calculate Reported Issuances during the period (from approved request_item)
                 $sqlIss = "SELECT IFNULL(SUM(ri.issued_quantity), 0) 
                            FROM request_item ri
                            JOIN requisition r ON ri.requisition_id = r.requisition_id
@@ -219,10 +233,6 @@ class SupplyModel {
                 $stmtIss = $this->conn->prepare($sqlIss);
                 $stmtIss->execute([$id, $startDate, $endDate]);
                 $issuances = (float)$stmtIss->fetchColumn();
-                
-                // 5. Calculate Previous Month Balance as requested (Back-calculation to ensure consistency)
-                // PB = EndingBalance - Acquisitions + Issuances
-                $beginningBalance = $actualEndingBalance - $acquisitions + $issuances;
                 
                 $reportData[] = [
                     'supply_id' => $id,
@@ -248,6 +258,7 @@ class SupplyModel {
             return [];
         }
     }
+
 
     private function ensureRPCIColumnsExist() {
         try {
